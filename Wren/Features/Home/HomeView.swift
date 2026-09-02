@@ -93,14 +93,22 @@ struct HomeView: View {
     /// Overdue first, then what's due in the next couple of days. Anything
     /// further out belongs on the Tasks screen, not here.
     private var tasksSection: some View {
-        let live = tasks.filter(\.isActive)
-        let overdue = live.filter { $0.state(calendar: calendar)?.isOverdue ?? false }
-        let soon = live.filter { task in
-            guard let next = task.state(calendar: calendar)?.nextDue else { return false }
-            guard !(task.state(calendar: calendar)?.isOverdue ?? false) else { return false }
-            return next <= (calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date())
+        // State is computed once per task: it walks the schedule, so calling it
+        // three times per row in a filter chain was both wasteful and how the
+        // "nothing due soon" case ended up unhandled.
+        let live = tasks.filter(\.isActive).map { (task: $0, state: $0.state(calendar: calendar)) }
+        let horizon = calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date()
+
+        let overdue = live.filter { $0.state?.isOverdue ?? false }
+        let soon = live.filter { entry in
+            guard !(entry.state?.isOverdue ?? false), let next = entry.state?.nextDue else { return false }
+            return next <= horizon
         }
-        let shown = overdue + soon
+        let shown = (overdue + soon).map(\.task)
+
+        // The next thing due at all, however far out — so the section always has
+        // something to say rather than disappearing.
+        let nextDueAnywhere = live.compactMap { $0.state?.nextDue }.min()
 
         return Group {
             if !shown.isEmpty {
@@ -133,29 +141,57 @@ struct HomeView: View {
                             .strokeBorder(Color.wren.divider, lineWidth: 1)
                     )
                 }
-            } else if tasks.isEmpty {
-                NavigationLink {
-                    TasksListView()
-                } label: {
-                    WrenCard {
-                        HStack {
-                            VStack(alignment: .leading, spacing: Space.xs) {
-                                Text("Tasks")
-                                    .font(.headline)
-                                    .foregroundStyle(Color.wren.textPrimary)
-                                Text("Filters, smoke alarms, the car service — anything that comes round again.")
-                                    .font(.subheadline)
-                                    .foregroundStyle(Color.wren.textSecondary)
-                            }
-                            Spacer()
-                            Image(systemName: "chevron.right")
-                                .foregroundStyle(Color.wren.textSecondary)
-                        }
-                    }
-                }
-                .buttonStyle(.plain)
+            } else {
+                // Two remaining cases, and both must still offer a way through
+                // to Tasks: nothing set up yet, and everything set up but
+                // nothing due for a while.
+                tasksEntryCard(nextDue: nextDueAnywhere, pausedCount: tasks.count - tasks.filter(\.isActive).count)
             }
         }
+    }
+
+    private func tasksEntryCard(nextDue: Date?, pausedCount: Int) -> some View {
+        NavigationLink {
+            TasksListView()
+        } label: {
+            WrenCard {
+                HStack {
+                    VStack(alignment: .leading, spacing: Space.xs) {
+                        Text("Tasks")
+                            .font(.headline)
+                            .foregroundStyle(Color.wren.textPrimary)
+                        Text(tasksEntrySubtitle(nextDue: nextDue, pausedCount: pausedCount))
+                            .font(.subheadline)
+                            .foregroundStyle(Color.wren.textSecondary)
+                    }
+                    Spacer()
+                    Image(systemName: "chevron.right")
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+            }
+        }
+        .buttonStyle(.plain)
+    }
+
+    private func tasksEntrySubtitle(nextDue: Date?, pausedCount: Int) -> String {
+        if tasks.isEmpty {
+            return "Filters, smoke alarms, the car service — anything that comes round again."
+        }
+        if let nextDue {
+            let days = calendar.dateComponents(
+                [.day],
+                from: calendar.startOfDay(for: Date()),
+                to: calendar.startOfDay(for: nextDue)
+            ).day ?? 0
+            let when = nextDue.formatted(.dateTime.weekday(.wide).day().month())
+            return days <= 7
+                ? "Nothing due yet — next is \(when)."
+                : "Nothing due for \(days) days — next is \(when)."
+        }
+        if pausedCount == tasks.count {
+            return "\(tasks.count) task\(tasks.count == 1 ? "" : "s"), all paused."
+        }
+        return "\(tasks.count) task\(tasks.count == 1 ? "" : "s"), nothing scheduled."
     }
 
     /// The next fortnight, so "is it recycling next week?" is answerable without

@@ -32,7 +32,7 @@ struct TaskEditorView: View {
                         .lineLimit(2...5)
                 }
 
-                ScheduleEditor(draft: $draft, calendar: calendar)
+                ScheduleEditor(draft: $draft, labels: .tasks, calendar: calendar)
 
                 Section {
                     Picker("Remind me", selection: $reminderMinutesBefore) {

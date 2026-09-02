@@ -35,8 +35,43 @@ struct ScheduleDraft {
 
 @MainActor
 struct ScheduleEditor: View {
+    /// The editor is shared by bins and tasks, which don't share vocabulary — a
+    /// task has no "collection date". Each consumer supplies its own nouns.
+    struct Labels {
+        let firstOccurrence: String
+        let timeOfDay: String
+        let daysHeader: String
+        let endToggle: String
+        let endDate: String
+        /// Lower-case form for mid-sentence use in the weekday hint.
+        let firstOccurrenceInline: String
+
+        static let bins = Labels(
+            firstOccurrence: "First collection",
+            timeOfDay: "Put out at",
+            daysHeader: "Collection days",
+            endToggle: "Stops on a date",
+            endDate: "Last collection",
+            firstOccurrenceInline: "first collection"
+        )
+
+        static let tasks = Labels(
+            firstOccurrence: "First due",
+            timeOfDay: "Due at",
+            daysHeader: "Due on these days",
+            endToggle: "Stops on a date",
+            endDate: "Last one due",
+            firstOccurrenceInline: "first due date"
+        )
+    }
+
     @Binding var draft: ScheduleDraft
+    var labels: Labels = .bins
     var calendar: Calendar = .current
+
+    private var usesWeekdays: Bool {
+        draft.frequency == .weekly && !draft.weekdays.isEmpty
+    }
 
     private var intervalLabel: String {
         switch draft.frequency {
@@ -66,10 +101,12 @@ struct ScheduleEditor: View {
                 }
             }
 
+            // With explicit weekdays the anchor's own date is irrelevant — only
+            // its time of day is used — so the picker narrows to match.
             DatePicker(
-                draft.frequency == .weekly && !draft.weekdays.isEmpty ? "Put out at" : "First collection",
+                usesWeekdays ? labels.timeOfDay : labels.firstOccurrence,
                 selection: $draft.anchorDate,
-                displayedComponents: draft.frequency == .weekly && !draft.weekdays.isEmpty ? .hourAndMinute : [.date, .hourAndMinute]
+                displayedComponents: usesWeekdays ? .hourAndMinute : [.date, .hourAndMinute]
             )
 
             if draft.frequency == .weekly {
@@ -82,16 +119,16 @@ struct ScheduleEditor: View {
         }
 
         Section {
-            Toggle("Stops on a date", isOn: $draft.hasEndDate)
+            Toggle(labels.endToggle, isOn: $draft.hasEndDate)
             if draft.hasEndDate {
-                DatePicker("Last collection", selection: $draft.endDate, displayedComponents: .date)
+                DatePicker(labels.endDate, selection: $draft.endDate, displayedComponents: .date)
             }
         }
     }
 
     private var weekdayPicker: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text("Collection days")
+            Text(labels.daysHeader)
                 .font(.subheadline)
                 .foregroundStyle(Color.wren.textSecondary)
 
@@ -120,8 +157,8 @@ struct ScheduleEditor: View {
             }
 
             Text(draft.weekdays.isEmpty
-                 ? "None selected — the first collection's own weekday is used."
-                 : "Overrides the first collection's weekday.")
+                 ? "None selected — the \(labels.firstOccurrenceInline)'s own weekday is used."
+                 : "Overrides the \(labels.firstOccurrenceInline)'s weekday.")
                 .font(.caption)
                 .foregroundStyle(Color.wren.textSecondary)
         }
