@@ -31,3 +31,57 @@ enum Radius {
     static let card: CGFloat = 12
     static let chip: CGFloat = 8
 }
+
+// MARK: - Bin lid colours
+
+extension Color {
+    /// Bins are the deliberate exception to "sage is the only accent" — these map
+    /// to physical lid colours, so they come from hex rather than the palette.
+    init(binHex: String) {
+        let cleaned = binHex.trimmingCharacters(in: CharacterSet(charactersIn: "#")).uppercased()
+        guard cleaned.count == 6, let value = Int(cleaned, radix: 16) else {
+            self = .wren.accent
+            return
+        }
+        self.init(
+            .sRGB,
+            red: Double((value >> 16) & 0xFF) / 255,
+            green: Double((value >> 8) & 0xFF) / 255,
+            blue: Double(value & 0xFF) / 255
+        )
+    }
+}
+
+/// The lid colours a QLD kerbside actually offers.
+enum BinLid: String, CaseIterable, Identifiable {
+    case red = "#B4453C"
+    case yellow = "#D9A82E"
+    case green = "#5C8C3F"
+    case blue = "#3E6E9E"
+    case grey = "#7A817C"
+
+    var id: String { rawValue }
+
+    var label: String {
+        switch self {
+        case .red: return "Red"
+        case .yellow: return "Yellow"
+        case .green: return "Green"
+        case .blue: return "Blue"
+        case .grey: return "Grey"
+        }
+    }
+
+    var color: Color { Color(binHex: rawValue) }
+
+    /// The bin this lid usually means, used as the default name on a new bin.
+    var suggestedName: String {
+        switch self {
+        case .red: return "General waste"
+        case .yellow: return "Recycling"
+        case .green: return "Green waste"
+        case .blue: return "Paper"
+        case .grey: return "Bin"
+        }
+    }
+}

@@ -12,7 +12,7 @@ struct DiagnosticsView: View {
     @StateObject private var scheduler = NotificationScheduler.shared
 
     @State private var levelFilter: Logger.Level?
-    @State private var probeCount = 0
+    @State private var binCount = 0
     @State private var showingExport = false
 
     var body: some View {
@@ -65,6 +65,27 @@ struct DiagnosticsView: View {
         Section {
             row("Authorisation", scheduler.authorizationStatus.wrenLabel)
             row("Pending", "\(scheduler.pending.count) / \(NotificationScheduler.pendingLimit)")
+            row("Bin budget", "\(NotificationScheduler.binRequestBudget) over \(NotificationScheduler.horizonDays)d")
+            if let lastRebuild = scheduler.lastRebuild {
+                row("Last rebuild", lastRebuild.formatted(date: .omitted, time: .standard))
+            }
+            if scheduler.droppedAtCap > 0 {
+                row("Dropped at cap", "\(scheduler.droppedAtCap)")
+            }
+
+            Button("Rebuild reminders now") {
+                Task { await rebuild() }
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(Color.wren.accent)
+
+            // Kept from Phase 0: the quickest way to confirm notifications still
+            // work after SideStore re-signs the build every seven days.
+            Button("Test notification (60s)") {
+                Task { await scheduler.scheduleTestNotification() }
+            }
+            .font(.subheadline.weight(.medium))
+            .foregroundStyle(Color.wren.accent)
 
             if scheduler.pending.isEmpty {
                 Text("Nothing scheduled.")
@@ -92,7 +113,7 @@ struct DiagnosticsView: View {
 
     private var storageSection: some View {
         Section("SwiftData") {
-            row("PipelineProbe", "\(probeCount) rows")
+            row("BinCollection", "\(binCount) rows")
         }
     }
 
@@ -152,10 +173,20 @@ struct DiagnosticsView: View {
 
     private func refreshCounts() {
         do {
-            probeCount = try context.fetchCount(FetchDescriptor<PipelineProbe>())
+            binCount = try context.fetchCount(FetchDescriptor<BinCollection>())
         } catch {
             Logger.shared.error("diagnostics", "row count failed: \(error.localizedDescription)")
         }
+    }
+
+    private func rebuild() async {
+        do {
+            let bins = try context.fetch(FetchDescriptor<BinCollection>())
+            await scheduler.rebuild(bins: bins)
+        } catch {
+            Logger.shared.error("diagnostics", "rebuild fetch failed: \(error.localizedDescription)")
+        }
+        refreshCounts()
     }
 
     private func row(_ label: String, _ value: String) -> some View {

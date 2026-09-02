@@ -1,15 +1,14 @@
 import SwiftUI
 import SwiftData
+import WrenCore
 
 @MainActor
 struct HomeView: View {
     @Environment(\.modelContext) private var context
+    @Query(sort: \BinCollection.sortOrder) private var bins: [BinCollection]
     @StateObject private var scheduler = NotificationScheduler.shared
-    @Query private var probes: [PipelineProbe]
 
-    @State private var lastScheduledAt: Date?
-
-    private let log = Logger.shared
+    private let calendar = Calendar.current
 
     var body: some View {
         NavigationStack {
@@ -17,47 +16,18 @@ struct HomeView: View {
                 VStack(alignment: .leading, spacing: Space.xl) {
                     header
 
-                    WrenCard {
-                        VStack(alignment: .leading, spacing: Space.m) {
-                            Text("Pipeline test")
-                                .font(.headline)
-                                .foregroundStyle(Color.wren.textPrimary)
-                            Text("Schedules a local notification 60 seconds out. Lock the phone and wait — this is the one thing Phase 0 has to prove.")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.wren.textSecondary)
+                    NavigationLink {
+                        BinsListView()
+                    } label: {
+                        BinWeekCard(bins: bins, calendar: calendar)
+                    }
+                    .buttonStyle(.plain)
 
-                            Button("Test notification (60s)") {
-                                Task {
-                                    await scheduler.scheduleTestNotification()
-                                    lastScheduledAt = Date()
-                                }
-                            }
-                            .buttonStyle(WrenPrimaryButtonStyle())
-
-                            HStack(spacing: Space.s) {
-                                WrenChip(text: scheduler.authorizationStatus.wrenLabel)
-                                WrenChip(text: "\(scheduler.pending.count) pending")
-                                if let lastScheduledAt {
-                                    WrenChip(text: "tapped \(lastScheduledAt.formatted(date: .omitted, time: .shortened))")
-                                }
-                            }
-                        }
+                    if scheduler.authorizationStatus == .denied && !bins.isEmpty {
+                        permissionWarning
                     }
 
-                    WrenCard {
-                        VStack(alignment: .leading, spacing: Space.m) {
-                            Text("Storage probe")
-                                .font(.headline)
-                                .foregroundStyle(Color.wren.textPrimary)
-                            Text("\(probes.count) row\(probes.count == 1 ? "" : "s") written. Survives relaunch if SwiftData is healthy.")
-                                .font(.subheadline)
-                                .foregroundStyle(Color.wren.textSecondary)
-
-                            Button("Write a row") { writeProbe() }
-                                .font(.subheadline.weight(.medium))
-                                .foregroundStyle(Color.wren.accent)
-                        }
-                    }
+                    upcoming
 
                     NavigationLink {
                         DiagnosticsView()
@@ -68,8 +38,9 @@ struct HomeView: View {
                                     Text("Diagnostics")
                                         .font(.headline)
                                         .foregroundStyle(Color.wren.textPrimary)
-                                    Text("Logs, pending notifications, build info")
+                                    Text("\(scheduler.pending.count) reminder\(scheduler.pending.count == 1 ? "" : "s") scheduled")
                                         .font(.subheadline)
+                                        .monospacedDigit()
                                         .foregroundStyle(Color.wren.textSecondary)
                                 }
                                 Spacer()
@@ -87,29 +58,96 @@ struct HomeView: View {
         }
         .task {
             await scheduler.refreshAuthorizationStatus()
-            await scheduler.refreshPending()
+            await scheduler.rebuild(bins: bins, calendar: calendar)
         }
     }
 
     private var header: some View {
         VStack(alignment: .leading, spacing: Space.xs) {
             WrenTitle(text: "Wren")
-            Text(BuildInfo.summary)
+            Text(Date().formatted(.dateTime.weekday(.wide).day().month(.wide)))
                 .font(.footnote)
-                .monospacedDigit()
                 .foregroundStyle(Color.wren.textSecondary)
         }
         .padding(.top, Space.s)
     }
 
-    private func writeProbe() {
-        let probe = PipelineProbe(note: "tapped at \(Date().formatted(date: .abbreviated, time: .standard))")
-        context.insert(probe)
-        do {
-            try context.save()
-            log.info("storage", "probe saved — \(probes.count + 1) rows")
-        } catch {
-            log.error("storage", "probe save failed: \(error.localizedDescription)")
+    /// Terracotta earns its keep here: without permission the app silently does
+    /// nothing useful, which is worth shouting about.
+    private var permissionWarning: some View {
+        WrenCard {
+            VStack(alignment: .leading, spacing: Space.s) {
+                Text("Reminders are switched off")
+                    .font(.headline)
+                    .foregroundStyle(Color.wren.alert)
+                Text("Wren can't notify you about bin nights until notifications are allowed in Settings.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
         }
+    }
+
+    /// The next fortnight, so "is it recycling next week?" is answerable without
+    /// opening anything.
+    private var upcoming: some View {
+        let horizon = calendar.date(byAdding: .day, value: 14, to: Date()) ?? Date()
+        let window = BinCycle.window(
+            schedules: bins.filter(\.isActive).compactMap(\.binSchedule),
+            from: Date(),
+            to: horizon,
+            calendar: calendar
+        )
+
+        return Group {
+            if !window.nights.isEmpty {
+                VStack(alignment: .leading, spacing: Space.m) {
+                    Text("Next fortnight")
+                        .font(.subheadline.weight(.medium))
+                        .foregroundStyle(Color.wren.textSecondary)
+
+                    VStack(spacing: 0) {
+                        ForEach(Array(window.nights.enumerated()), id: \.element) { index, night in
+                            nightRow(night, dues: window.due.filter { $0.date == night })
+                            if index < window.nights.count - 1 {
+                                Divider().overlay(Color.wren.divider)
+                            }
+                        }
+                    }
+                    .background(Color.wren.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.card)
+                            .strokeBorder(Color.wren.divider, lineWidth: 1)
+                    )
+                }
+            }
+        }
+    }
+
+    private func nightRow(_ night: Date, dues: [BinDue]) -> some View {
+        HStack(spacing: Space.m) {
+            HStack(spacing: Space.xs) {
+                ForEach(dues) { due in
+                    if let bin = bins.first(where: { $0.binID == due.binID }) {
+                        Circle()
+                            .fill(Color(binHex: bin.colorHex))
+                            .frame(width: 10, height: 10)
+                    }
+                }
+            }
+            .frame(width: 44, alignment: .leading)
+
+            Text(night.formatted(.dateTime.weekday(.abbreviated).day().month()))
+                .font(.subheadline)
+                .monospacedDigit()
+                .foregroundStyle(Color.wren.textPrimary)
+
+            Spacer()
+
+            Text(dues.compactMap { due in bins.first { $0.binID == due.binID }?.name }.joined(separator: " + "))
+                .font(.caption)
+                .foregroundStyle(Color.wren.textSecondary)
+                .lineLimit(1)
+        }
+        .padding(Space.m)
     }
 }

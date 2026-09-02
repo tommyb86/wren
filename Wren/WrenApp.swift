@@ -26,11 +26,21 @@ struct WrenApp: App {
                 Logger.shared.flush()
             case .active:
                 Logger.shared.debug("app", "active")
-                // From Phase 1 this is where the notification set is rebuilt.
-                Task { await NotificationScheduler.shared.refreshPending() }
+                // The whole pending set is rebuilt on every foreground. That is
+                // what keeps us under the 64-request cap without diffing.
+                Task { await rebuildReminders() }
             default:
                 break
             }
+        }
+    }
+
+    private func rebuildReminders() async {
+        do {
+            let bins = try container.mainContext.fetch(FetchDescriptor<BinCollection>())
+            await NotificationScheduler.shared.rebuild(bins: bins)
+        } catch {
+            Logger.shared.error("app", "could not fetch bins on foreground: \(error.localizedDescription)")
         }
     }
 }
