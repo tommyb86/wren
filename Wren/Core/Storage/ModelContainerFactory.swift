@@ -49,6 +49,7 @@ enum ModelContainerFactory {
     }
 
     /// Renames the store (and its -wal/-shm siblings) out of the way.
+    @MainActor
     private static func quarantineStore(at url: URL) -> Bool {
         let manager = FileManager.default
         guard manager.fileExists(atPath: url.path) else { return false }
