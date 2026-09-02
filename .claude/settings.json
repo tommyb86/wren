@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Bash",
+        "hooks": [
+          {
+            "type": "command",
+            "shell": "bash",
+            "if": "Bash(gh:*)",
+            "command": "if grep -qE '(-R|--repo)[ =]' ; then echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"ask\",\"permissionDecisionReason\":\"gh command names an explicit --repo, which may not be tommyb86/wren\"}}'; else echo '{\"hookSpecificOutput\":{\"hookEventName\":\"PreToolUse\",\"permissionDecision\":\"allow\",\"permissionDecisionReason\":\"gh is pre-approved in the wren project\"}}'; fi",
+            "statusMessage": "Approving gh for wren"
+          }
+        ]
+      }
+    ]
+  }
+}
