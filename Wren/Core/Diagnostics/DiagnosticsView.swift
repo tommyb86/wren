@@ -1,9 +1,11 @@
 import SwiftUI
+import UIKit
 import SwiftData
 import UserNotifications
 
 /// First-class feature, not a debug afterthought. When something misbehaves on
 /// the device, this screen is the only window in.
+@MainActor
 struct DiagnosticsView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var logger = Logger.shared

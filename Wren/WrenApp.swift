@@ -2,6 +2,7 @@ import SwiftUI
 import SwiftData
 
 @main
+@MainActor
 struct WrenApp: App {
     @Environment(\.scenePhase) private var scenePhase
 

@@ -1,6 +1,7 @@
 import SwiftUI
 import SwiftData
 
+@MainActor
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @StateObject private var scheduler = NotificationScheduler.shared
