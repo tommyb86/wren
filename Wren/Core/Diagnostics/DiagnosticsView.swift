@@ -23,6 +23,7 @@ struct DiagnosticsView: View {
             notificationSection
             storageSection
             logSection
+            colophon
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
@@ -156,6 +157,26 @@ struct DiagnosticsView: View {
             }
         } header: {
             Text("Log — \(logger.entries.count) entries, newest first")
+        }
+    }
+
+    /// The last thing you see on the way out — a printer's colophon rather than
+    /// a splash. Also the fastest way to read back exactly which build is on the
+    /// phone when something looks wrong.
+    private var colophon: some View {
+        Section {
+            VStack(spacing: Space.s) {
+                WrenMark(size: 52)
+                Text("Wren \(BuildInfo.version)")
+                    .font(.footnote.weight(.medium))
+                    .foregroundStyle(Color.wren.textPrimary)
+                Text("build \(BuildInfo.build) · \(BuildInfo.gitSHA)")
+                    .font(.caption2.monospaced())
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, Space.m)
+            .listRowBackground(Color.clear)
         }
     }
 

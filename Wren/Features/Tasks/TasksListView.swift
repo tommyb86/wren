@@ -123,9 +123,8 @@ struct TasksListView: View {
 
     private var emptyState: some View {
         VStack(spacing: Space.m) {
-            Image(systemName: "checklist")
-                .font(.system(size: 32))
-                .foregroundStyle(Color.wren.textSecondary)
+            WrenMark(size: 64)
+                .padding(.bottom, Space.xs)
             Text("No tasks yet")
                 .font(.system(.title3, design: .serif))
                 .foregroundStyle(Color.wren.textPrimary)

@@ -56,3 +56,27 @@ struct WrenChip: View {
             .background(Color.wren.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip))
     }
 }
+
+/// The app's mark, framed the way iOS frames it on the home screen.
+///
+/// The artwork is opaque RGB with its warm-paper background baked in, so it
+/// cannot float on a dark surface without showing a pale square. Presenting it
+/// deliberately as a tile — a bookplate, a stamp — is honest about that and
+/// reads as intentional in both themes.
+struct WrenMark: View {
+    var size: CGFloat = 60
+
+    var body: some View {
+        Image("WrenMark")
+            .resizable()
+            .aspectRatio(contentMode: .fit)
+            .frame(width: size, height: size)
+            // Matches the iOS icon mask closely enough to read as the same object.
+            .clipShape(RoundedRectangle(cornerRadius: size * 0.22, style: .continuous))
+            .overlay(
+                RoundedRectangle(cornerRadius: size * 0.22, style: .continuous)
+                    .strokeBorder(Color.wren.divider, lineWidth: 1)
+            )
+            .accessibilityHidden(true)
+    }
+}
