@@ -105,8 +105,11 @@ public enum Money {
         for (offset, character) in text.enumerated() where character == "." || character == "," {
             let digitsAfter = text.dropFirst(offset + 1).filter(\.isNumber).count
             let separatorsAfter = text.dropFirst(offset + 1).filter { $0 == "." || $0 == "," }.count
-            // A decimal separator has 1–2 digits after it and no further separators.
-            if separatorsAfter == 0, digitsAfter == 1 || digitsAfter == 2 {
+            // No further separators, and a digit count that grouping cannot
+            // explain: groups are always exactly three, so 1–2 digits after is
+            // cents and 4+ is a decimal with excess precision (someone pasted a
+            // rate). Exactly 3 stays grouping — "1,234" is a thousand.
+            if separatorsAfter == 0, digitsAfter != 3, digitsAfter > 0 {
                 candidate = offset
             }
         }
