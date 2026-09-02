@@ -17,3 +17,7 @@ Package.resolved
 # macOS / editor cruft
 .DS_Store
 *.swp
+
+# IDE
+.idea/
+.vscode/
