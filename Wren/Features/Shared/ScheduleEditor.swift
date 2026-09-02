@@ -55,6 +55,15 @@ struct ScheduleEditor: View {
             firstOccurrenceInline: "first collection"
         )
 
+        static let bills = Labels(
+            firstOccurrence: "First bill",
+            timeOfDay: "Due at",
+            daysHeader: "Billed on these days",
+            endToggle: "Ends on a date",
+            endDate: "Last bill",
+            firstOccurrenceInline: "first bill"
+        )
+
         static let tasks = Labels(
             firstOccurrence: "First due",
             timeOfDay: "Due at",

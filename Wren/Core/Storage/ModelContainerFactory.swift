@@ -2,7 +2,13 @@ import Foundation
 import SwiftData
 
 enum ModelContainerFactory {
-    static let schema = Schema([BinCollection.self, RecurringTask.self, TaskCompletion.self])
+    static let schema = Schema([
+        BinCollection.self,
+        RecurringTask.self,
+        TaskCompletion.self,
+        Bill.self,
+        BillPayment.self
+    ])
 
     /// A failed container must be *visible*. On device the only symptom would
     /// otherwise be a blank launch with no way to find out why.

@@ -15,6 +15,8 @@ struct DiagnosticsView: View {
     @State private var binCount = 0
     @State private var taskCount = 0
     @State private var completionCount = 0
+    @State private var billCount = 0
+    @State private var paymentCount = 0
     @State private var showingExport = false
 
     var body: some View {
@@ -119,6 +121,8 @@ struct DiagnosticsView: View {
             row("BinCollection", "\(binCount) rows")
             row("RecurringTask", "\(taskCount) rows")
             row("TaskCompletion", "\(completionCount) rows")
+            row("Bill", "\(billCount) rows")
+            row("BillPayment", "\(paymentCount) rows")
         }
     }
 
@@ -201,6 +205,8 @@ struct DiagnosticsView: View {
             binCount = try context.fetchCount(FetchDescriptor<BinCollection>())
             taskCount = try context.fetchCount(FetchDescriptor<RecurringTask>())
             completionCount = try context.fetchCount(FetchDescriptor<TaskCompletion>())
+            billCount = try context.fetchCount(FetchDescriptor<Bill>())
+            paymentCount = try context.fetchCount(FetchDescriptor<BillPayment>())
         } catch {
             Logger.shared.error("diagnostics", "row count failed: \(error.localizedDescription)")
         }

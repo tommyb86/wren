@@ -7,6 +7,7 @@ struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \BinCollection.sortOrder) private var bins: [BinCollection]
     @Query(sort: \RecurringTask.sortOrder) private var tasks: [RecurringTask]
+    @Query(sort: \Bill.sortOrder) private var bills: [Bill]
     @StateObject private var scheduler = NotificationScheduler.shared
 
     private let calendar = Calendar.current
@@ -29,6 +30,8 @@ struct HomeView: View {
                     }
 
                     tasksSection
+
+                    billsSection
 
                     upcoming
 
@@ -86,6 +89,78 @@ struct HomeView: View {
                 Text("Wren can't notify you about bin nights until notifications are allowed in Settings.")
                     .font(.subheadline)
                     .foregroundStyle(Color.wren.textSecondary)
+            }
+        }
+    }
+
+    /// Purely informative — no reminders attached. The number that answers
+    /// "what does this household cost", plus what's left to pay this month.
+    private var billsSection: some View {
+        let specs = bills.compactMap(\.spec)
+        let payments = bills.flatMap(\.paymentRecords)
+
+        return Group {
+            if specs.isEmpty {
+                NavigationLink { BillsListView() } label: {
+                    WrenCard {
+                        HStack {
+                            VStack(alignment: .leading, spacing: Space.xs) {
+                                Text("Bills")
+                                    .font(.headline)
+                                    .foregroundStyle(Color.wren.textPrimary)
+                                Text("Add what the household pays and Wren works out the monthly cost.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(Color.wren.textSecondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
+            } else {
+                let summary = BillReports.monthSummary(
+                    bills: specs,
+                    payments: payments,
+                    containing: Date(),
+                    calendar: calendar
+                )
+
+                NavigationLink { ReportsView() } label: {
+                    WrenCard {
+                        VStack(alignment: .leading, spacing: Space.s) {
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
+                                    .font(.system(.title2, design: .serif))
+                                    .monospacedDigit()
+                                    .foregroundStyle(Color.wren.textPrimary)
+                                Text("a month")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.wren.textSecondary)
+                                Spacer()
+                                Image(systemName: "chevron.right")
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            }
+
+                            if summary.outstandingCents > 0 {
+                                Text("\(Money.format(cents: summary.outstandingCents)) still to pay this month")
+                                    .font(.caption)
+                                    .monospacedDigit()
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            } else if summary.dueCents > 0 {
+                                Text("Everything due this month is paid")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            } else {
+                                Text("Nothing due this month")
+                                    .font(.caption)
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            }
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
     }
