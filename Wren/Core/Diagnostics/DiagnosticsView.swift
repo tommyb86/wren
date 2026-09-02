@@ -13,6 +13,8 @@ struct DiagnosticsView: View {
 
     @State private var levelFilter: Logger.Level?
     @State private var binCount = 0
+    @State private var taskCount = 0
+    @State private var completionCount = 0
     @State private var showingExport = false
 
     var body: some View {
@@ -65,7 +67,7 @@ struct DiagnosticsView: View {
         Section {
             row("Authorisation", scheduler.authorizationStatus.wrenLabel)
             row("Pending", "\(scheduler.pending.count) / \(NotificationScheduler.pendingLimit)")
-            row("Bin budget", "\(NotificationScheduler.binRequestBudget) over \(NotificationScheduler.horizonDays)d")
+            row("Budget", "\(NotificationScheduler.requestBudget) over \(NotificationScheduler.horizonDays)d")
             if let lastRebuild = scheduler.lastRebuild {
                 row("Last rebuild", lastRebuild.formatted(date: .omitted, time: .standard))
             }
@@ -114,6 +116,8 @@ struct DiagnosticsView: View {
     private var storageSection: some View {
         Section("SwiftData") {
             row("BinCollection", "\(binCount) rows")
+            row("RecurringTask", "\(taskCount) rows")
+            row("TaskCompletion", "\(completionCount) rows")
         }
     }
 
@@ -174,18 +178,15 @@ struct DiagnosticsView: View {
     private func refreshCounts() {
         do {
             binCount = try context.fetchCount(FetchDescriptor<BinCollection>())
+            taskCount = try context.fetchCount(FetchDescriptor<RecurringTask>())
+            completionCount = try context.fetchCount(FetchDescriptor<TaskCompletion>())
         } catch {
             Logger.shared.error("diagnostics", "row count failed: \(error.localizedDescription)")
         }
     }
 
     private func rebuild() async {
-        do {
-            let bins = try context.fetch(FetchDescriptor<BinCollection>())
-            await scheduler.rebuild(bins: bins)
-        } catch {
-            Logger.shared.error("diagnostics", "rebuild fetch failed: \(error.localizedDescription)")
-        }
+        await ReminderCoordinator.rebuild(context: context)
         refreshCounts()
     }
 

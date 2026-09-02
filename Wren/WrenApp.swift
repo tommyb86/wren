@@ -36,11 +36,6 @@ struct WrenApp: App {
     }
 
     private func rebuildReminders() async {
-        do {
-            let bins = try container.mainContext.fetch(FetchDescriptor<BinCollection>())
-            await NotificationScheduler.shared.rebuild(bins: bins)
-        } catch {
-            Logger.shared.error("app", "could not fetch bins on foreground: \(error.localizedDescription)")
-        }
+        await ReminderCoordinator.rebuild(context: container.mainContext)
     }
 }

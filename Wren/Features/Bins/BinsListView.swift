@@ -124,8 +124,7 @@ struct BinsListView: View {
         } catch {
             Logger.shared.error("bins", "delete failed: \(error.localizedDescription)")
         }
-        let remaining = bins
-        Task { await NotificationScheduler.shared.rebuild(bins: remaining, calendar: calendar) }
+        Task { await ReminderCoordinator.rebuild(context: context, calendar: calendar) }
     }
 }
 

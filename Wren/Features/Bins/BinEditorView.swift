@@ -146,7 +146,7 @@ struct BinEditorView: View {
 
     private func save() {
         let trimmed = name.trimmingCharacters(in: .whitespaces)
-        let isFirstBin = !isEditing && existingBinCount == 0
+        let isFirstSource = !isEditing && ReminderCoordinator.hasNoSources(context: context)
 
         if let bin {
             bin.name = trimmed
@@ -177,7 +177,7 @@ struct BinEditorView: View {
         // Permission is requested on first meaningful use — adding the first bin
         // — rather than at launch, so the prompt arrives with context.
         Task {
-            if isFirstBin {
+            if isFirstSource {
                 await NotificationScheduler.shared.requestAuthorization()
             }
             await rebuildReminders()
@@ -199,11 +199,6 @@ struct BinEditorView: View {
     }
 
     private func rebuildReminders() async {
-        do {
-            let bins = try context.fetch(FetchDescriptor<BinCollection>())
-            await NotificationScheduler.shared.rebuild(bins: bins, calendar: calendar)
-        } catch {
-            log.error("bins", "could not fetch bins to rebuild reminders: \(error.localizedDescription)")
-        }
+        await ReminderCoordinator.rebuild(context: context, calendar: calendar)
     }
 }

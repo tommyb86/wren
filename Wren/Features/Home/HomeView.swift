@@ -6,6 +6,7 @@ import WrenCore
 struct HomeView: View {
     @Environment(\.modelContext) private var context
     @Query(sort: \BinCollection.sortOrder) private var bins: [BinCollection]
+    @Query(sort: \RecurringTask.sortOrder) private var tasks: [RecurringTask]
     @StateObject private var scheduler = NotificationScheduler.shared
 
     private let calendar = Calendar.current
@@ -23,9 +24,11 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
 
-                    if scheduler.authorizationStatus == .denied && !bins.isEmpty {
+                    if scheduler.authorizationStatus == .denied && !(bins.isEmpty && tasks.isEmpty) {
                         permissionWarning
                     }
+
+                    tasksSection
 
                     upcoming
 
@@ -58,7 +61,7 @@ struct HomeView: View {
         }
         .task {
             await scheduler.refreshAuthorizationStatus()
-            await scheduler.rebuild(bins: bins, calendar: calendar)
+            await ReminderCoordinator.rebuild(context: context, calendar: calendar)
         }
     }
 
@@ -83,6 +86,74 @@ struct HomeView: View {
                 Text("Wren can't notify you about bin nights until notifications are allowed in Settings.")
                     .font(.subheadline)
                     .foregroundStyle(Color.wren.textSecondary)
+            }
+        }
+    }
+
+    /// Overdue first, then what's due in the next couple of days. Anything
+    /// further out belongs on the Tasks screen, not here.
+    private var tasksSection: some View {
+        let live = tasks.filter(\.isActive)
+        let overdue = live.filter { $0.state(calendar: calendar)?.isOverdue ?? false }
+        let soon = live.filter { task in
+            guard let next = task.state(calendar: calendar)?.nextDue else { return false }
+            guard !(task.state(calendar: calendar)?.isOverdue ?? false) else { return false }
+            return next <= (calendar.date(byAdding: .day, value: 2, to: Date()) ?? Date())
+        }
+        let shown = overdue + soon
+
+        return Group {
+            if !shown.isEmpty {
+                VStack(alignment: .leading, spacing: Space.m) {
+                    HStack {
+                        Text(overdue.isEmpty ? "Tasks" : "Needs doing")
+                            .font(.subheadline.weight(.medium))
+                            .foregroundStyle(overdue.isEmpty ? Color.wren.textSecondary : Color.wren.alert)
+                        Spacer()
+                        NavigationLink("All tasks") { TasksListView() }
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Color.wren.accent)
+                    }
+
+                    VStack(spacing: 0) {
+                        ForEach(Array(shown.enumerated()), id: \.element.taskID) { index, task in
+                            TaskRow(task: task, calendar: calendar) {
+                                TaskStore.complete(task, context: context, calendar: calendar)
+                            }
+                            .padding(.horizontal, Space.m)
+                            .padding(.vertical, Space.s)
+                            if index < shown.count - 1 {
+                                Divider().overlay(Color.wren.divider)
+                            }
+                        }
+                    }
+                    .background(Color.wren.surface, in: RoundedRectangle(cornerRadius: Radius.card))
+                    .overlay(
+                        RoundedRectangle(cornerRadius: Radius.card)
+                            .strokeBorder(Color.wren.divider, lineWidth: 1)
+                    )
+                }
+            } else if tasks.isEmpty {
+                NavigationLink {
+                    TasksListView()
+                } label: {
+                    WrenCard {
+                        HStack {
+                            VStack(alignment: .leading, spacing: Space.xs) {
+                                Text("Tasks")
+                                    .font(.headline)
+                                    .foregroundStyle(Color.wren.textPrimary)
+                                Text("Filters, smoke alarms, the car service — anything that comes round again.")
+                                    .font(.subheadline)
+                                    .foregroundStyle(Color.wren.textSecondary)
+                            }
+                            Spacer()
+                            Image(systemName: "chevron.right")
+                                .foregroundStyle(Color.wren.textSecondary)
+                        }
+                    }
+                }
+                .buttonStyle(.plain)
             }
         }
     }
