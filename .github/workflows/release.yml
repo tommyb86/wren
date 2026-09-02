@@ -1,0 +1,48 @@
+name: release
+
+on:
+  push:
+    tags: ['v*']
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  ipa:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: brew install xcodegen
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Archive unsigned
+        run: |
+          set -o pipefail
+          xcodebuild archive \
+            -project Wren.xcodeproj \
+            -scheme Wren \
+            -configuration Release \
+            -archivePath "$RUNNER_TEMP/Wren.xcarchive" \
+            -destination 'generic/platform=iOS' \
+            WREN_GIT_SHA=${{ github.sha }} \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY=""
+
+      # SideStore re-signs the payload on device with the Apple ID, so the IPA
+      # ships unsigned and without embedded provisioning.
+      - name: Package IPA
+        run: |
+          mkdir -p Payload
+          cp -R "$RUNNER_TEMP/Wren.xcarchive/Products/Applications/Wren.app" Payload/
+          zip -qr Wren.ipa Payload
+          ls -lh Wren.ipa
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: Wren.ipa
+          generate_release_notes: true

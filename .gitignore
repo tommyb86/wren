@@ -1,0 +1,19 @@
+# XcodeGen output — never committed, always regenerated
+*.xcodeproj
+*.xcworkspace
+
+# Build products
+build/
+DerivedData/
+.build/
+*.ipa
+*.xcarchive
+Payload/
+
+# SPM
+.swiftpm/
+Package.resolved
+
+# macOS / editor cruft
+.DS_Store
+*.swp

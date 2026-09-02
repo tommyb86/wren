@@ -1,0 +1,50 @@
+name: check
+
+on: [push, pull_request, workflow_dispatch]
+
+concurrency:
+  group: check-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+
+      - run: brew install xcodegen xcbeautify
+
+      # Fast leg first: pure-Foundation logic, no Xcode build required.
+      - name: Cache SPM
+        uses: actions/cache@v4
+        with:
+          path: Packages/WrenCore/.build
+          key: spm-${{ runner.os }}-${{ hashFiles('Packages/WrenCore/**/*.swift', 'Packages/WrenCore/Package.swift') }}
+          restore-keys: spm-${{ runner.os }}-
+
+      - name: Test WrenCore
+        run: swift test --package-path Packages/WrenCore
+
+      - name: Generate project
+        run: xcodegen generate
+
+      - name: Cache DerivedData
+        uses: actions/cache@v4
+        with:
+          path: ~/Library/Developer/Xcode/DerivedData
+          key: dd-${{ runner.os }}-${{ hashFiles('project.yml', 'Wren/**', 'Models/**') }}
+          restore-keys: dd-${{ runner.os }}-
+
+      - name: Build unsigned
+        run: |
+          set -o pipefail
+          xcodebuild build \
+            -project Wren.xcodeproj \
+            -scheme Wren \
+            -destination 'generic/platform=iOS' \
+            -configuration Debug \
+            WREN_GIT_SHA=${{ github.sha }} \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            | xcbeautify
