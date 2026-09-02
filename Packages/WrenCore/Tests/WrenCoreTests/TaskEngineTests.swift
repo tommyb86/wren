@@ -184,7 +184,14 @@ final class TaskEngineTests: XCTestCase {
             calendar: brisbane
         )
 
-        XCTAssertEqual(tight.overdue.count, 2, "a fortnight of a weekly task is two misses")
+        // Both ends of the window are inclusive, and 2026-12-01 is itself a
+        // Tuesday due at 09:00 — so a 14-day lookback catches Nov 17, Nov 24
+        // and Dec 1.
+        XCTAssertEqual(tight.overdue, [
+            date(2026, 11, 17),
+            date(2026, 11, 24),
+            date(2026, 12, 1)
+        ])
         XCTAssertTrue(unbounded.overdue.count > tight.overdue.count)
         XCTAssertEqual(unbounded.nextDue, tight.nextDue, "lookback must not affect what is next")
     }
