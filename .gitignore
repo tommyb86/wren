@@ -21,3 +21,12 @@ Package.resolved
 # IDE
 .idea/
 .vscode/
+
+# Keys and certificates — never committed. A blanket `git add -A` swept an
+# SSH private key in here once; these patterns stop that recurring.
+id_*
+!id_*.md
+*.pem
+*.p12
+*.key
+*.mobileprovision
