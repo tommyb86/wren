@@ -39,12 +39,12 @@ struct DocumentScanner: UIViewControllerRepresentable {
             didFinishWith scan: VNDocumentCameraScan
         ) {
             let pages = (0..<scan.pageCount).map { scan.imageOfPage(at: $0) }
-            Logger.shared.info("receipts", "scanned \(pages.count) page(s)")
+            Logger.record(.info, "receipts", "scanned \(pages.count) page(s)")
             onFinish(pages)
         }
 
         func documentCameraViewControllerDidCancel(_ controller: VNDocumentCameraViewController) {
-            Logger.shared.debug("receipts", "scan cancelled")
+            Logger.record(.debug, "receipts", "scan cancelled")
             onCancel()
         }
 
@@ -52,7 +52,7 @@ struct DocumentScanner: UIViewControllerRepresentable {
             _ controller: VNDocumentCameraViewController,
             didFailWithError error: Error
         ) {
-            Logger.shared.error("receipts", "scan failed: \(error.localizedDescription)")
+            Logger.record(.error, "receipts", "scan failed: \(error.localizedDescription)")
             onCancel()
         }
     }

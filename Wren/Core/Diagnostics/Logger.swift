@@ -10,7 +10,7 @@ import Combine
 final class Logger: ObservableObject {
     static let shared = Logger()
 
-    enum Level: String, Codable, CaseIterable, Identifiable {
+    enum Level: String, Codable, CaseIterable, Identifiable, Sendable {
         case debug, info, warn, error
         var id: String { rawValue }
 
@@ -60,6 +60,19 @@ final class Logger: ObservableObject {
         #if DEBUG
         print(entries[entries.count - 1].line)
         #endif
+    }
+
+    /// Logging entry point for code that isn't on the main actor — Vision
+    /// completion handlers, file I/O, delegate callbacks.
+    ///
+    /// Hops to the main actor rather than assuming isolation, because some of
+    /// these callers genuinely run on a background queue and asserting
+    /// otherwise would trap. Ordering between concurrent callers is therefore
+    /// best-effort, which is an acceptable price for a log.
+    nonisolated static func record(_ level: Level, _ category: String, _ message: String) {
+        Task { @MainActor in
+            Logger.shared.log(level, category, message)
+        }
     }
 
     func debug(_ category: String, _ message: String) { log(.debug, category, message) }

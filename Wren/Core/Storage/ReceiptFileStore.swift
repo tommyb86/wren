@@ -20,10 +20,10 @@ enum ReceiptFileStore {
         guard !FileManager.default.fileExists(atPath: directory.path) else { return true }
         do {
             try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
-            Logger.shared.info("receipts", "created \(directory.lastPathComponent) directory")
+            Logger.record(.info, "receipts", "created \(directory.lastPathComponent) directory")
             return true
         } catch {
-            Logger.shared.error("receipts", "could not create receipts directory: \(error.localizedDescription)")
+            Logger.record(.error, "receipts", "could not create receipts directory: \(error.localizedDescription)")
             return false
         }
     }
@@ -36,17 +36,17 @@ enum ReceiptFileStore {
     static func save(_ image: UIImage) -> String? {
         guard ensureDirectory() else { return nil }
         guard let data = image.jpegData(compressionQuality: jpegQuality) else {
-            Logger.shared.error("receipts", "could not encode a scanned page as JPEG")
+            Logger.record(.error, "receipts", "could not encode a scanned page as JPEG")
             return nil
         }
 
         let filename = "\(UUID().uuidString).jpg"
         do {
             try data.write(to: url(for: filename), options: .atomic)
-            Logger.shared.info("receipts", "saved \(filename) (\(data.count / 1024)KB)")
+            Logger.record(.info, "receipts", "saved \(filename) (\(data.count / 1024)KB)")
             return filename
         } catch {
-            Logger.shared.error("receipts", "could not write \(filename): \(error.localizedDescription)")
+            Logger.record(.error, "receipts", "could not write \(filename): \(error.localizedDescription)")
             return nil
         }
     }
@@ -65,9 +65,9 @@ enum ReceiptFileStore {
         for filename in filenames {
             do {
                 try FileManager.default.removeItem(at: url(for: filename))
-                Logger.shared.info("receipts", "deleted \(filename)")
+                Logger.record(.info, "receipts", "deleted \(filename)")
             } catch {
-                Logger.shared.warn("receipts", "could not delete \(filename): \(error.localizedDescription)")
+                Logger.record(.warn, "receipts", "could not delete \(filename): \(error.localizedDescription)")
             }
         }
     }
@@ -117,7 +117,7 @@ enum ReceiptFileStore {
             for filename in filenames {
                 let source = url(for: filename)
                 guard FileManager.default.fileExists(atPath: source.path) else {
-                    Logger.shared.warn("receipts", "export skipped missing file \(filename)")
+                    Logger.record(.warn, "receipts", "export skipped missing file \(filename)")
                     continue
                 }
                 try FileManager.default.copyItem(at: source, to: staging.appendingPathComponent(filename))
@@ -134,25 +134,25 @@ enum ReceiptFileStore {
                     try FileManager.default.copyItem(at: zipped, to: destination)
                     copied = destination
                 } catch {
-                    Logger.shared.error("receipts", "could not copy the archive out: \(error.localizedDescription)")
+                    Logger.record(.error, "receipts", "could not copy the archive out: \(error.localizedDescription)")
                 }
             }
 
             try? FileManager.default.removeItem(at: staging)
 
             if let coordinatorError {
-                Logger.shared.error("receipts", "zip failed: \(coordinatorError.localizedDescription)")
+                Logger.record(.error, "receipts", "zip failed: \(coordinatorError.localizedDescription)")
                 return nil
             }
 
             if let copied {
                 let attributes = try? FileManager.default.attributesOfItem(atPath: copied.path)
                 let size = (attributes?[.size] as? Int64) ?? 0
-                Logger.shared.info("receipts", "exported \(filenames.count) page(s), \(size / 1024)KB")
+                Logger.record(.info, "receipts", "exported \(filenames.count) page(s), \(size / 1024)KB")
             }
             return copied
         } catch {
-            Logger.shared.error("receipts", "export failed: \(error.localizedDescription)")
+            Logger.record(.error, "receipts", "export failed: \(error.localizedDescription)")
             try? FileManager.default.removeItem(at: staging)
             return nil
         }

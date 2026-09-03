@@ -11,7 +11,7 @@ enum ReceiptOCR {
         var pages: [String] = []
         for (index, image) in images.enumerated() {
             let text = await recognizeText(in: image)
-            Logger.shared.info("receipts", "OCR page \(index + 1): \(text.count) chars")
+            Logger.record(.info, "receipts", "OCR page \(index + 1): \(text.count) chars")
             if !text.isEmpty { pages.append(text) }
         }
         return pages.joined(separator: "\n\n")
@@ -19,14 +19,14 @@ enum ReceiptOCR {
 
     static func recognizeText(in image: UIImage) async -> String {
         guard let cgImage = image.cgImage else {
-            Logger.shared.warn("receipts", "OCR skipped a page with no CGImage")
+            Logger.record(.warn, "receipts", "OCR skipped a page with no CGImage")
             return ""
         }
 
         return await withCheckedContinuation { continuation in
             let request = VNRecognizeTextRequest { request, error in
                 if let error {
-                    Logger.shared.error("receipts", "OCR failed: \(error.localizedDescription)")
+                    Logger.record(.error, "receipts", "OCR failed: \(error.localizedDescription)")
                     continuation.resume(returning: "")
                     return
                 }
@@ -44,7 +44,7 @@ enum ReceiptOCR {
             do {
                 try VNImageRequestHandler(cgImage: cgImage, options: [:]).perform([request])
             } catch {
-                Logger.shared.error("receipts", "OCR handler failed: \(error.localizedDescription)")
+                Logger.record(.error, "receipts", "OCR handler failed: \(error.localizedDescription)")
                 continuation.resume(returning: "")
             }
         }
