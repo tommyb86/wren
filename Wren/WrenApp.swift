@@ -5,6 +5,7 @@ import SwiftData
 @MainActor
 struct WrenApp: App {
     @Environment(\.scenePhase) private var scenePhase
+    @AppStorage(Appearance.storageKey) private var appearanceRaw = Appearance.system.rawValue
 
     private let container: ModelContainer
 
@@ -17,6 +18,7 @@ struct WrenApp: App {
         WindowGroup {
             TodayView()
                 .tint(Color.wren.accent)
+                .preferredColorScheme((Appearance(rawValue: appearanceRaw) ?? .system).colorScheme)
         }
         .modelContainer(container)
         .onChange(of: scenePhase) { _, phase in

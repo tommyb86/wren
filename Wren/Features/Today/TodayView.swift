@@ -72,10 +72,10 @@ struct TodayView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
-                    NavigationLink { DiagnosticsView() } label: {
+                    NavigationLink { SettingsView() } label: {
                         Image(systemName: "gearshape")
                     }
-                    .accessibilityLabel("Diagnostics")
+                    .accessibilityLabel("Settings")
                 }
             }
             .sheet(item: $recordingPaymentFor) { bill in
