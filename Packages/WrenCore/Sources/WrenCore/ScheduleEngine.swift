@@ -99,6 +99,10 @@ public struct ScheduleEngine {
         let step = index * schedule.effectiveInterval
 
         switch schedule.frequency {
+        case .once:
+            // Exactly one cycle. Returning nil for every later index is what
+            // stops the callers' loops — they break on a nil base.
+            return index == 0 ? schedule.anchorDate : nil
         case .daily:
             return calendar.date(byAdding: .day, value: step, to: schedule.anchorDate)
         case .weekly:
@@ -163,6 +167,9 @@ public struct ScheduleEngine {
         var reference = schedule.anchorDate
 
         switch schedule.frequency {
+        case .once:
+            // There is only cycle zero, so never estimate past it.
+            return 0
         case .daily:
             component = .day
         case .weekly:

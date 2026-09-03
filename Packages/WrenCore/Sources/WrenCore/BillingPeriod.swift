@@ -25,6 +25,12 @@ public enum BillingPeriod {
         let interval = Double(schedule.effectiveInterval)
 
         switch schedule.frequency {
+        case .once:
+            // Not a rate at all. Zero keeps a one-off out of the monthly
+            // commitment — that figure is about ongoing cost — while the
+            // forecast still shows it in the month it actually lands, because
+            // the forecast asks the engine for real dated occurrences.
+            return 0
         case .daily:
             return daysPerYear / interval
         case .weekly:
@@ -62,6 +68,7 @@ public enum BillingPeriod {
     /// Human-readable cadence for report rows, e.g. "$120.00 quarterly".
     public static func cadenceDescription(_ schedule: Schedule) -> String {
         switch (schedule.frequency, schedule.effectiveInterval) {
+        case (.once, _): return "one-off"
         case (.daily, 1): return "daily"
         case (.weekly, 1): return "weekly"
         case (.weekly, 2): return "fortnightly"

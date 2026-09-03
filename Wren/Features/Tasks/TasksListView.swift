@@ -53,6 +53,14 @@ struct TasksListView: View {
             Section(overdueTasks.isEmpty ? "Tasks" : "Upcoming") {
                 ForEach(upcomingTasks) { task in row(task) }
             }
+
+            // A settled one-off has nothing left to do, so it drops out of the
+            // main list rather than sitting there looking pending forever.
+            if !finishedTasks.isEmpty {
+                Section("Done") {
+                    ForEach(finishedTasks) { task in row(task) }
+                }
+            }
         }
         .listStyle(.insetGrouped)
         .scrollContentBackground(.hidden)
@@ -74,9 +82,13 @@ struct TasksListView: View {
         tasks.filter { $0.isActive && ($0.state(calendar: calendar)?.isOverdue ?? false) }
     }
 
+    private var finishedTasks: [RecurringTask] {
+        tasks.filter(\.isFinished)
+    }
+
     private var upcomingTasks: [RecurringTask] {
-        let overdueIDs = Set(overdueTasks.map(\.taskID))
-        return tasks.filter { !overdueIDs.contains($0.taskID) }
+        let handled = Set(overdueTasks.map(\.taskID)).union(finishedTasks.map(\.taskID))
+        return tasks.filter { !handled.contains($0.taskID) }
     }
 
     private func complete(_ task: RecurringTask) {

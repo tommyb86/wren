@@ -79,7 +79,11 @@ struct TaskRow: View {
             }
         }
 
-        guard let next = state.nextDue else { return "Finished" }
+        guard let next = state.nextDue else {
+            // A one-off is genuinely done; a repeating task with no next
+            // occurrence has hit its end date.
+            return task.isFinished ? "Done" : "Finished"
+        }
 
         if calendar.isDateInToday(next) {
             return "Due today at \(next.formatted(date: .omitted, time: .shortened))"

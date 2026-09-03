@@ -9,6 +9,9 @@ import Foundation
 /// anchored on the 31st yields Feb 28 and then Mar 31, not Mar 28.
 public struct Schedule: Codable, Hashable, Sendable {
     public enum Frequency: String, Codable, Sendable, CaseIterable {
+        /// Fires exactly once, at the anchor. Turns a recurring task into a plain
+        /// reminder.
+        case once
         case daily, weekly, monthly, yearly
     }
 
@@ -74,6 +77,7 @@ extension Schedule {
     public func summary(calendar: Calendar = .current) -> String {
         let cadence: String
         switch (frequency, effectiveInterval) {
+        case (.once, _): return "Once"
         case (.daily, 1): cadence = "Daily"
         case (.weekly, 1): cadence = "Weekly"
         case (.weekly, 2): cadence = "Fortnightly"
