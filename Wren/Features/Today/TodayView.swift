@@ -210,19 +210,32 @@ struct TodayView: View {
         }
         .padding(.horizontal, Space.m)
         .padding(.bottom, Space.s)
+        // The first band sits flush with the top of the box.
+        .padding(.top, -Space.m)
+        // Bands bleed to the box edge, so the content is clipped to the box's
+        // corners before the border goes on.
+        .clipShape(RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
         .wrenBox()
     }
 
+    /// Each day is a solid band, ink on the box, so the eye lands on the day
+    /// before the rows. "Needs doing" is the one red band.
     @ViewBuilder
     private func group(_ title: String, items: [TodayItem], isAlert: Bool = false) -> some View {
         let models = items.compactMap(rowModel)
         if !models.isEmpty {
-            WrenSectionLabel(text: title, color: isAlert ? .wren.alert : .wren.textPrimary)
-                .padding(.top, Space.l)
-                .padding(.bottom, Space.xs)
+            WrenSectionLabel(text: title, color: .wren.surface)
+                .padding(.horizontal, Space.m)
+                .padding(.vertical, Space.s)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .background(isAlert ? Color.wren.alert : Color.wren.textPrimary)
+                .padding(.horizontal, -Space.m)
+                .padding(.top, Space.m)
 
-            ForEach(models) { model in
-                Divider().overlay(Color.wren.divider)
+            ForEach(Array(models.enumerated()), id: \.element.id) { index, model in
+                if index > 0 {
+                    Divider().overlay(Color.wren.divider)
+                }
                 TodayRow(model: model, calendar: calendar)
             }
         }
