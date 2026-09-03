@@ -16,6 +16,7 @@ struct BillEditorView: View {
     @State private var isVariableAmount = false
     @State private var category = ""
     @State private var paidBy = ""
+    @State private var paysAutomatically = false
     @State private var isActive = true
     @State private var draft = ScheduleDraft()
     @State private var didLoad = false
@@ -67,6 +68,12 @@ struct BillEditorView: View {
                 ScheduleEditor(draft: $draft, labels: .bills, calendar: calendar)
 
                 Section {
+                    Toggle("Pays automatically", isOn: $paysAutomatically)
+                } footer: {
+                    Text(automaticFooter)
+                }
+
+                Section {
                     Toggle("Active", isOn: $isActive)
                 } footer: {
                     Text(normalisationFooter)
@@ -93,6 +100,18 @@ struct BillEditorView: View {
             }
             .task { load() }
         }
+    }
+
+    /// States plainly what the app does and doesn't know. Wren has no bank feed,
+    /// so "settled" is an assumption — and on a variable bill the amount is
+    /// still worth recording, or the trend disappears.
+    private var automaticFooter: String {
+        guard paysAutomatically else {
+            return "Off: occurrences stay outstanding until you record a payment."
+        }
+        return isVariableAmount
+            ? "Direct debit. Nothing to tick — occurrences count as settled once the due date passes. Wren can't know the real amount, so it'll keep a list of ones worth entering to preserve the trend."
+            : "Direct debit. Nothing to tick — occurrences count as settled once the due date passes, valued at the expected amount. Wren can't verify it actually went out."
     }
 
     /// Shows the normalisation working, so the monthly figure in the reports is
@@ -125,6 +144,7 @@ struct BillEditorView: View {
         isVariableAmount = bill.isVariableAmount
         category = bill.category
         paidBy = bill.paidBy
+        paysAutomatically = bill.paysAutomatically
         isActive = bill.isActive
         if let schedule = bill.schedule {
             draft = ScheduleDraft(schedule)
@@ -140,6 +160,7 @@ struct BillEditorView: View {
             bill.isVariableAmount = isVariableAmount
             bill.category = category.trimmingCharacters(in: .whitespaces)
             bill.paidBy = paidBy.trimmingCharacters(in: .whitespaces)
+            bill.paysAutomatically = paysAutomatically
             bill.isActive = isActive
             bill.apply(draft.schedule)
             Logger.shared.info("bills", "updated '\(trimmed)' — \(Money.plainFormat(cents: amountCents)) \(BillingPeriod.cadenceDescription(draft.schedule))")
@@ -151,6 +172,7 @@ struct BillEditorView: View {
                 schedule: draft.schedule,
                 category: category.trimmingCharacters(in: .whitespaces),
                 paidBy: paidBy.trimmingCharacters(in: .whitespaces),
+                paysAutomatically: paysAutomatically,
                 isActive: isActive,
                 sortOrder: existingBillCount
             )

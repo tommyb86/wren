@@ -139,7 +139,7 @@ final class BillReportsTests: XCTestCase {
         XCTAssertEqual(summary.monthStart, date(2026, 1, 1, 0))
         XCTAssertEqual(summary.occurrences.count, 3)
         XCTAssertEqual(summary.dueCents, 8_900 + 1_599 + 45_000)
-        XCTAssertEqual(summary.paidCents, 8_900)
+        XCTAssertEqual(summary.recordedCents, 8_900)
         XCTAssertEqual(summary.outstandingCents, 1_599 + 45_000)
     }
 
@@ -175,7 +175,7 @@ final class BillReportsTests: XCTestCase {
         )
 
         XCTAssertTrue(
-            summary.occurrences.first { $0.billID == self.internetID }?.isPaid ?? false,
+            summary.occurrences.first { $0.billID == self.internetID }?.isSettled ?? false,
             "history must survive a due-time edit"
         )
     }
@@ -270,6 +270,173 @@ final class BillReportsTests: XCTestCase {
 
         XCTAssertEqual(history.count, 2)
         XCTAssertEqual(history.map(\.amountCents), [52_000, 41_000])
+    }
+
+    // MARK: - Automatic payments
+
+    private let telstraID = UUID()
+
+    /// A fixed direct debit: nothing to tick, and the assumption is sound
+    /// because the amount never moves.
+    private func telstra(variable: Bool = false) -> BillSpec {
+        BillSpec(
+            id: telstraID,
+            name: "Telstra",
+            amountCents: 8_900,
+            isVariableAmount: variable,
+            schedule: Schedule(frequency: .monthly, anchorDate: date(2026, 1, 12)),
+            category: "Utilities",
+            paysAutomatically: true
+        )
+    }
+
+    func testAutomaticBillPastItsDueDateIsAssumedSettled() {
+        let summary = BillReports.monthSummary(
+            bills: [telstra()],
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        let occurrence = summary.occurrences.first
+        XCTAssertEqual(occurrence?.settlement, .assumed)
+        XCTAssertTrue(occurrence?.isSettled ?? false)
+        XCTAssertEqual(summary.outstandingCents, 0, "a direct debit should not sit there asking to be ticked")
+    }
+
+    func testAutomaticBillBeforeItsDueDateIsStillOutstanding() {
+        let summary = BillReports.monthSummary(
+            bills: [telstra()],
+            payments: [],
+            containing: date(2026, 1, 5), // due on the 12th
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.occurrences.first?.settlement, .outstanding)
+        XCTAssertEqual(summary.outstandingCents, 8_900, "paying itself later is not the same as already paid")
+    }
+
+    func testManualBillPastItsDueDateStaysOutstanding() {
+        var manual = telstra()
+        manual = BillSpec(
+            id: telstraID,
+            name: manual.name,
+            amountCents: manual.amountCents,
+            schedule: manual.schedule,
+            category: manual.category,
+            paysAutomatically: false
+        )
+
+        let summary = BillReports.monthSummary(
+            bills: [manual],
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.occurrences.first?.settlement, .outstanding)
+    }
+
+    /// An amount someone actually recorded always beats an assumption — the
+    /// direct debit may well have come out at a different figure.
+    func testARecordedAmountOverridesTheAssumption() {
+        let payments = [
+            BillPaymentRecord(billID: telstraID, amountCents: 9_400, dueDate: date(2026, 1, 12), paidAt: date(2026, 1, 12))
+        ]
+
+        let summary = BillReports.monthSummary(
+            bills: [telstra()],
+            payments: payments,
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.occurrences.first?.settlement, .recorded(cents: 9_400))
+        XCTAssertEqual(summary.recordedCents, 9_400)
+        XCTAssertEqual(summary.assumedCents, 0)
+    }
+
+    /// The whole reason amounts are never invented: an assumed debit must not
+    /// masquerade as a verified figure.
+    func testAssumedAmountsAreKeptSeparateFromRecordedOnes() {
+        let summary = BillReports.monthSummary(
+            bills: [telstra()],
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.recordedCents, 0, "nothing was actually recorded")
+        XCTAssertEqual(summary.assumedCents, 8_900)
+        XCTAssertEqual(summary.settledCents, 8_900)
+    }
+
+    /// The trap this design exists to avoid: auto-settling a *variable* bill
+    /// would otherwise silently destroy the "has the power bill gone up?"
+    /// signal. It stays settled, but it is flagged as needing a real figure.
+    func testVariableAutomaticBillsAreFlaggedAsNeedingAnAmount() {
+        let summary = BillReports.monthSummary(
+            bills: [telstra(variable: true)],
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.outstandingCents, 0, "still no busywork")
+        XCTAssertEqual(summary.needsAmountRecorded.count, 1)
+        XCTAssertEqual(summary.needsAmountRecorded.first?.name, "Telstra")
+    }
+
+    func testFixedAutomaticBillsAreNotFlagged() {
+        let summary = BillReports.monthSummary(
+            bills: [telstra(variable: false)],
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertTrue(summary.needsAmountRecorded.isEmpty, "a fixed amount needs no confirming")
+    }
+
+    /// Variance must never be computed from an assumption, or every automatic
+    /// bill would report a perfect zero forever.
+    func testVarianceIgnoresAssumedSettlements() {
+        let variance = BillReports.variance(bill: telstra(), payments: [])
+
+        XCTAssertEqual(variance.paymentCount, 0)
+        XCTAssertEqual(variance.differenceCents, 0)
+        XCTAssertNil(variance.percentDifference, "an assumption is not evidence of anything")
+        XCTAssertTrue(
+            BillReports.variances(bills: [telstra()], payments: []).isEmpty,
+            "an automatic bill with no recorded amounts has nothing to compare"
+        )
+    }
+
+    func testForecastLeavesFutureAutomaticOccurrencesOutstanding() {
+        let forecast = BillReports.forecast(
+            bills: [telstra()],
+            from: date(2026, 1, 20),
+            months: 3,
+            calendar: brisbane
+        )
+
+        let february = forecast.first { brisbane.component(.month, from: $0.monthStart) == 2 }
+        XCTAssertEqual(february?.occurrences.first?.settlement, .outstanding)
+    }
+
+    // MARK: - Recorded averages
+
+    func testRecordedAverageReflectsActualHistory() {
+        let payments = [
+            BillPaymentRecord(billID: electricityID, amountCents: 41_000, dueDate: date(2026, 1, 15), paidAt: date(2026, 1, 15)),
+            BillPaymentRecord(billID: electricityID, amountCents: 52_000, dueDate: date(2026, 4, 15), paidAt: date(2026, 4, 15))
+        ]
+
+        XCTAssertEqual(BillReports.recordedAverageCents(billID: electricityID, payments: payments), 46_500)
+    }
+
+    func testRecordedAverageIsNilWithoutHistory() {
+        XCTAssertNil(BillReports.recordedAverageCents(billID: electricityID, payments: []))
     }
 
     // MARK: - Shared households

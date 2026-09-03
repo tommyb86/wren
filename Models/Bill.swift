@@ -17,6 +17,9 @@ final class Bill {
     var category: String = ""
     /// Optional, for a shared household.
     var paidBy: String = ""
+    /// Direct debit. Occurrences past their due date count as settled so there
+    /// is nothing to tick — but no amount is ever invented for them.
+    var paysAutomatically: Bool = false
     var isActive: Bool = true
     var sortOrder: Int = 0
 
@@ -31,6 +34,7 @@ final class Bill {
         schedule: Schedule? = nil,
         category: String = "",
         paidBy: String = "",
+        paysAutomatically: Bool = false,
         isActive: Bool = true,
         sortOrder: Int = 0
     ) {
@@ -41,6 +45,7 @@ final class Bill {
         self.scheduleData = (try? schedule?.encoded()) ?? Data()
         self.category = category
         self.paidBy = paidBy
+        self.paysAutomatically = paysAutomatically
         self.isActive = isActive
         self.sortOrder = sortOrder
         self.payments = []
@@ -68,6 +73,7 @@ extension Bill {
             schedule: schedule,
             category: category,
             paidBy: paidBy,
+            paysAutomatically: paysAutomatically,
             isActive: isActive
         )
     }

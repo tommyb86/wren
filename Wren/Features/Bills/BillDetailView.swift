@@ -67,10 +67,19 @@ struct BillDetailView: View {
             if let next = bill.nextDue(calendar: calendar) {
                 row("Next due", next.formatted(.dateTime.weekday(.abbreviated).day().month().year()))
             }
+            // Shown beside the estimate, never replacing it — the monthly
+            // commitment is meant to be a stable figure, not one that drifts as
+            // history accumulates.
+            if let average = BillReports.recordedAverageCents(billID: bill.billID, payments: bill.paymentRecords) {
+                row("Recorded average", Money.format(cents: average))
+            }
             if !bill.category.isEmpty { row("Category", bill.category) }
             if !bill.paidBy.isEmpty { row("Paid by", bill.paidBy) }
+            if bill.paysAutomatically { row("Payment", "Automatic") }
         } footer: {
-            Text("Bills are informative only — Wren doesn't send reminders for them.")
+            Text(bill.paysAutomatically
+                 ? "Pays automatically, so occurrences count as settled once due. Wren has no bank feed, so that's an assumption — and the amount is only ever what you record."
+                 : "Bills are informative only — Wren doesn't send reminders for them.")
         }
     }
 

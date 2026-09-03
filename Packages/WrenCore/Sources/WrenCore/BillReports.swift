@@ -17,6 +17,10 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
     /// two people can hold separate bills with identical names — two car
     /// registrations are only tellable apart by whose it is.
     public let paidBy: String
+    /// Direct debit. Occurrences past their due date are treated as settled so
+    /// there is nothing to tick — but the *amount* is never invented, because
+    /// Wren has no bank feed and cannot know a debit actually went through.
+    public let paysAutomatically: Bool
     public let isActive: Bool
 
     public init(
@@ -27,6 +31,7 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
         schedule: Schedule,
         category: String = "",
         paidBy: String = "",
+        paysAutomatically: Bool = false,
         isActive: Bool = true
     ) {
         self.id = id
@@ -36,6 +41,7 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
         self.schedule = schedule
         self.category = category
         self.paidBy = paidBy
+        self.paysAutomatically = paysAutomatically
         self.isActive = isActive
     }
 }
@@ -68,15 +74,29 @@ public struct CategoryTotal: Hashable, Sendable, Identifiable {
     public var id: String { category }
 }
 
-/// One occurrence in a month, and whether it has been settled.
+/// One occurrence in a month, and how it stands.
 public struct BillOccurrence: Hashable, Sendable, Identifiable {
+    /// "Is it settled?" and "what was actually paid?" are two different
+    /// questions, and a direct debit answers only the first. Collapsing them
+    /// would mean inventing an amount nobody verified.
+    public enum Settlement: Hashable, Sendable {
+        /// Still owed, or not yet due.
+        case outstanding
+        /// A real payment was recorded, for this much.
+        case recorded(cents: Int)
+        /// A direct debit whose due date has passed. Presumed to have gone out;
+        /// the amount was never verified.
+        case assumed
+    }
+
     public let billID: UUID
     public let name: String
     /// Whose bill it is, when the household records that.
     public let paidBy: String
+    public let isVariableAmount: Bool
     public let dueDate: Date
     public let expectedCents: Int
-    public let paidCents: Int?
+    public let settlement: Settlement
 
     /// Name qualified by owner, so two "Car registration" rows are tellable
     /// apart in a list without opening either.
@@ -84,9 +104,32 @@ public struct BillOccurrence: Hashable, Sendable, Identifiable {
         paidBy.isEmpty ? name : "\(name) · \(paidBy)"
     }
 
-    public var isPaid: Bool { paidCents != nil }
+    /// What was actually paid — only ever a figure someone recorded.
+    public var recordedCents: Int? {
+        guard case .recorded(let cents) = settlement else { return nil }
+        return cents
+    }
+
+    public var isSettled: Bool { settlement != .outstanding }
+    public var isAssumed: Bool { settlement == .assumed }
+
     /// What is still owed on this occurrence.
-    public var outstandingCents: Int { isPaid ? 0 : expectedCents }
+    public var outstandingCents: Int { isSettled ? 0 : expectedCents }
+
+    /// Best available figure for money-out totals: the recorded amount when
+    /// known, otherwise the expectation for an assumed debit.
+    public var settledCents: Int {
+        switch settlement {
+        case .outstanding: return 0
+        case .recorded(let cents): return cents
+        case .assumed: return expectedCents
+        }
+    }
+
+    /// An assumed settlement on a variable bill is the one case worth chasing:
+    /// the amount matters and nobody knows it.
+    public var needsAmountRecorded: Bool { isAssumed && isVariableAmount }
+
     public var id: String { "\(billID.uuidString)-\(dueDate.timeIntervalSince1970)" }
 }
 
@@ -96,9 +139,24 @@ public struct MonthSummary: Hashable, Sendable {
 
     /// Expected total for everything falling in the month.
     public var dueCents: Int { occurrences.reduce(0) { $0 + $1.expectedCents } }
-    /// Actual total paid, which can exceed `dueCents` on variable bills.
-    public var paidCents: Int { occurrences.reduce(0) { $0 + ($1.paidCents ?? 0) } }
+    /// Amounts someone actually recorded. Can exceed the expectation on
+    /// variable bills, which is the point of tracking it.
+    public var recordedCents: Int { occurrences.reduce(0) { $0 + ($1.recordedCents ?? 0) } }
+    /// Direct debits presumed to have gone out, valued at their expectation.
+    /// Kept separate from `recordedCents` so a total is never presented as
+    /// verified when it isn't.
+    public var assumedCents: Int {
+        occurrences.filter(\.isAssumed).reduce(0) { $0 + $1.expectedCents }
+    }
+    /// Everything considered settled, recorded or assumed.
+    public var settledCents: Int { occurrences.reduce(0) { $0 + $1.settledCents } }
     public var outstandingCents: Int { occurrences.reduce(0) { $0 + $1.outstandingCents } }
+
+    /// Variable bills that went out automatically with no amount recorded —
+    /// exactly the figures that would otherwise be lost.
+    public var needsAmountRecorded: [BillOccurrence] {
+        occurrences.filter(\.needsAmountRecorded)
+    }
 }
 
 /// A month in the forecast. The point is seeing the lumpy ones — rego,
@@ -183,6 +241,7 @@ public enum BillReports {
         bills: [BillSpec],
         payments: [BillPaymentRecord],
         containing date: Date,
+        now: Date? = nil,
         calendar: Calendar = .current
     ) -> MonthSummary {
         guard let month = calendar.dateInterval(of: .month, for: date) else {
@@ -196,6 +255,7 @@ public enum BillReports {
                 payments: payments,
                 from: month.start,
                 to: end,
+                now: now ?? date,
                 calendar: calendar
             )
         )
@@ -210,6 +270,7 @@ public enum BillReports {
         payments: [BillPaymentRecord] = [],
         from: Date,
         months: Int = 12,
+        now: Date? = nil,
         calendar: Calendar = .current
     ) -> [ForecastMonth] {
         guard months > 0, let firstMonth = calendar.dateInterval(of: .month, for: from) else { return [] }
@@ -226,6 +287,7 @@ public enum BillReports {
                     payments: payments,
                     from: month.start,
                     to: month.end.addingTimeInterval(-1),
+                    now: now ?? from,
                     calendar: calendar
                 )
             )
@@ -248,6 +310,19 @@ public enum BillReports {
         payments
             .filter { $0.billID == billID }
             .sorted { $0.dueDate > $1.dueDate }
+    }
+
+    /// Average of the amounts actually recorded for a bill, or nil with no
+    /// history.
+    ///
+    /// Shown *alongside* the estimate rather than replacing it: the monthly
+    /// commitment is meant to be a stable "what do we spend" figure, and having
+    /// it drift on its own as history accumulates would be surprising.
+    public static func recordedAverageCents(billID: UUID, payments: [BillPaymentRecord]) -> Int? {
+        let mine = payments.filter { $0.billID == billID }
+        guard !mine.isEmpty else { return nil }
+        let total = mine.reduce(0) { $0 + $1.amountCents }
+        return Int((Double(total) / Double(mine.count)).rounded())
     }
 
     /// Expected versus actual across every recorded payment for a bill.
@@ -283,11 +358,15 @@ public enum BillReports {
 
     /// Dated occurrences in a window, matched against payments. Respects
     /// `endDate`, because these are real occurrences rather than a rate.
+    ///
+    /// `now` decides which automatic debits count as gone out; occurrences still
+    /// in the future stay outstanding whether or not the bill pays itself.
     public static func occurrences(
         bills: [BillSpec],
         payments: [BillPaymentRecord],
         from: Date,
         to: Date,
+        now: Date = Date(),
         calendar: Calendar = .current
     ) -> [BillOccurrence] {
         active(bills)
@@ -300,13 +379,25 @@ public enum BillReports {
                         let payment = mine.first {
                             calendar.startOfDay(for: $0.dueDate) == calendar.startOfDay(for: due)
                         }
+
+                        let settlement: BillOccurrence.Settlement
+                        if let payment {
+                            // A recorded amount always wins over an assumption.
+                            settlement = .recorded(cents: payment.amountCents)
+                        } else if bill.paysAutomatically, due <= now {
+                            settlement = .assumed
+                        } else {
+                            settlement = .outstanding
+                        }
+
                         return BillOccurrence(
                             billID: bill.id,
                             name: bill.name,
                             paidBy: bill.paidBy,
+                            isVariableAmount: bill.isVariableAmount,
                             dueDate: due,
                             expectedCents: bill.amountCents,
-                            paidCents: payment?.amountCents
+                            settlement: settlement
                         )
                     }
             }

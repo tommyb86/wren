@@ -91,7 +91,12 @@ struct ReportsView: View {
 
         return Section {
             row("Due", Money.format(cents: summary.dueCents))
-            row("Paid", Money.format(cents: summary.paidCents))
+            row("Recorded", Money.format(cents: summary.recordedCents))
+            if summary.assumedCents > 0 {
+                // Never folded into "Recorded": an assumed direct debit is not a
+                // verified figure, and presenting it as one would be a lie.
+                row("Assumed paid", Money.format(cents: summary.assumedCents))
+            }
             HStack {
                 Text("Outstanding")
                     .font(.subheadline)
@@ -105,26 +110,54 @@ struct ReportsView: View {
 
             ForEach(summary.occurrences) { occurrence in
                 HStack {
-                    Image(systemName: occurrence.isPaid ? "checkmark.circle.fill" : "circle")
+                    // A dashed tick for assumed: settled, but not verified.
+                    Image(systemName: settlementSymbol(occurrence))
                         .font(.caption)
-                        .foregroundStyle(occurrence.isPaid ? Color.wren.accent : Color.wren.textSecondary)
+                        .foregroundStyle(occurrence.isSettled ? Color.wren.accent : Color.wren.textSecondary)
                     VStack(alignment: .leading, spacing: 1) {
                         Text(occurrence.label)
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Color.wren.textPrimary)
-                        Text(occurrence.dueDate.formatted(.dateTime.day().month()))
+                        Text(settlementDetail(occurrence))
                             .font(.caption2)
                             .foregroundStyle(Color.wren.textSecondary)
                     }
                     Spacer()
-                    Text(Money.format(cents: occurrence.paidCents ?? occurrence.expectedCents))
+                    Text(Money.format(cents: occurrence.recordedCents ?? occurrence.expectedCents))
                         .font(.caption)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textSecondary)
                 }
             }
+
+            if !summary.needsAmountRecorded.isEmpty {
+                let count = summary.needsAmountRecorded.count
+                Text("\(count) variable bill\(count == 1 ? "" : "s") went out automatically without a recorded amount. Entering the real figures keeps the trend meaningful.")
+                    .font(.caption)
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
         } header: {
             Text(Date().formatted(.dateTime.month(.wide).year()))
+        }
+    }
+
+    private func settlementSymbol(_ occurrence: BillOccurrence) -> String {
+        switch occurrence.settlement {
+        case .recorded: return "checkmark.circle.fill"
+        case .assumed: return "checkmark.circle.dotted"
+        case .outstanding: return "circle"
+        }
+    }
+
+    private func settlementDetail(_ occurrence: BillOccurrence) -> String {
+        let day = occurrence.dueDate.formatted(.dateTime.day().month())
+        switch occurrence.settlement {
+        case .recorded: return day
+        case .assumed:
+            return occurrence.needsAmountRecorded
+                ? "\(day) · assumed, amount not recorded"
+                : "\(day) · assumed"
+        case .outstanding: return day
         }
     }
 

@@ -8,7 +8,7 @@ enum BillCSV {
     /// Every bill with its normalised figures — the "what do we spend" export.
     static func bills(_ specs: [BillSpec]) -> String {
         var rows = [
-            row("Name", "Category", "Paid by", "Amount", "Cadence", "Varies", "Monthly equivalent", "Annual", "Active")
+            row("Name", "Category", "Paid by", "Amount", "Cadence", "Varies", "Automatic", "Monthly equivalent", "Annual", "Active")
         ]
 
         for spec in specs.sorted(by: { $0.name < $1.name }) {
@@ -19,6 +19,7 @@ enum BillCSV {
                 decimal(spec.amountCents),
                 BillingPeriod.cadenceDescription(spec.schedule),
                 spec.isVariableAmount ? "yes" : "no",
+                spec.paysAutomatically ? "yes" : "no",
                 decimal(BillingPeriod.monthlyEquivalentCents(amountCents: spec.amountCents, schedule: spec.schedule)),
                 decimal(BillingPeriod.annualCents(amountCents: spec.amountCents, schedule: spec.schedule)),
                 spec.isActive ? "yes" : "no"
