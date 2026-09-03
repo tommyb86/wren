@@ -147,20 +147,44 @@ final class TodayAgendaTests: XCTestCase {
 
         let agenda = TodayAgenda.build(bins: [], tasks: tasks(completed: completed), bills: [], payments: [], now: now, calendar: brisbane)
 
-        XCTAssertTrue(agenda.overdue.filter { $0.kind == .task }.isEmpty)
-        XCTAssertTrue(
-            agenda.allItems.filter { $0.kind == .task }.allSatisfy { $0.date > self.now },
-            "only the next occurrence should remain"
-        )
+        XCTAssertTrue(agenda.overdue.filter { $0.kind == .task }.isEmpty, "settled occurrences stop nagging")
+        // The weekly task's next occurrence is Sep 9, exactly seven days out and
+        // so past the horizon — nothing of it remains on the agenda.
+        XCTAssertTrue(agenda.isEmpty)
     }
 
-    /// A weekly task must not fill the week with copies of itself.
+    /// A daily task inside the window is the real test of this: without the
+    /// next-only rule it would contribute an item for every remaining day.
     func testOnlyTheNextTaskOccurrenceIsShownForward() {
-        let completed = [date(2026, 8, 19), date(2026, 8, 26), date(2026, 9, 2)]
+        let daily = [TaskSpec(
+            id: taskID,
+            schedule: Schedule(frequency: .daily, anchorDate: date(2026, 9, 2, 9, 0)),
+            completedDueDates: [date(2026, 9, 2)]
+        )]
 
-        let agenda = TodayAgenda.build(bins: [], tasks: tasks(completed: completed), bills: [], payments: [], now: now, calendar: brisbane)
+        let agenda = TodayAgenda.build(bins: [], tasks: daily, bills: [], payments: [], now: now, calendar: brisbane)
 
-        XCTAssertEqual(agenda.allItems.filter { $0.kind == .task }.count, 1)
+        let taskItems = agenda.allItems.filter { $0.kind == .task }
+        XCTAssertEqual(taskItems.count, 1, "six more days are in range but must not be listed")
+        XCTAssertEqual(taskItems.first?.date, date(2026, 9, 3, 9, 0))
+        XCTAssertEqual(taskItems.first?.status, .dueTomorrow)
+    }
+
+    /// The horizon is seven days from the start of today, so an occurrence a
+    /// full week out sits just outside it.
+    func testTheWindowIsSevenDaysFromTheStartOfToday() {
+        let sixDays = [BinSchedule(id: binID, schedule: Schedule(frequency: .weekly, anchorDate: date(2026, 9, 8, 19, 0)))]
+        let sevenDays = [BinSchedule(id: binID, schedule: Schedule(frequency: .weekly, anchorDate: date(2026, 9, 9, 19, 0)))]
+
+        XCTAssertEqual(
+            TodayAgenda.build(bins: sixDays, tasks: [], bills: [], payments: [], now: now, calendar: brisbane)
+                .laterThisWeek.count,
+            1
+        )
+        XCTAssertTrue(
+            TodayAgenda.build(bins: sevenDays, tasks: [], bills: [], payments: [], now: now, calendar: brisbane)
+                .isEmpty
+        )
     }
 
     func testTasksAreActionable() {
