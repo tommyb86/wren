@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import PhotosUI
 import WrenCore
 
 /// Receipts grouped by Australian financial year, because that is the only
@@ -17,6 +18,9 @@ struct ReceiptsListView: View {
     @State private var exportURL: URL?
     @State private var exportText: String?
     @State private var scannerUnavailable = false
+    @State private var photoItem: PhotosPickerItem?
+    @State private var isChoosingPhoto = false
+    @State private var isChoosingFile = false
 
     private let calendar = Calendar.current
 
@@ -49,11 +53,48 @@ struct ReceiptsListView: View {
         .navigationTitle("Receipts")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button(action: startScan) {
-                    Image(systemName: "doc.viewfinder")
+                // Three ways in, because plenty of receipts are never paper:
+                // an emailed PDF, or a screenshot already in the library.
+                Menu {
+                    Button {
+                        startScan()
+                    } label: {
+                        Label("Scan with camera", systemImage: "doc.viewfinder")
+                    }
+                    Button {
+                        isChoosingPhoto = true
+                    } label: {
+                        Label("Choose a photo", systemImage: "photo.on.rectangle")
+                    }
+                    Button {
+                        isChoosingFile = true
+                    } label: {
+                        Label("Import a PDF or image", systemImage: "folder")
+                    }
+                } label: {
+                    Image(systemName: "plus")
                 }
-                .accessibilityLabel("Scan a receipt")
+                .accessibilityLabel("Add a receipt")
                 .disabled(isProcessing)
+            }
+        }
+        .photosPicker(isPresented: $isChoosingPhoto, selection: $photoItem, matching: .images)
+        .onChange(of: photoItem) { _, item in
+            guard let item else { return }
+            Task { await importPhoto(item) }
+        }
+        .fileImporter(
+            isPresented: $isChoosingFile,
+            // PDFs and images only; anything else has nothing to read.
+            allowedContentTypes: [.pdf, .image],
+            allowsMultipleSelection: false
+        ) { result in
+            switch result {
+            case .success(let urls):
+                guard let url = urls.first else { return }
+                Task { await importFile(url) }
+            case .failure(let error):
+                Logger.shared.error("receipts", "file import failed: \(error.localizedDescription)")
             }
         }
         .fullScreenCover(isPresented: $isScanning) {
@@ -234,13 +275,15 @@ struct ReceiptsListView: View {
             Text("No receipts yet")
                 .font(.system(.title3, design: .serif))
                 .foregroundStyle(Color.wren.textPrimary)
-            Text("Scan a receipt and Wren reads the vendor, amount and date for you to confirm, then files it by financial year.")
+            Text("Scan a paper receipt, or import a PDF or screenshot. Wren reads the vendor, amount and date for you to confirm, then files it by financial year.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.wren.textSecondary)
             Button("Scan a receipt", action: startScan)
                 .buttonStyle(WrenPrimaryButtonStyle())
-                .padding(.top, Space.s)
+            Button("Import a PDF or image") { isChoosingFile = true }
+                .font(.subheadline.weight(.medium))
+                .foregroundStyle(Color.wren.accent)
         }
         .padding(Space.xl)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -272,14 +315,45 @@ struct ReceiptsListView: View {
         isScanning = true
     }
 
+    private func importPhoto(_ item: PhotosPickerItem) async {
+        photoItem = nil
+        isProcessing = true
+        defer { isProcessing = false }
+
+        guard let data = try? await item.loadTransferable(type: Data.self),
+              let imported = ReceiptImport.load(imageData: data)
+        else {
+            Logger.shared.error("receipts", "could not load the chosen photo")
+            return
+        }
+        await process(imported.images, embeddedText: imported.embeddedText)
+    }
+
+    private func importFile(_ url: URL) async {
+        isProcessing = true
+        defer { isProcessing = false }
+
+        guard let imported = ReceiptImport.load(from: url) else { return }
+        await process(imported.images, embeddedText: imported.embeddedText)
+    }
+
     /// Pages are written to disk first, then read. If the user abandons the
     /// confirmation sheet, the editor cleans those files up.
-    private func process(_ images: [UIImage]) async {
+    ///
+    /// `embeddedText` is a PDF's own text layer. When present it is used
+    /// instead of OCR — it is exact, where OCR is a guess at pixels.
+    private func process(_ images: [UIImage], embeddedText: String? = nil) async {
         guard !images.isEmpty else { return }
         isProcessing = true
 
         let filenames = ReceiptFileStore.save(images)
-        let text = await ReceiptOCR.recognizeText(in: images)
+        let text: String
+        if let embeddedText {
+            text = embeddedText
+            Logger.shared.info("receipts", "using the PDF's text layer, skipping OCR")
+        } else {
+            text = await ReceiptOCR.recognizeText(in: images)
+        }
         let suggestions = ReceiptParser.parse(text, calendar: calendar)
 
         Logger.shared.info(
