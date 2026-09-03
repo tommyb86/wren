@@ -23,6 +23,7 @@ struct ReceiptEditorView: View {
     @State private var category = ""
     @State private var notes = ""
     @State private var didLoad = false
+    @State private var viewingPage: PageSelection?
 
     private let calendar = Calendar.current
     private let categorySuggestions = ["Work", "Home office", "Tools", "Vehicle", "Education", "Donations"]
@@ -62,24 +63,24 @@ struct ReceiptEditorView: View {
                 }
 
                 if !currentFilenames.isEmpty {
-                    Section("\(currentFilenames.count) page\(currentFilenames.count == 1 ? "" : "s")") {
+                    Section {
                         ScrollView(.horizontal, showsIndicators: false) {
                             HStack(spacing: Space.s) {
-                                ForEach(currentFilenames, id: \.self) { filename in
-                                    if let image = ReceiptFileStore.loadImage(filename) {
-                                        Image(uiImage: image)
-                                            .resizable()
-                                            .aspectRatio(contentMode: .fill)
-                                            .frame(width: 72, height: 96)
-                                            .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
-                                            .overlay(
-                                                RoundedRectangle(cornerRadius: Radius.chip)
-                                                    .strokeBorder(Color.wren.divider, lineWidth: 1)
-                                            )
+                                ForEach(Array(currentFilenames.enumerated()), id: \.element) { offset, filename in
+                                    Button {
+                                        viewingPage = PageSelection(index: offset)
+                                    } label: {
+                                        thumbnail(filename)
                                     }
+                                    .buttonStyle(.plain)
+                                    .accessibilityLabel("View page \(offset + 1)")
                                 }
                             }
                         }
+                    } header: {
+                        Text("\(currentFilenames.count) page\(currentFilenames.count == 1 ? "" : "s")")
+                    } footer: {
+                        Text("Tap a page to read it full screen — pinch or double-tap to zoom.")
                     }
                 }
 
@@ -103,11 +104,38 @@ struct ReceiptEditorView: View {
                 }
             }
             .task { load() }
+            .fullScreenCover(item: $viewingPage) { selection in
+                ReceiptPageViewer(filenames: currentFilenames, index: selection.index)
+            }
         }
     }
 
     private var currentFilenames: [String] {
         receipt?.imageFilenames ?? pendingFilenames
+    }
+
+    @ViewBuilder
+    private func thumbnail(_ filename: String) -> some View {
+        if let image = ReceiptFileStore.loadImage(filename) {
+            Image(uiImage: image)
+                .resizable()
+                .aspectRatio(contentMode: .fill)
+                .frame(width: 72, height: 96)
+                .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.chip)
+                        .strokeBorder(Color.wren.divider, lineWidth: 1)
+                )
+        } else {
+            RoundedRectangle(cornerRadius: Radius.chip)
+                .fill(Color.wren.accentSoft)
+                .frame(width: 72, height: 96)
+                .overlay(
+                    Image(systemName: "exclamationmark.triangle")
+                        .font(.caption)
+                        .foregroundStyle(Color.wren.alert)
+                )
+        }
     }
 
     /// The parser's alternatives. Shown only for a fresh scan — once saved, the
@@ -242,4 +270,10 @@ struct ReceiptEditorView: View {
         }
         dismiss()
     }
+}
+
+/// `fullScreenCover(item:)` needs an Identifiable, and a bare Int isn't one.
+private struct PageSelection: Identifiable {
+    let index: Int
+    var id: Int { index }
 }
