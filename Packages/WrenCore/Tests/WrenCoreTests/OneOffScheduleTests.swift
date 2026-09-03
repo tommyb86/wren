@@ -166,7 +166,7 @@ final class OneOffScheduleTests: XCTestCase {
     }
 
     /// The whole point: once done, a reminder is finished — no overdue entries,
-    /// nothing next, and it stops asking.
+    /// nothing next, and it stops asking, however long ago it was.
     func testACompletedReminderGoesQuietForever() {
         let fires = date(2026, 9, 10, 17, 30)
         let state = TaskEngine.state(
@@ -178,7 +178,35 @@ final class OneOffScheduleTests: XCTestCase {
 
         XCTAssertTrue(state.overdue.isEmpty)
         XCTAssertNil(state.nextDue)
+        // `lastCompletedDue` is deliberately not asserted here: the state's
+        // history is bounded by the lookback window, and this occurrence is
+        // over three months back. Anything that needs to know a one-off was
+        // settled must ask the completions directly.
+    }
+
+    func testACompletedReminderReportsItsSettlementWithinTheLookback() {
+        let fires = date(2026, 9, 10, 17, 30)
+        let state = TaskEngine.state(
+            schedule: onceOn(fires),
+            completedDueDates: [fires],
+            now: date(2026, 9, 15, 10, 0),
+            calendar: brisbane
+        )
+
         XCTAssertEqual(state.lastCompletedDue, fires)
+    }
+
+    /// What `RecurringTask.isFinished` relies on, and why it does not go
+    /// through `state`: this must hold no matter how long ago the reminder was.
+    func testCompletionOfAOneOffIsAnswerableOutsideTheLookback() {
+        let fires = date(2026, 9, 10, 17, 30)
+
+        XCTAssertTrue(
+            TaskEngine.isComplete(occurrence: fires, completedDueDates: [fires], calendar: brisbane)
+        )
+        XCTAssertFalse(
+            TaskEngine.isComplete(occurrence: fires, completedDueDates: [], calendar: brisbane)
+        )
     }
 
     func testTickingAReminderSettlesItsOnlyOccurrence() {

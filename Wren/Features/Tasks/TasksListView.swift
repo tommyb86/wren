@@ -140,7 +140,7 @@ struct TasksListView: View {
             Text("No tasks yet")
                 .font(.system(.title3, design: .serif))
                 .foregroundStyle(Color.wren.textPrimary)
-            Text("Anything that comes round again — filters, smoke alarms, the car service.")
+            Text("Anything that comes round again — filters, smoke alarms, the car service — or a one-off reminder.")
                 .font(.subheadline)
                 .multilineTextAlignment(.center)
                 .foregroundStyle(Color.wren.textSecondary)

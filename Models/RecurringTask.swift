@@ -67,9 +67,12 @@ extension RecurringTask {
     /// True for a one-off reminder that has been settled: it has no further
     /// occurrences and nothing outstanding, so it is done rather than merely
     /// quiet. A repeating task is never finished — it comes round again.
+    /// Checked against the completions directly rather than via
+    /// `RecurringTaskState`, whose history is bounded by the lookback window —
+    /// a reminder settled months ago would otherwise stop reading as done.
     var isFinished: Bool {
-        guard schedule?.frequency == .once, let state = state() else { return false }
-        return !state.isOverdue && state.lastCompletedDue != nil
+        guard let schedule, schedule.frequency == .once else { return false }
+        return TaskEngine.isComplete(occurrence: schedule.anchorDate, completedDueDates: completedDueDates)
     }
 
     /// The occurrence a "done" tap should settle.
