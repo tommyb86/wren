@@ -109,9 +109,9 @@ struct RecordPaymentView: View {
         let delta = amountCents - bill.amountCents
         Logger.shared.info(
             "bills",
-            "recorded \(Money.fallbackFormat(cents: amountCents, showsCents: true)) for '\(bill.name)'"
+            "recorded \(Money.plainFormat(cents: amountCents)) for '\(bill.name)'"
                 + " settling \(dueDate.formatted(date: .abbreviated, time: .omitted))"
-                + (delta == 0 ? "" : " (\(delta > 0 ? "+" : "")\(Money.fallbackFormat(cents: delta, showsCents: true)) vs expected)")
+                + (delta == 0 ? "" : " (\(delta > 0 ? "+" : "")\(Money.plainFormat(cents: delta)) vs expected)")
         )
         dismiss()
     }

@@ -154,7 +154,7 @@ struct BillDetailView: View {
     }
 
     private func delete(_ payment: BillPayment) {
-        Logger.shared.info("bills", "deleted a payment of \(Money.fallbackFormat(cents: payment.amountCents, showsCents: true)) from '\(bill.name)'")
+        Logger.shared.info("bills", "deleted a payment of \(Money.plainFormat(cents: payment.amountCents)) from '\(bill.name)'")
         bill.payments?.removeAll { $0.persistentModelID == payment.persistentModelID }
         context.delete(payment)
         do {

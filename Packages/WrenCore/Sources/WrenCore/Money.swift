@@ -20,7 +20,7 @@ public enum Money {
         formatter.maximumFractionDigits = showsCents ? 2 : 0
 
         let value = NSNumber(value: Double(cents) / 100)
-        return formatter.string(from: value) ?? fallbackFormat(cents: cents, showsCents: showsCents)
+        return formatter.string(from: value) ?? plainFormat(cents: cents, showsCents: showsCents)
     }
 
     /// Rounded to whole dollars — for report headlines, where cents are noise.
@@ -37,9 +37,13 @@ public enum Money {
         )
     }
 
-    /// swift-corelibs-Foundation's currency formatting differs from Darwin's, so
-    /// tests assert against this deterministic form rather than the locale one.
-    static func fallbackFormat(cents: Int, showsCents: Bool) -> String {
+    /// Deterministic, locale-independent formatting: "$120.50".
+    ///
+    /// Used for log lines, CSV-adjacent text and seeding a text field, where a
+    /// locale-formatted string would be wrong or unparseable. Also what `format`
+    /// falls back to, and what tests assert against, since swift-corelibs and
+    /// Darwin disagree on currency formatting details.
+    public static func plainFormat(cents: Int, showsCents: Bool = true) -> String {
         let negative = cents < 0
         let magnitude = abs(cents)
         let body: String
@@ -62,9 +66,9 @@ public enum Money {
     /// Parses what someone actually types: "120", "120.50", "$1,234.56", "1 234,56".
     /// Returns nil rather than guessing when the text isn't a number.
     ///
-    /// The separator ambiguity is resolved by position: whichever of `.` or `,`
-    /// appears last and is followed by exactly one or two digits is the decimal
-    /// separator. Everything else is a grouping separator.
+    /// The separator ambiguity is resolved by digit count, since grouping
+    /// separators always precede exactly three digits: the last separator with
+    /// one, two, or four-or-more digits after it is the decimal point.
     public static func parse(_ text: String) -> Int? {
         let allowed = Set("0123456789.,-")
         let cleaned = text.filter { allowed.contains($0) }

@@ -30,10 +30,14 @@ struct BillEditorView: View {
     var body: some View {
         NavigationStack {
             Form {
-                Section("Bill") {
+                // A string title and a footer are mutually exclusive overloads,
+                // so the header goes in its own builder.
+                Section {
                     TextField("Name", text: $name)
                     MoneyField(label: "Amount", cents: $amountCents)
                     Toggle("Amount varies", isOn: $isVariableAmount)
+                } header: {
+                    Text("Bill")
                 } footer: {
                     Text(isVariableAmount
                          ? "The amount above is treated as an estimate. Recording what you actually pay is what drives the variance report."
@@ -138,7 +142,7 @@ struct BillEditorView: View {
             bill.paidBy = paidBy.trimmingCharacters(in: .whitespaces)
             bill.isActive = isActive
             bill.apply(draft.schedule)
-            Logger.shared.info("bills", "updated '\(trimmed)' — \(Money.fallbackFormat(cents: amountCents, showsCents: true)) \(BillingPeriod.cadenceDescription(draft.schedule))")
+            Logger.shared.info("bills", "updated '\(trimmed)' — \(Money.plainFormat(cents: amountCents)) \(BillingPeriod.cadenceDescription(draft.schedule))")
         } else {
             let created = Bill(
                 name: trimmed,
@@ -151,7 +155,7 @@ struct BillEditorView: View {
                 sortOrder: existingBillCount
             )
             context.insert(created)
-            Logger.shared.info("bills", "added '\(trimmed)' — \(Money.fallbackFormat(cents: amountCents, showsCents: true)) \(BillingPeriod.cadenceDescription(draft.schedule))")
+            Logger.shared.info("bills", "added '\(trimmed)' — \(Money.plainFormat(cents: amountCents)) \(BillingPeriod.cadenceDescription(draft.schedule))")
         }
 
         do {

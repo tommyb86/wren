@@ -32,7 +32,7 @@ struct MoneyField: View {
             didLoad = true
             // Seed from the model, but leave a genuinely zero amount blank so the
             // placeholder does the talking.
-            text = cents == 0 ? "" : Money.fallbackFormat(cents: cents, showsCents: true)
+            text = cents == 0 ? "" : Money.plainFormat(cents: cents)
         }
     }
 

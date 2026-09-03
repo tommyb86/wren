@@ -65,7 +65,7 @@ final class MoneyTests: XCTestCase {
 
     func testParseSurvivesItsOwnOutput() {
         for cents in [0, 5, 99, 100, 12_050, 123_456_789, -1_240] {
-            let text = Money.fallbackFormat(cents: cents, showsCents: true)
+            let text = Money.plainFormat(cents: cents, showsCents: true)
             XCTAssertEqual(Money.parse(text), cents, "round trip failed for \(cents)")
         }
     }
@@ -88,11 +88,11 @@ final class MoneyTests: XCTestCase {
 
     /// Darwin and swift-corelibs disagree on currency formatting details, so the
     /// deterministic fallback is what gets asserted.
-    func testFallbackFormatting() {
-        XCTAssertEqual(Money.fallbackFormat(cents: 12_050, showsCents: true), "$120.50")
-        XCTAssertEqual(Money.fallbackFormat(cents: 5, showsCents: true), "$0.05")
-        XCTAssertEqual(Money.fallbackFormat(cents: 12_000, showsCents: false), "$120")
-        XCTAssertEqual(Money.fallbackFormat(cents: -1_240, showsCents: true), "-$12.40")
+    func testPlainFormatting() {
+        XCTAssertEqual(Money.plainFormat(cents: 12_050, showsCents: true), "$120.50")
+        XCTAssertEqual(Money.plainFormat(cents: 5, showsCents: true), "$0.05")
+        XCTAssertEqual(Money.plainFormat(cents: 12_000, showsCents: false), "$120")
+        XCTAssertEqual(Money.plainFormat(cents: -1_240, showsCents: true), "-$12.40")
     }
 
     func testFormatProducesSomethingContainingTheAmount() {
