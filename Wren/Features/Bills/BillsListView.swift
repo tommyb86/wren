@@ -52,6 +52,12 @@ struct BillsListView: View {
                         Text("a month across \(activeCount) active bill\(activeCount == 1 ? "" : "s")")
                             .font(.caption)
                             .foregroundStyle(Color.wren.textSecondary)
+                        // Naming the destination — an unlabelled chevron on a
+                        // number doesn't read as "there are reports in here".
+                        Text("Reports, forecast and export")
+                            .font(.caption.weight(.medium))
+                            .foregroundStyle(Color.wren.accent)
+                            .padding(.top, 2)
                     }
                     .padding(.vertical, Space.xs)
                 }

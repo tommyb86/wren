@@ -127,7 +127,10 @@ struct HomeView: View {
                     calendar: calendar
                 )
 
-                NavigationLink { ReportsView() } label: {
+                // Always the bills list, never straight to Reports: the list is
+                // the only place bills can be added or edited, and Reports has
+                // no way back to it.
+                NavigationLink { BillsListView() } label: {
                     WrenCard {
                         VStack(alignment: .leading, spacing: Space.s) {
                             HStack(alignment: .firstTextBaseline) {
