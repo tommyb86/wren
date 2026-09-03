@@ -56,22 +56,44 @@ final class PaymentTrendTests: XCTestCase {
         XCTAssertEqual(BillReports.medianCents(of: []), 0)
     }
 
-    /// Why the median and not the mean: one unusual payment shifts a mean far
-    /// enough that it stops looking unusual.
-    func testMedianResistsTheOutlierThatTheMeanDoesNot() {
-        let amounts = aglHistory().map(\.amountCents)
+    /// Why the median and not the mean. A single large payment drags a mean so
+    /// far that the *ordinary* payments start looking anomalous — the failure is
+    /// false positives on normal data, not a missed outlier.
+    func testMeanWouldFalselyFlagOrdinaryPaymentsAroundOneSpike() {
+        let amounts = [15_000, 15_500, 16_000, 90_000]
+        let median = BillReports.medianCents(of: amounts)
         let mean = Int((Double(amounts.reduce(0, +)) / Double(amounts.count)).rounded())
 
-        XCTAssertEqual(BillReports.medianCents(of: amounts), 15_828)
+        XCTAssertEqual(median, 15_750)
+        XCTAssertEqual(mean, 34_125)
+
+        // Against the median, only the spike stands out.
+        XCTAssertTrue(BillReports.isOutlier(90_000, median: median))
+        for ordinary in [15_000, 15_500, 16_000] {
+            XCTAssertFalse(BillReports.isOutlier(ordinary, median: median), "\(ordinary) is unremarkable")
+        }
+
+        // Against the mean, every ordinary payment would be flagged.
+        for ordinary in [15_000, 15_500, 16_000] {
+            XCTAssertTrue(
+                BillReports.isOutlier(ordinary, median: mean),
+                "\(ordinary) would be a false positive against a mean of \(mean)"
+            )
+        }
+    }
+
+    /// On the real AGL history both statistics happen to catch the odd payment;
+    /// the median just does so more decisively. Recorded so the claim above is
+    /// not mistaken for "the mean always misses it".
+    func testBothStatisticsCatchTheOddAGLPayment() {
+        let amounts = aglHistory().map(\.amountCents)
+        let median = BillReports.medianCents(of: amounts)
+        let mean = Int((Double(amounts.reduce(0, +)) / Double(amounts.count)).rounded())
+
+        XCTAssertEqual(median, 15_828)
         XCTAssertEqual(mean, 14_919)
-        XCTAssertTrue(
-            BillReports.isOutlier(8_470, median: 15_828),
-            "the median flags the odd payment"
-        )
-        XCTAssertFalse(
-            BillReports.isOutlier(8_470, median: mean),
-            "against the mean it would slip through — which is the whole reason for using the median"
-        )
+        XCTAssertTrue(BillReports.isOutlier(8_470, median: median))
+        XCTAssertTrue(BillReports.isOutlier(8_470, median: mean))
     }
 
     // MARK: - Outliers
