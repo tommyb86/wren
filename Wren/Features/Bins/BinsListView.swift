@@ -27,7 +27,7 @@ struct BinsListView: View {
                 Button {
                     isAdding = true
                 } label: {
-                    Image(systemName: "plus")
+                    WrenToolbarIcon(systemName: "plus")
                 }
                 .accessibilityLabel("Add bin")
             }
@@ -41,50 +41,51 @@ struct BinsListView: View {
     }
 
     private var list: some View {
-        List {
-            ForEach(bins) { bin in
-                Button {
-                    editing = bin
-                } label: {
-                    row(bin)
+        let active = bins.filter(\.isActive).count
+        return List {
+            Section {
+                ForEach(Array(bins.enumerated()), id: \.element.binID) { index, bin in
+                    Button {
+                        editing = bin
+                    } label: {
+                        row(bin)
+                    }
+                    .buttonStyle(.plain)
+                    .wrenRow(first: index == 0, last: index == bins.count - 1)
                 }
-                .buttonStyle(.plain)
+                .onDelete(perform: delete)
+            } header: {
+                WrenListHeader(text: "Bins", trailing: "\(active) active")
             }
-            .onDelete(perform: delete)
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
+        .wrenListStyle()
     }
 
     private func row(_ bin: BinCollection) -> some View {
         HStack(spacing: Space.m) {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(Color(binHex: bin.colorHex))
-                .frame(width: 6, height: 36)
+            WrenLidSwatch(color: Color(binHex: bin.colorHex))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(bin.name.isEmpty ? "Untitled bin" : bin.name)
-                    .font(.body.weight(.medium))
-                    .foregroundStyle(Color.wren.textPrimary)
+                    .font(WrenFont.heading)
+                    .foregroundStyle(bin.isActive ? Color.wren.textPrimary : Color.wren.textSecondary)
                 Text(bin.schedule?.summary(calendar: calendar) ?? "No schedule")
-                    .font(.caption)
+                    .font(WrenFont.detail)
                     .foregroundStyle(Color.wren.textSecondary)
             }
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
-                if !bin.isActive {
-                    Text("Paused")
-                        .font(.caption.weight(.medium))
-                        .foregroundStyle(Color.wren.textSecondary)
-                } else if let next = bin.nextCollection(calendar: calendar) {
+            if !bin.isActive {
+                WrenChip(text: "Paused", tint: .wren.textSecondary, fill: .wren.surface)
+            } else if let next = bin.nextCollection(calendar: calendar) {
+                VStack(alignment: .trailing, spacing: 1) {
                     Text(next.formatted(.dateTime.weekday(.abbreviated).day().month()))
-                        .font(.caption.weight(.medium))
+                        .font(WrenFont.value)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textPrimary)
                     Text(next.formatted(date: .omitted, time: .shortened))
-                        .font(.caption2)
+                        .font(.caption2.weight(.medium))
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textSecondary)
                 }
@@ -126,4 +127,3 @@ struct BinsListView: View {
         Task { await ReminderCoordinator.rebuild(context: context, calendar: calendar) }
     }
 }
-

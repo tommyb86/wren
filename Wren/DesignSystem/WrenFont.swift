@@ -37,6 +37,8 @@ enum WrenFont {
     static let heading = display(17, relativeTo: .body)
     /// Primary buttons.
     static let button = display(17, relativeTo: .body)
+    /// Figures on the right of a row: an amount, a date.
+    static let value = display(15, relativeTo: .subheadline)
     /// Uppercase section labels.
     static let label = display(15, relativeTo: .subheadline)
     /// Chips, tile labels, compact buttons.

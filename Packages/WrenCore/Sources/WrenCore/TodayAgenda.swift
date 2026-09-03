@@ -165,9 +165,18 @@ public struct TodayAgenda: Hashable, Sendable {
                 )
             }
 
-            // Only the next occurrence is worth showing forward — a weekly task
-            // would otherwise fill the week with itself.
-            if let next = state.nextDue, next <= horizon, let status = status(for: next, now: now, calendar: calendar) {
+            // Only the next outstanding occurrence is worth showing forward — a
+            // weekly task would otherwise fill the week with itself — and one
+            // ticked off early must drop out, or the tick looks like it did
+            // nothing.
+            let next = TaskEngine.outstanding(
+                schedule: task.schedule,
+                completedDueDates: task.completedDueDates,
+                from: now,
+                to: horizon,
+                calendar: calendar
+            ).first
+            if let next, let status = status(for: next, now: now, calendar: calendar) {
                 result.append(
                     TodayItem(kind: .task, sourceID: task.id, date: next, status: status, isActionable: true, amountCents: nil)
                 )

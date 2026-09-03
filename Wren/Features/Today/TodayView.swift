@@ -19,6 +19,7 @@ struct TodayView: View {
     @StateObject private var scheduler = NotificationScheduler.shared
 
     @State private var recordingPaymentFor: Bill?
+    @State private var lastSettled: SettledTask?
 
     private let calendar = Calendar.current
 
@@ -80,6 +81,13 @@ struct TodayView: View {
             }
             .sheet(item: $recordingPaymentFor) { bill in
                 RecordPaymentView(bill: bill)
+            }
+            .overlay(alignment: .bottom) {
+                if let lastSettled {
+                    WrenUndoBanner(title: "Done · \(lastSettled.title)", detail: lastSettled.detail) {
+                        undo(lastSettled)
+                    }
+                }
             }
         }
         .task {
@@ -241,7 +249,7 @@ struct TodayView: View {
                 title: task.title.isEmpty ? "Untitled task" : task.title,
                 detail: overdueDetail(for: item) ?? item.date.formatted(date: .omitted, time: .shortened),
                 tint: nil,
-                action: { TaskStore.complete(task, context: context, calendar: calendar) }
+                action: { settle(task) }
             )
 
         case .bill:
@@ -286,6 +294,29 @@ struct TodayView: View {
         case 1: return "Overdue since yesterday"
         default: return "Overdue by \(days) days"
         }
+    }
+
+    // MARK: - Completion
+
+    /// The row disappears the moment it is ticked, so the banner is the only
+    /// way back for five seconds.
+    private func settle(_ task: RecurringTask) {
+        guard let due = TaskStore.complete(task, context: context, calendar: calendar) else { return }
+        let settled = SettledTask(taskID: task.taskID, title: task.title, due: due)
+        withAnimation(.snappy) { lastSettled = settled }
+        Task {
+            try? await Task.sleep(for: .seconds(5))
+            withAnimation(.snappy) {
+                if lastSettled == settled { lastSettled = nil }
+            }
+        }
+    }
+
+    private func undo(_ settled: SettledTask) {
+        if let task = tasks.first(where: { $0.taskID == settled.taskID }) {
+            TaskStore.undoLastCompletion(task, context: context, calendar: calendar)
+        }
+        withAnimation(.snappy) { lastSettled = nil }
     }
 
     private var emptyState: some View {

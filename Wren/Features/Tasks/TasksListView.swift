@@ -9,7 +9,7 @@ struct TasksListView: View {
 
     @State private var editing: RecurringTask?
     @State private var isAdding = false
-    @State private var lastSettled: (title: String, due: Date)?
+    @State private var lastSettled: SettledTask?
 
     private let calendar = Calendar.current
 
@@ -25,7 +25,7 @@ struct TasksListView: View {
         .navigationTitle("Tasks")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { isAdding = true } label: { Image(systemName: "plus") }
+                Button { isAdding = true } label: { WrenToolbarIcon(systemName: "plus") }
                     .accessibilityLabel("Add task")
             }
         }
@@ -37,7 +37,9 @@ struct TasksListView: View {
         }
         .overlay(alignment: .bottom) {
             if let lastSettled {
-                undoBanner(lastSettled)
+                WrenUndoBanner(title: "Done · \(lastSettled.title)", detail: lastSettled.detail) {
+                    undo(lastSettled)
+                }
             }
         }
     }
@@ -45,35 +47,40 @@ struct TasksListView: View {
     private var list: some View {
         List {
             if !overdueTasks.isEmpty {
-                Section("Overdue") {
-                    ForEach(overdueTasks) { task in row(task) }
-                }
+                section("Overdue", tasks: overdueTasks, color: .wren.alert)
             }
 
-            Section(overdueTasks.isEmpty ? "Tasks" : "Upcoming") {
-                ForEach(upcomingTasks) { task in row(task) }
-            }
+            section(overdueTasks.isEmpty ? "Tasks" : "Upcoming", tasks: upcomingTasks)
 
             // A settled one-off has nothing left to do, so it drops out of the
             // main list rather than sitting there looking pending forever.
             if !finishedTasks.isEmpty {
-                Section("Done") {
-                    ForEach(finishedTasks) { task in row(task) }
-                }
+                section("Done", tasks: finishedTasks, color: .wren.textSecondary)
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
+        .wrenListStyle()
+    }
+
+    private func section(_ title: String, tasks: [RecurringTask], color: Color = .wren.textPrimary) -> some View {
+        Section {
+            ForEach(Array(tasks.enumerated()), id: \.element.taskID) { index, task in
+                row(task)
+                    .wrenRow(first: index == 0, last: index == tasks.count - 1)
+            }
+        } header: {
+            WrenListHeader(text: title, color: color)
+        }
     }
 
     private func row(_ task: RecurringTask) -> some View {
-        TaskRow(task: task, calendar: calendar) { complete(task) }
+        TaskRow(task: task, calendar: calendar, onComplete: { complete(task) }, onUndo: { undoLast(task) })
             .swipeActions(edge: .trailing) {
                 Button("Delete", role: .destructive) {
                     TaskStore.delete(task, context: context, calendar: calendar)
                 }
+                .tint(Color.wren.alert)
                 Button("Edit") { editing = task }
-                    .tint(Color.wren.accent)
+                    .tint(Color.wren.textPrimary)
             }
             .onTapGesture { editing = task }
     }
@@ -93,44 +100,32 @@ struct TasksListView: View {
 
     private func complete(_ task: RecurringTask) {
         guard let due = TaskStore.complete(task, context: context, calendar: calendar) else { return }
-        withAnimation(.snappy) { lastSettled = (task.title, due) }
+        let settled = SettledTask(taskID: task.taskID, title: task.title, due: due)
+        withAnimation(.snappy) { lastSettled = settled }
 
         // Undo is worth offering: the tick settles a specific occurrence, and
         // getting the wrong one silently would corrupt the history.
         Task {
             try? await Task.sleep(for: .seconds(5))
-            withAnimation(.snappy) { lastSettled = nil }
+            withAnimation(.snappy) {
+                if lastSettled == settled { lastSettled = nil }
+            }
         }
     }
 
-    private func undoBanner(_ settled: (title: String, due: Date)) -> some View {
-        HStack(spacing: Space.m) {
-            VStack(alignment: .leading, spacing: 1) {
-                Text("Done — \(settled.title)")
-                    .font(.caption.weight(.medium))
-                    .foregroundStyle(Color.wren.textPrimary)
-                Text("Settled \(settled.due.formatted(.dateTime.weekday(.abbreviated).day().month()))")
-                    .font(.caption2)
-                    .foregroundStyle(Color.wren.textSecondary)
-            }
-            Spacer()
-            Button("Undo") {
-                if let task = tasks.first(where: { $0.title == settled.title }) {
-                    TaskStore.undoLastCompletion(task, context: context, calendar: calendar)
-                }
-                withAnimation(.snappy) { lastSettled = nil }
-            }
-            .font(.caption.weight(.semibold))
-            .foregroundStyle(Color.wren.accent)
+    private func undo(_ settled: SettledTask) {
+        if let task = tasks.first(where: { $0.taskID == settled.taskID }) {
+            TaskStore.undoLastCompletion(task, context: context, calendar: calendar)
         }
-        .padding(Space.m)
-        .background(Color.wren.surface, in: RoundedRectangle(cornerRadius: Radius.card))
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.card)
-                .strokeBorder(Color.wren.divider, lineWidth: 1)
-        )
-        .padding(Space.l)
-        .transition(.move(edge: .bottom).combined(with: .opacity))
+        withAnimation(.snappy) { lastSettled = nil }
+    }
+
+    /// The ticked box tapped again: take back the most recent completion.
+    private func undoLast(_ task: RecurringTask) {
+        TaskStore.undoLastCompletion(task, context: context, calendar: calendar)
+        withAnimation(.snappy) {
+            if lastSettled?.taskID == task.taskID { lastSettled = nil }
+        }
     }
 
     private var emptyState: some View {

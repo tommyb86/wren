@@ -72,7 +72,7 @@ struct ReceiptsListView: View {
                         Label("Import a PDF or image", systemImage: "folder")
                     }
                 } label: {
-                    Image(systemName: "plus")
+                    WrenToolbarIcon(systemName: "plus")
                 }
                 .accessibilityLabel("Add a receipt")
                 .disabled(isProcessing)
@@ -152,25 +152,22 @@ struct ReceiptsListView: View {
                 let inYear = visibleReceipts.filter { year.contains($0.date, calendar: calendar) }
                 if !inYear.isEmpty {
                     Section {
-                        ForEach(inYear) { receipt in
+                        ForEach(Array(inYear.enumerated()), id: \.element.receiptID) { index, receipt in
                             Button { editing = receipt } label: { row(receipt) }
                                 .buttonStyle(.plain)
+                                .wrenRow(first: index == 0)
                         }
-                    } header: {
-                        HStack {
-                            Text(year.prefixedLabel)
-                            Spacer()
-                            Text(Money.format(cents: total(of: inYear)))
-                                .monospacedDigit()
-                        }
-                    } footer: {
+                        // Export lives in the box as its last row, so the year
+                        // and the way to get it out are one object.
                         exportFooter(year: year, receipts: inYear)
+                            .wrenRow(last: true)
+                    } header: {
+                        WrenListHeader(text: year.prefixedLabel, trailing: Money.format(cents: total(of: inYear)))
                     }
                 }
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
+        .wrenListStyle()
     }
 
     private var displayedYears: [FinancialYear] {
@@ -179,23 +176,28 @@ struct ReceiptsListView: View {
 
     private var summarySection: some View {
         Section {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Money.format(cents: total(of: visibleReceipts)))
+                    .font(WrenFont.title2)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.wren.textPrimary)
+                Text("\(visibleReceipts.count) receipt\(visibleReceipts.count == 1 ? "" : "s")\(selectedYear.map { " in \($0.prefixedLabel)" } ?? " across all years")")
+                    .font(.caption.weight(.medium))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            .padding(.vertical, Space.xs)
+            .wrenRow(first: true)
+
             Picker("Financial year", selection: $selectedYear) {
                 Text("All years").tag(FinancialYear?.none)
                 ForEach(years) { year in
                     Text(year.label).tag(FinancialYear?.some(year))
                 }
             }
-
-            HStack {
-                Text("\(visibleReceipts.count) receipt\(visibleReceipts.count == 1 ? "" : "s")")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.wren.textSecondary)
-                Spacer()
-                Text(Money.format(cents: total(of: visibleReceipts)))
-                    .font(.subheadline.weight(.medium))
-                    .monospacedDigit()
-                    .foregroundStyle(Color.wren.textPrimary)
-            }
+            .font(WrenFont.value)
+            .foregroundStyle(Color.wren.textPrimary)
+            .tint(Color.wren.textPrimary)
+            .wrenRow(last: true)
         }
     }
 
@@ -206,32 +208,33 @@ struct ReceiptsListView: View {
                     .resizable()
                     .aspectRatio(contentMode: .fill)
                     .frame(width: 34, height: 44)
-                    .clipShape(RoundedRectangle(cornerRadius: 4))
-                    .overlay(RoundedRectangle(cornerRadius: 4).strokeBorder(Color.wren.divider, lineWidth: 1))
+                    .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
+                    .overlay(RoundedRectangle(cornerRadius: Radius.chip).strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border))
             } else {
-                RoundedRectangle(cornerRadius: 4)
+                RoundedRectangle(cornerRadius: Radius.chip)
                     .fill(Color.wren.accentSoft)
                     .frame(width: 34, height: 44)
+                    .overlay(RoundedRectangle(cornerRadius: Radius.chip).strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border))
                     .overlay(
                         Image(systemName: "doc.text")
                             .font(.caption)
-                            .foregroundStyle(Color.wren.accent)
+                            .foregroundStyle(Color.wren.textPrimary)
                     )
             }
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(receipt.displayVendor)
-                    .font(.body.weight(.medium))
+                    .font(WrenFont.heading)
                     .foregroundStyle(Color.wren.textPrimary)
                 Text(subtitle(receipt))
-                    .font(.caption)
+                    .font(WrenFont.detail)
                     .foregroundStyle(Color.wren.textSecondary)
             }
 
             Spacer()
 
             Text(Money.format(cents: receipt.amountCents))
-                .font(.subheadline.weight(.medium))
+                .font(WrenFont.value)
                 .monospacedDigit()
                 .foregroundStyle(Color.wren.textPrimary)
         }
@@ -251,6 +254,7 @@ struct ReceiptsListView: View {
             Button("Export CSV") {
                 exportText = ReceiptCSV.rows(receipts, calendar: calendar)
             }
+            .buttonStyle(WrenCompactButtonStyle(fill: .wren.surface, foreground: .wren.textPrimary))
             Button("Export images") {
                 let filenames = receipts.flatMap(\.imageFilenames)
                 guard !filenames.isEmpty else {
@@ -262,10 +266,10 @@ struct ReceiptsListView: View {
                     archiveName: "Wren-receipts-\(year.label.replacingOccurrences(of: "–", with: "-"))"
                 )
             }
+            .buttonStyle(WrenCompactButtonStyle(fill: .wren.surface, foreground: .wren.textPrimary))
+            Spacer()
         }
-        .font(.caption.weight(.medium))
-        .foregroundStyle(Color.wren.accent)
-        .padding(.top, Space.xs)
+        .padding(.vertical, Space.xs)
     }
 
     private var emptyState: some View {

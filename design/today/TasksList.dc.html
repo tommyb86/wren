@@ -1,0 +1,115 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F3F0E8; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .block { background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; }
+    .label { font-size: 14px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .box { width: 24px; height: 24px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 2px; box-shadow: 2px 2px 0 #1C1A17; box-sizing: border-box; }
+    a { color: #1C1A17; } a:hover { color: #444444; }
+  </style>
+</helmet>
+<div class="screen" style="position: relative; width: 390px; min-height: 1000px; background: #F3F0E8; color: #1C1A17; display: flex; flex-direction: column; gap: 24px; padding: 62px 16px 48px 16px; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+    <div style="font-size: 34px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em;">Tasks</div>
+    <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #C6F135; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="label" style="color: #D93A2B;">Overdue</div>
+    <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Clean the aircon filters</div>
+          <div class="sys" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #D93A2B;">Overdue by 3 days</div>
+        </div>
+        <div class="num" style="font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 6px; border: 1.5px solid #D93A2B; color: #D93A2B; border-radius: 3px;">2 missed</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="label">Upcoming</div>
+    <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Pick up Freddie</div>
+          <div class="sys num" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Due tomorrow at 11:30 am</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid #DED9CE;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Iron uniforms</div>
+          <div class="sys num" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Next Sun 6 Sep</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid #DED9CE;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Test the smoke alarms</div>
+          <div class="sys num" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Next Wed 1 Oct</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid #DED9CE;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box" style="background: #C6F135; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Water the ferns</div>
+          <div class="sys num" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Next Mon 7 Sep</div>
+        </div>
+      </div>
+
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-top: 1px solid #DED9CE;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box" style="box-shadow: none; border-color: #5E5A52;"></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700; color: #5E5A52;">Descale the kettle</div>
+          <div class="sys" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Next Sat 3 Oct</div>
+        </div>
+        <div style="font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 6px; border: 1.5px solid #5E5A52; color: #5E5A52; border-radius: 3px;">Paused</div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="label" style="color: #5E5A52;">Done</div>
+    <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0;">
+        <div style="width: 44px; height: 44px; margin-left: -10px; display: flex; align-items: center; justify-content: center;"><div class="box" style="background: #C6F135; display: flex; align-items: center; justify-content: center;"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#111111" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"></path></svg></div></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700; color: #5E5A52;">Book the car service</div>
+          <div class="sys" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Done</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div style="position: absolute; left: 16px; right: 16px; bottom: 48px; display: flex; align-items: center; gap: 12px; padding: 10px 14px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; box-shadow: 3px 3px 0 #1C1A17;">
+    <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;">
+      <div style="font-size: 15px; line-height: 20px; font-weight: 700;">Done · Clean the aircon filters</div>
+      <div class="sys" style="font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52;">Settled Mon 31 Aug</div>
+    </div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; background: #C6F135; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Undo</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

@@ -73,7 +73,20 @@ public struct TaskEngine {
             lookbackDays: lookbackDays,
             calendar: calendar
         )
-        return current.overdue.first ?? current.nextDue
+        if let oldest = current.overdue.first { return oldest }
+
+        // Ticking ahead is allowed, so the next occurrence may already be
+        // settled; walk forward to the first one that isn't. Bounded, because
+        // a schedule that has been ticked a year ahead is not worth chasing.
+        var candidate = current.nextDue
+        var hops = 0
+        while let date = candidate,
+              isComplete(occurrence: date, completedDueDates: completedDueDates, calendar: calendar),
+              hops < 12 {
+            candidate = ScheduleEngine.next(schedule, after: date, calendar: calendar)
+            hops += 1
+        }
+        return candidate
     }
 
     /// Whether a specific occurrence has been completed. Matched at day

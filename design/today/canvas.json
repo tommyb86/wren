@@ -2,7 +2,8 @@
   "pages": [
     { "id": "page-0", "name": "Today" },
     { "id": "page-1", "name": "Directions" },
-    { "id": "page-2", "name": "Looks" }
+    { "id": "page-2", "name": "Looks" },
+    { "id": "page-3", "name": "Lists" }
   ],
   "artboards": [
     { "file": "Main.dc.html",   "title": "Today", "page": "page-0", "x": 0, "y": 0, "w": 390, "h": 1100 },
@@ -21,7 +22,10 @@
     { "file": "BrutalColour.dc.html",  "title": "Brutal, colour-block", "page": "page-2", "x": 3360, "y": 0, "w": 390, "h": 1100 },
     { "file": "BrutalMono.dc.html",    "title": "Brutal, mono",         "page": "page-2", "x": 3920, "y": 0, "w": 390, "h": 1100 },
     { "file": "BrutalSticker.dc.html", "title": "Brutal, sticker",      "page": "page-2", "x": 4480, "y": 0, "w": 390, "h": 1100 },
-    { "file": "BrutalGrid.dc.html",    "title": "Brutal, grid",         "page": "page-2", "x": 5040, "y": 0, "w": 390, "h": 1100 }
+    { "file": "BrutalGrid.dc.html",    "title": "Brutal, grid",         "page": "page-2", "x": 5040, "y": 0, "w": 390, "h": 1100 },
+
+    { "file": "BillsList.dc.html", "title": "Bills", "page": "page-3", "x": 0,   "y": 0, "w": 390, "h": 1000 },
+    { "file": "TasksList.dc.html", "title": "Tasks", "page": "page-3", "x": 560, "y": 0, "w": 390, "h": 1000 }
   ],
   "annotations": [
     { "id": "chosen", "page": "page-0", "x": 0, "y": -260, "w": 950, "text": "The chosen look: Brutal, calmer, on the Diary structure. This is what the SwiftUI port is built from. Tokens: paper #F3F0E8 / ink #1C1A17 / lime #C6F135 / hairline #DED9CE; dark is ink on #111111 with the same lime. 1.5px borders, 6px radius, hard 2px shadows only on things you can press. Type is SF Pro in the app; Space Grotesk here is the stand-in." },
@@ -41,7 +45,11 @@
     { "id": "note-brutal-colour", "page": "page-2", "x": 3360, "y": -220, "w": 390, "text": "Brutal, colour-block\nThe most common form of the trend: every block gets its own flat pastel, black borders and offset shadows hold it together. Header on lime, one colour per section, so colour is navigation.\n\nLoudest of the set. Best at joy and wayfinding; worst at calm." },
     { "id": "note-brutal-mono", "page": "page-2", "x": 3920, "y": -220, "w": 390, "text": "Brutal, mono\nZine brutalism. Pure black and white, 3px borders, 6px shadows, Archivo Black for the date and every number, solid black day bars. The only colour is the bin lids.\n\nMost minimal of the brutalist set. Reads as printed, not designed." },
     { "id": "note-brutal-sticker", "page": "page-2", "x": 4480, "y": -220, "w": 390, "text": "Brutal, sticker\nThe playful branch: pills instead of boxes, slightly rotated day tags like stuck-on labels, dashed rules, a dot-grid paper behind. Section stats become a wrapping row of sticker chips instead of tiles.\n\nFriendliest brutalism; the rotation is the risk, it can tip into novelty." },
-    { "id": "note-brutal-grid", "page": "page-2", "x": 5040, "y": -220, "w": 390, "text": "Brutal, grid\nRaw-HTML brutalism. One continuous table: every cell bordered, no gaps, no shadows, Space Mono for labels and times, lime only on the Tonight row. Section stats are four tight columns.\n\nDensest and most honest. Best on data; hardest for small type." }
+    { "id": "note-brutal-grid", "page": "page-2", "x": 5040, "y": -220, "w": 390, "text": "Brutal, grid\nRaw-HTML brutalism. One continuous table: every cell bordered, no gaps, no shadows, Space Mono for labels and times, lime only on the Tonight row. Section stats are four tight columns.\n\nDensest and most honest. Best on data; hardest for small type." },
+
+    { "id": "lists-brief", "page": "page-3", "x": 0, "y": -300, "w": 950, "text": "The section lists in the chosen look, replacing the stock iOS grouped lists. Same anatomy as Today: a bordered box per section, an uppercase label above it, hairline rules between rows, 17pt Space Grotesk titles with a 12pt SF Pro detail line. Rows are 56pt on two lines. The plus button becomes a small lime block. Swipe actions keep the ink border and use the alert red for delete. Names and amounts are sample data." },
+    { "id": "note-bills", "page": "page-3", "x": 0, "y": -140, "w": 390, "text": "Bills\nThe monthly figure sits in its own box with the Reports link as a row inside it, so the headline and where it leads are one object. Per-row: name with the 'varies' tag, cadence and who pays, and the monthly equivalent on the right with a quiet /mo. Paused bills go grey with a bordered tag." },
+    { "id": "note-tasks", "page": "page-3", "x": 560, "y": -140, "w": 390, "text": "Tasks\nSame tick box as Today, hanging in the left gutter so the title column lines up with Bills. Overdue is a red label and red detail, with a bordered '2 missed' tag when one tap won't clear it. Settled tasks show a lime ticked box. The undo banner floats above the list with a slightly deeper shadow, since it's the one thing that moves." }
   ],
-  "launch": { "view": "canvas", "page": "page-0" }
+  "launch": { "view": "canvas", "page": "page-3" }
 }

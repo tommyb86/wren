@@ -26,7 +26,7 @@ struct BillsListView: View {
         .navigationTitle("Bills")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
-                Button { isAdding = true } label: { Image(systemName: "plus") }
+                Button { isAdding = true } label: { WrenToolbarIcon(systemName: "plus") }
                     .accessibilityLabel("Add bill")
             }
         }
@@ -40,33 +40,34 @@ struct BillsListView: View {
 
     private var list: some View {
         List {
+            // The headline and where it leads are one box: the figure on top,
+            // the way into Reports as the row beneath it.
             Section {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
+                        .font(WrenFont.title2)
+                        .monospacedDigit()
+                        .foregroundStyle(Color.wren.textPrimary)
+                    Text("a month across \(activeCount) active bill\(activeCount == 1 ? "" : "s"), every cadence made monthly")
+                        .font(.caption.weight(.medium))
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+                .padding(.vertical, Space.xs)
+                .wrenRow(first: true)
+
                 NavigationLink {
                     ReportsView()
                 } label: {
-                    VStack(alignment: .leading, spacing: Space.xs) {
-                        Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
-                            .font(WrenFont.title2)
-                            .monospacedDigit()
-                            .foregroundStyle(Color.wren.textPrimary)
-                        Text("a month across \(activeCount) active bill\(activeCount == 1 ? "" : "s")")
-                            .font(.caption)
-                            .foregroundStyle(Color.wren.textSecondary)
-                        // Naming the destination — an unlabelled chevron on a
-                        // number doesn't read as "there are reports in here".
-                        Text("Reports, forecast and export")
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(Color.wren.accent)
-                            .padding(.top, 2)
-                    }
-                    .padding(.vertical, Space.xs)
+                    Text("Reports, forecast and export")
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textPrimary)
+                        .padding(.vertical, Space.xs)
                 }
-            } footer: {
-                Text("Every bill converted to a monthly equivalent, so different cadences are comparable.")
+                .wrenRow(last: true)
             }
 
-            Section("Bills") {
-                ForEach(bills) { bill in
+            Section {
+                ForEach(Array(bills.enumerated()), id: \.element.billID) { index, bill in
                     NavigationLink {
                         BillDetailView(bill: bill)
                     } label: {
@@ -74,14 +75,17 @@ struct BillsListView: View {
                     }
                     .swipeActions(edge: .trailing) {
                         Button("Delete", role: .destructive) { delete(bill) }
+                            .tint(Color.wren.alert)
                         Button("Edit") { editing = bill }
-                            .tint(Color.wren.accent)
+                            .tint(Color.wren.textPrimary)
                     }
+                    .wrenRow(first: index == 0, last: index == bills.count - 1)
                 }
+            } header: {
+                WrenListHeader(text: "Bills", trailing: "\(activeCount) active")
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
+        .wrenListStyle()
     }
 
     private var activeCount: Int { bills.filter(\.isActive).count }
@@ -89,40 +93,33 @@ struct BillsListView: View {
     private func row(_ bill: Bill) -> some View {
         HStack(spacing: Space.m) {
             VStack(alignment: .leading, spacing: 2) {
-                HStack(spacing: Space.xs) {
+                HStack(spacing: Space.s) {
                     Text(bill.name.isEmpty ? "Untitled bill" : bill.name)
-                        .font(.body.weight(.medium))
-                        .foregroundStyle(Color.wren.textPrimary)
+                        .font(WrenFont.heading)
+                        .foregroundStyle(bill.isActive ? Color.wren.textPrimary : Color.wren.textSecondary)
                     if bill.isVariableAmount {
-                        Text("varies")
-                            .font(.caption2.weight(.medium))
-                            .foregroundStyle(Color.wren.accent)
-                            .padding(.horizontal, Space.xs)
-                            .padding(.vertical, 1)
-                            .background(Color.wren.accentSoft, in: RoundedRectangle(cornerRadius: 4))
+                        WrenChip(text: "varies", tint: .wren.textPrimary, fill: .wren.accentSoft)
                     }
                 }
                 subtitle(bill)
-                    .font(.caption)
+                    .font(WrenFont.detail)
                     .foregroundStyle(Color.wren.textSecondary)
             }
 
             Spacer()
 
-            VStack(alignment: .trailing, spacing: 2) {
-                if bill.isActive {
-                    Text(Money.format(cents: bill.monthlyEquivalentCents))
-                        .font(.caption.weight(.medium))
+            if bill.isActive {
+                VStack(alignment: .trailing, spacing: 1) {
+                    Text(Money.formatWholeDollars(cents: bill.monthlyEquivalentCents))
+                        .font(WrenFont.value)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textPrimary)
                     Text("/mo")
-                        .font(.caption2)
-                        .foregroundStyle(Color.wren.textSecondary)
-                } else {
-                    Text("Paused")
-                        .font(.caption.weight(.medium))
+                        .font(.caption2.weight(.medium))
                         .foregroundStyle(Color.wren.textSecondary)
                 }
+            } else {
+                WrenChip(text: "Paused", tint: .wren.textSecondary, fill: .wren.surface)
             }
         }
         .padding(.vertical, Space.xs)
@@ -169,5 +166,6 @@ struct BillsListView: View {
         } catch {
             Logger.shared.error("bills", "delete failed: \(error.localizedDescription)")
         }
+        Task { await ReminderCoordinator.rebuild(context: context, calendar: calendar) }
     }
 }
