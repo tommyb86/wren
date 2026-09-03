@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <style>
+    body { margin: 0; background: #0E1A2B; }
+    .screen { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .num { font-variant-numeric: tabular-nums; }
+    .glass { background: rgba(255,255,255,0.10); backdrop-filter: blur(28px) saturate(170%); -webkit-backdrop-filter: blur(28px) saturate(170%); border: 1px solid rgba(255,255,255,0.22); box-shadow: inset 0 1px 0 rgba(255,255,255,0.35), 0 12px 40px rgba(0,0,0,0.28); }
+    a { color: #FFFFFF; } a:hover { color: #DDEBFF; }
+  </style>
+</helmet>
+<div class="screen" style="position: relative; width: 390px; min-height: 1100px; overflow: hidden; background: linear-gradient(180deg, #0E1A2B 0%, #143547 55%, #1A4A52 100%); color: #FFFFFF; box-sizing: border-box;">
+
+  <div style="position: absolute; left: -80px; top: 40px; width: 300px; height: 300px; border-radius: 150px; background: radial-gradient(circle, rgba(255,140,105,0.75) 0%, rgba(255,140,105,0) 70%); filter: blur(30px);"></div>
+  <div style="position: absolute; right: -120px; top: 260px; width: 360px; height: 360px; border-radius: 180px; background: radial-gradient(circle, rgba(88,201,190,0.65) 0%, rgba(88,201,190,0) 70%); filter: blur(30px);"></div>
+  <div style="position: absolute; left: 40px; top: 760px; width: 320px; height: 320px; border-radius: 160px; background: radial-gradient(circle, rgba(125,120,255,0.45) 0%, rgba(125,120,255,0) 70%); filter: blur(30px);"></div>
+
+  <div style="position: relative; display: flex; flex-direction: column; gap: 24px; padding: 62px 16px 48px 16px;">
+
+    <div style="display: flex; flex-direction: column; gap: 14px; padding: 0 4px;">
+      <div style="font-size: 13px; line-height: 18px; font-weight: 600; letter-spacing: 0.02em; color: rgba(255,255,255,0.65);">Today</div>
+      <div style="font-size: 34px; line-height: 40px; font-weight: 700; letter-spacing: -0.02em; color: #FFFFFF;">Thursday 3 September</div>
+      <div style="font-size: 18px; line-height: 26px; font-weight: 400; color: rgba(255,255,255,0.85); text-wrap: pretty;">Two bins go out tonight. One thing to do tomorrow, and <span class="num" style="font-weight: 600; color: #FFFFFF;">$510.72</span> in bills by Sunday.</div>
+    </div>
+
+    <div style="display: flex; gap: 10px; overflow: hidden;">
+      <div class="glass" style="flex-shrink: 0; width: 150px; display: flex; flex-direction: column; gap: 14px; padding: 14px; border-radius: 22px; box-sizing: border-box;">
+        <div style="font-size: 12px; line-height: 16px; font-weight: 600; color: rgba(255,255,255,0.6);">Bins</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="display: flex; align-items: center; gap: 7px;"><div style="width: 10px; height: 10px; border-radius: 5px; background: #F2C14E; box-shadow: 0 0 10px rgba(242,193,78,0.8);"></div><div style="font-size: 16px; line-height: 20px; font-weight: 600;">Recycling</div></div>
+          <div style="font-size: 12px; line-height: 16px; color: rgba(255,255,255,0.6);">week from Thu 10</div>
+        </div>
+      </div>
+      <div class="glass" style="flex-shrink: 0; width: 150px; display: flex; flex-direction: column; gap: 14px; padding: 14px; border-radius: 22px; box-sizing: border-box;">
+        <div style="font-size: 12px; line-height: 16px; font-weight: 600; color: rgba(255,255,255,0.6);">Bills</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div class="num" style="font-size: 16px; line-height: 20px; font-weight: 600;">$1,240 / mo</div>
+          <div style="font-size: 12px; line-height: 16px; color: rgba(255,255,255,0.6);">3 due this week</div>
+        </div>
+      </div>
+      <div class="glass" style="flex-shrink: 0; width: 150px; display: flex; flex-direction: column; gap: 14px; padding: 14px; border-radius: 22px; box-sizing: border-box;">
+        <div style="font-size: 12px; line-height: 16px; font-weight: 600; color: rgba(255,255,255,0.6);">Tasks</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div style="font-size: 16px; line-height: 20px; font-weight: 600;">2 active</div>
+          <div style="font-size: 12px; line-height: 16px; color: rgba(255,255,255,0.6);">Nothing overdue</div>
+        </div>
+      </div>
+      <div class="glass" style="flex-shrink: 0; width: 150px; display: flex; flex-direction: column; gap: 14px; padding: 14px; border-radius: 22px; box-sizing: border-box;">
+        <div style="font-size: 12px; line-height: 16px; font-weight: 600; color: rgba(255,255,255,0.6);">Receipts</div>
+        <div style="display: flex; flex-direction: column; gap: 3px;">
+          <div class="num" style="font-size: 16px; line-height: 20px; font-weight: 600;">$3,410</div>
+          <div style="font-size: 12px; line-height: 16px; color: rgba(255,255,255,0.6);">FY26 so far</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="glass" style="display: flex; flex-direction: column; padding: 6px 18px; border-radius: 26px;">
+
+      <div style="font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,255,255,0.6); padding: 14px 0 4px 0;">Tonight</div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.12);">
+        <div style="width: 12px; height: 12px; border-radius: 6px; background: #E0584B; box-shadow: 0 0 12px rgba(224,88,75,0.8);"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">General waste</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">Collected 6:00 am</div></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-bottom: 1px solid rgba(255,255,255,0.12);">
+        <div style="width: 12px; height: 12px; border-radius: 6px; background: #6FB24A; box-shadow: 0 0 12px rgba(111,178,74,0.8);"></div>
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">Green waste</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">Collected 6:00 am</div></div>
+      </div>
+
+      <div style="font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,255,255,0.6); padding: 18px 0 4px 0;">Tomorrow · Friday 4</div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.12);">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">Pick up Freddie</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">11:30 am</div></div>
+        <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 28px; height: 28px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.7); box-sizing: border-box;"></div></div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">Neurodiverse Playhouse</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">4:30 pm · <span class="num">$161.99</span></div></div>
+        <div class="glass" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 16px; margin: 5px 0; border-radius: 17px; font-size: 13px; line-height: 18px; font-weight: 600;">Paid</div>
+      </div>
+
+      <div style="font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,255,255,0.6); padding: 18px 0 4px 0;">Saturday 5</div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">AGL</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">Electricity · <span class="num">$150.00</span></div></div>
+        <div class="glass" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 16px; margin: 5px 0; border-radius: 17px; font-size: 13px; line-height: 18px; font-weight: 600;">Paid</div>
+      </div>
+
+      <div style="font-size: 13px; line-height: 18px; font-weight: 600; color: rgba(255,255,255,0.6); padding: 18px 0 4px 0;">Sunday 6</div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.12);">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">Zurich</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">Insurance · <span class="num">$198.73</span></div></div>
+        <div class="glass" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 16px; margin: 5px 0; border-radius: 17px; font-size: 13px; line-height: 18px; font-weight: 600;">Paid</div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0 12px 0;">
+        <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 600;">Iron uniforms</div><div style="font-size: 13px; line-height: 18px; color: rgba(255,255,255,0.6);">Any time</div></div>
+        <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 28px; height: 28px; border-radius: 14px; border: 1.5px solid rgba(255,255,255,0.7); box-sizing: border-box;"></div></div>
+      </div>
+
+    </div>
+
+  </div>
+</div>
+</x-dc>
+</body>
+</html>

@@ -2,6 +2,12 @@ import SwiftUI
 
 /// Design tokens, resolved from the hand-written colour sets in Assets.xcassets.
 /// Views never reference a raw hex — they go through `Color.wren`.
+///
+/// The look is a calm neo-brutalism: paper and ink, one lime highlight, borders
+/// instead of shadows. `textPrimary` doubles as the ink every border is drawn
+/// in, and `accent` resolves to the same ink so links and ticks stay
+/// monochrome. Lime is reserved for the few things that are actions or the
+/// one number that matters.
 struct WrenPalette {
     let background = Color("Colors/Background", bundle: .main)
     let surface = Color("Colors/Surface", bundle: .main)
@@ -9,6 +15,9 @@ struct WrenPalette {
     let textSecondary = Color("Colors/TextSecondary", bundle: .main)
     let accent = Color("Colors/Accent", bundle: .main)
     let accentSoft = Color("Colors/AccentSoft", bundle: .main)
+    /// Lime. Same in both appearances, so anything on it uses `onHighlight`.
+    let highlight = Color("Colors/Highlight", bundle: .main)
+    let onHighlight = Color("Colors/OnHighlight", bundle: .main)
     let alert = Color("Colors/Alert", bundle: .main)
     let divider = Color("Colors/Divider", bundle: .main)
 }
@@ -28,14 +37,22 @@ enum Space {
 }
 
 enum Radius {
-    static let card: CGFloat = 12
-    static let chip: CGFloat = 8
+    static let card: CGFloat = 6
+    static let chip: CGFloat = 3
+}
+
+/// Line weights. Borders are drawn, not implied, so these are load-bearing.
+enum Stroke {
+    /// Every box, chip and swatch.
+    static let border: CGFloat = 1.5
+    /// The hard offset shadow under anything pressable.
+    static let shadow: CGFloat = 2
 }
 
 // MARK: - Bin lid colours
 
 extension Color {
-    /// Bins are the deliberate exception to "sage is the only accent" — these map
+    /// Bins are the deliberate exception to "ink and one highlight" — these map
     /// to physical lid colours, so they come from hex rather than the palette.
     init(binHex: String) {
         let cleaned = binHex.trimmingCharacters(in: CharacterSet(charactersIn: "#")).uppercased()

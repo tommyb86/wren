@@ -46,7 +46,7 @@ struct BillsListView: View {
                 } label: {
                     VStack(alignment: .leading, spacing: Space.xs) {
                         Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
-                            .font(.system(.title2, design: .serif))
+                            .font(.title2.weight(.bold))
                             .monospacedDigit()
                             .foregroundStyle(Color.wren.textPrimary)
                         Text("a month across \(activeCount) active bill\(activeCount == 1 ? "" : "s")")
@@ -147,7 +147,7 @@ struct BillsListView: View {
             WrenMark(size: 64)
                 .padding(.bottom, Space.xs)
             Text("No bills yet")
-                .font(.system(.title3, design: .serif))
+                .font(.title3.weight(.bold))
                 .foregroundStyle(Color.wren.textPrimary)
             Text("Add what the household pays and Wren works out what it costs a month — whatever cadence each bill arrives on.")
                 .font(.subheadline)

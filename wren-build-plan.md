@@ -289,9 +289,9 @@ struct BinWeekState {
 
 Derived by asking the engine for occurrences inside the current collection cycle. On the dashboard:
 
-- A prominent card: "Recycling week" with the bin's lid colour as the card accent
-- Next collection date and days remaining
-- Multiple bins on one night shown as stacked colour chips
+- The Bins tile on Today: "Recycling week" with the distinctive bin's lid swatch, and when the next night is
+- Bin rows in the agenda name the *night to put it out* ("Out tonight, collected 6:00 am"), since the collection date alone was the confusing part
+- Multiple bins on one night appear as separate rows, each with its lid swatch
 - Reminder the evening before
 
 Model:
@@ -397,41 +397,47 @@ Background top-up via `BGAppRefreshTask` is a nice-to-have. Verify the entitleme
 
 ## 9. Design system
 
-Calm, warm, minimal. A well-made paper notebook, not a productivity dashboard.
+Calm neo-brutalism: paper and ink, one lime highlight, borders instead of shadows. Minimal in element count, confident in line. Chosen September 2026 from the explorations in `design/today/` (the canvas at `wren-today-redesign.html`); the earlier sage-and-serif notebook look is superseded.
 
 **Light**
 
 | Token | Hex | Use |
 |---|---|---|
-| `bg` | `#FAF9F6` | warm paper |
-| `surface` | `#FFFFFF` | cards |
-| `textPrimary` | `#1F2421` | near-black, green cast |
-| `textSecondary` | `#7A817C` | metadata |
-| `accent` | `#4A7C6F` | muted sage — primary actions |
-| `accentSoft` | `#E3EDE9` | chips, selected rows |
-| `alert` | `#C4703F` | terracotta — overdue only |
-| `divider` | `#EAE7E0` | hairlines |
+| `bg` | `#F3F0E8` | paper |
+| `surface` | `#FFFFFF` | boxes |
+| `textPrimary` | `#1C1A17` | ink — text *and* every border |
+| `textSecondary` | `#5E5A52` | metadata |
+| `accent` | `#1C1A17` | same as ink; links and ticks stay monochrome |
+| `accentSoft` | `#E4F5A6` | pale lime — selected chips, suggestion pills |
+| `highlight` | `#C6F135` | lime — the Today tag, Paid buttons, the one number that matters |
+| `onHighlight` | `#111111` | text on lime, both appearances |
+| `alert` | `#D93A2B` | overdue only |
+| `divider` | `#DED9CE` | hairline row rules |
 
 **Dark**
 
 | Token | Hex |
 |---|---|
-| `bg` | `#14181A` |
-| `surface` | `#1E2426` |
-| `textPrimary` | `#E8E6E1` |
-| `textSecondary` | `#8E9591` |
-| `accent` | `#6FA593` |
-| `accentSoft` | `#243330` |
-| `alert` | `#D98A5B` |
-| `divider` | `#2A3134` |
+| `bg` | `#111111` |
+| `surface` | `#111111` (borders do the work; no lifted panels) |
+| `textPrimary` | `#F4EFE3` |
+| `textSecondary` | `#B8B3A8` |
+| `accent` | `#F4EFE3` |
+| `accentSoft` | `#3A4410` |
+| `highlight` | `#C6F135` |
+| `onHighlight` | `#111111` |
+| `alert` | `#FF6B5B` |
+| `divider` | `#2A2823` |
 
 Define as colour sets in `Assets.xcassets` (hand-written `Contents.json`), expose as `Color.wren.accent`. Never a raw hex in a view.
 
-**Colour discipline:** sage is the only accent; terracotta appears *only* for overdue, so it means something when it shows up. Bin lid colours are the deliberate exception — they map to physical objects.
+**Colour discipline:** ink and paper, lime only on things you can press or the one figure the sentence is about. Red appears *only* for overdue, so it means something when it shows up. Bin lid colours are the deliberate exception — they map to physical objects, and are drawn as bordered squares so they read as objects rather than status dots.
 
-**Typography:** SF Pro Text with Dynamic Type for body. Large screen titles in New York (`.system(.largeTitle, design: .serif)`) — a serif title over sans body is what stops it reading as a default template. Monospaced digits on all amounts.
+**Line:** every box, chip and swatch has a 1.5pt ink border (`Stroke.border`), corner radius 6 on cards and 3 on chips. No drop shadows. Anything pressable gets a hard 2pt offset block of ink behind it (`.wrenHardShadow`), and pressing pushes it into that shadow. Rows separate with a 1pt `divider` rule.
 
-**Spacing:** 4pt scale (4, 8, 12, 16, 24, 32). Corner radius 12 on cards, 8 on chips. Almost no shadows — separate with the divider colour. Generous vertical rhythm.
+**Typography:** SF Pro with Dynamic Type. Screen titles are `.largeTitle` bold with tight tracking; section labels are uppercase, tracked, bold `.subheadline`. No serif anywhere. Monospaced digits on all amounts. (Space Grotesk was the stand-in in the HTML mockups; bundling it is an option, not a requirement.)
+
+**Spacing:** 4pt scale (4, 8, 12, 16, 24, 32). Generous vertical rhythm.
 
 **Interaction:** light haptic on completion. `.snappy` springs. Every list gets a designed empty state.
 

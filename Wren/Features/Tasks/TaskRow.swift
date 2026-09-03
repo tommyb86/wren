@@ -14,15 +14,9 @@ struct TaskRow: View {
 
     var body: some View {
         HStack(spacing: Space.m) {
-            Button(action: onComplete) {
-                Image(systemName: isSettled ? "checkmark.circle.fill" : "circle")
-                    .font(.title3)
-                    .foregroundStyle(isSettled ? Color.wren.accent : Color.wren.textSecondary)
-                    .contentTransition(.symbolEffect(.replace))
-            }
-            .buttonStyle(.plain)
-            .disabled(task.schedule == nil)
-            .accessibilityLabel(isSettled ? "Completed" : "Mark done")
+            WrenCheckbox(isOn: isSettled, action: onComplete)
+                .disabled(task.schedule == nil)
+                .accessibilityLabel(isSettled ? "Completed" : "Mark done")
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(task.title.isEmpty ? "Untitled task" : task.title)

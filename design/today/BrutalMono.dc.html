@@ -1,0 +1,107 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo+Black&amp;family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FFFFFF; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .display { font-family: "Archivo Black", "Arial Black", Impact, sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .block { background: #FFFFFF; border: 3px solid #000000; box-shadow: 6px 6px 0 #000000; }
+    a { color: #000000; } a:hover { color: #444444; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1100px; background: #FFFFFF; color: #000000; display: flex; flex-direction: column; gap: 26px; padding: 62px 20px 48px 20px; box-sizing: border-box;">
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div style="display: flex; align-items: baseline; gap: 12px;">
+      <div class="display" style="font-size: 72px; line-height: 64px; letter-spacing: -0.04em;">THU</div>
+      <div class="display" style="font-size: 72px; line-height: 64px; letter-spacing: -0.04em;">03</div>
+    </div>
+    <div style="font-size: 14px; line-height: 18px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">September · Today</div>
+    <div style="font-size: 18px; line-height: 25px; font-weight: 500; padding-top: 6px; text-wrap: pretty;">Two bins go out tonight. One thing to do tomorrow, and <span class="num display" style="font-size: 17px;">$510.72</span> in bills by Sunday.</div>
+  </div>
+
+  <div class="block" style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr));">
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px; border-right: 3px solid #000000; border-bottom: 3px solid #000000;">
+      <div style="font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Bins</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #D9A82E; border: 3px solid #000000;"></div><div class="display" style="font-size: 15px; line-height: 20px;">RECYCLING</div></div>
+        <div style="font-size: 12px; line-height: 16px; font-weight: 500;">week from Thu 10</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px; border-bottom: 3px solid #000000;">
+      <div style="font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Bills</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div class="display num" style="font-size: 15px; line-height: 20px;">$1,240/MO</div>
+        <div style="font-size: 12px; line-height: 16px; font-weight: 500;">3 due this week</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px; border-right: 3px solid #000000;">
+      <div style="font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Tasks</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div class="display" style="font-size: 15px; line-height: 20px;">2 ACTIVE</div>
+        <div style="font-size: 12px; line-height: 16px; font-weight: 500;">Nothing overdue</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px;">
+      <div style="font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;">Receipts</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div class="display num" style="font-size: 15px; line-height: 20px;">$3,410</div>
+        <div style="font-size: 12px; line-height: 16px; font-weight: 500;">FY26 so far</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="block" style="display: flex; flex-direction: column;">
+
+    <div class="display" style="padding: 8px 14px; background: #000000; color: #FFFFFF; font-size: 13px; line-height: 18px; letter-spacing: 0.08em;">TONIGHT</div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 3px solid #000000;">
+      <div style="width: 14px; height: 14px; background: #B4453C; border: 3px solid #000000;"></div>
+      <div style="flex-grow: 1; font-size: 17px; line-height: 22px; font-weight: 700;">General waste</div>
+      <div style="font-size: 12px; line-height: 16px; font-weight: 700;">6:00 AM</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px; border-bottom: 3px solid #000000;">
+      <div style="width: 14px; height: 14px; background: #5C8C3F; border: 3px solid #000000;"></div>
+      <div style="flex-grow: 1; font-size: 17px; line-height: 22px; font-weight: 700;">Green waste</div>
+      <div style="font-size: 12px; line-height: 16px; font-weight: 700;">6:00 AM</div>
+    </div>
+
+    <div class="display" style="padding: 8px 14px; background: #000000; color: #FFFFFF; font-size: 13px; line-height: 18px; letter-spacing: 0.08em;">TOMORROW · FRI 04</div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 14px; border-bottom: 3px solid #000000;">
+      <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 700;">Pick up Freddie</div><div style="font-size: 12px; line-height: 16px; font-weight: 500;">11:30 am</div></div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 24px; height: 24px; border: 3px solid #000000; box-sizing: border-box;"></div></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 14px; border-bottom: 3px solid #000000;">
+      <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 700;">Neurodiverse Playhouse</div><div style="font-size: 12px; line-height: 16px; font-weight: 500;">4:30 pm · <span class="num">$161.99</span></div></div>
+      <div class="display" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 12px; margin: 5px 0; background: #000000; color: #FFFFFF; font-size: 11px; line-height: 16px; letter-spacing: 0.08em;">PAID</div>
+    </div>
+
+    <div class="display" style="padding: 8px 14px; background: #000000; color: #FFFFFF; font-size: 13px; line-height: 18px; letter-spacing: 0.08em;">SATURDAY 05</div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 14px; border-bottom: 3px solid #000000;">
+      <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 700;">AGL</div><div style="font-size: 12px; line-height: 16px; font-weight: 500;">Electricity · <span class="num">$150.00</span></div></div>
+      <div class="display" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 12px; margin: 5px 0; background: #000000; color: #FFFFFF; font-size: 11px; line-height: 16px; letter-spacing: 0.08em;">PAID</div>
+    </div>
+
+    <div class="display" style="padding: 8px 14px; background: #000000; color: #FFFFFF; font-size: 13px; line-height: 18px; letter-spacing: 0.08em;">SUNDAY 06</div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 14px; border-bottom: 3px solid #000000;">
+      <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 700;">Zurich</div><div style="font-size: 12px; line-height: 16px; font-weight: 500;">Insurance · <span class="num">$198.73</span></div></div>
+      <div class="display" style="display: flex; align-items: center; justify-content: center; height: 34px; padding: 0 12px; margin: 5px 0; background: #000000; color: #FFFFFF; font-size: 11px; line-height: 16px; letter-spacing: 0.08em;">PAID</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 4px 14px;">
+      <div style="display: flex; flex-direction: column; gap: 1px; flex-grow: 1;"><div style="font-size: 17px; line-height: 22px; font-weight: 700;">Iron uniforms</div><div style="font-size: 12px; line-height: 16px; font-weight: 500;">Any time</div></div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 24px; height: 24px; border: 3px solid #000000; box-sizing: border-box;"></div></div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

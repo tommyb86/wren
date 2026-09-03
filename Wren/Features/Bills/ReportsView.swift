@@ -55,7 +55,7 @@ struct ReportsView: View {
         Section {
             VStack(alignment: .leading, spacing: Space.xs) {
                 Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
-                    .font(.system(.largeTitle, design: .serif))
+                    .font(.largeTitle.weight(.bold))
                     .monospacedDigit()
                     .foregroundStyle(Color.wren.textPrimary)
                 Text("a month")

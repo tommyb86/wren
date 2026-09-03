@@ -1,0 +1,47 @@
+{
+  "pages": [
+    { "id": "page-0", "name": "Today" },
+    { "id": "page-1", "name": "Directions" },
+    { "id": "page-2", "name": "Looks" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html",   "title": "Today", "page": "page-0", "x": 0, "y": 0, "w": 390, "h": 1100 },
+    { "file": "BrutalDark.dc.html", "title": "Today, dark", "page": "page-0", "x": 560, "y": 0, "w": 390, "h": 1100 },
+
+    { "file": "Tabs.dc.html",   "title": "A · Tabs",  "page": "page-1", "x": 0,    "y": 0, "w": 390, "h": 1000 },
+    { "file": "Diary.dc.html",  "title": "B · Diary", "page": "page-1", "x": 560,  "y": 0, "w": 390, "h": 1100 },
+    { "file": "Tiles.dc.html",  "title": "C · Tiles", "page": "page-1", "x": 1120, "y": 0, "w": 390, "h": 1100 },
+
+    { "file": "Quiet.dc.html",  "title": "Quiet",        "page": "page-2", "x": 0,    "y": 0, "w": 390, "h": 1100 },
+    { "file": "Acid.dc.html",   "title": "Acid",         "page": "page-2", "x": 560,  "y": 0, "w": 390, "h": 1100 },
+    { "file": "Swiss.dc.html",  "title": "Swiss",        "page": "page-2", "x": 1120, "y": 0, "w": 390, "h": 1100 },
+    { "file": "Glass.dc.html",  "title": "Liquid Glass", "page": "page-2", "x": 1680, "y": 0, "w": 390, "h": 1100 },
+    { "file": "Soft.dc.html",   "title": "Soft",         "page": "page-2", "x": 2240, "y": 0, "w": 390, "h": 1100 },
+    { "file": "Brutal.dc.html", "title": "Brutal",       "page": "page-2", "x": 2800, "y": 0, "w": 390, "h": 1100 },
+    { "file": "BrutalColour.dc.html",  "title": "Brutal, colour-block", "page": "page-2", "x": 3360, "y": 0, "w": 390, "h": 1100 },
+    { "file": "BrutalMono.dc.html",    "title": "Brutal, mono",         "page": "page-2", "x": 3920, "y": 0, "w": 390, "h": 1100 },
+    { "file": "BrutalSticker.dc.html", "title": "Brutal, sticker",      "page": "page-2", "x": 4480, "y": 0, "w": 390, "h": 1100 },
+    { "file": "BrutalGrid.dc.html",    "title": "Brutal, grid",         "page": "page-2", "x": 5040, "y": 0, "w": 390, "h": 1100 }
+  ],
+  "annotations": [
+    { "id": "chosen", "page": "page-0", "x": 0, "y": -260, "w": 950, "text": "The chosen look: Brutal, calmer, on the Diary structure. This is what the SwiftUI port is built from. Tokens: paper #F3F0E8 / ink #1C1A17 / lime #C6F135 / hairline #DED9CE; dark is ink on #111111 with the same lime. 1.5px borders, 6px radius, hard 2px shadows only on things you can press. Type is SF Pro in the app; Space Grotesk here is the stand-in." },
+
+    { "id": "brief", "page": "page-1", "x": 0, "y": -440, "w": 1510, "text": "Today screen, three directions. All three fix the same two things: the bin-week card stops being a hero block and becomes a line of context, and the section links stop being a list at the bottom. The agenda loses its boxed buckets in every option. Dark theme only for now, matching the screenshot. Amounts on the section tiles ($1,240/mo, $3,410 FY26) are sample figures." },
+    { "id": "note-tabs", "page": "page-1", "x": 0, "y": -220, "w": 390, "text": "A · Tabs\nNavigation-first. A native tab bar makes Bins, Tasks, Bills and Receipts one tap from anywhere; Diagnostics moves behind the gear. Bin week is a single tinted strip that always shows the next bin night.\n\nFor: zero learning curve, the most iOS-native answer, keeps the calm.\nAgainst: the least exciting of the three, the tab bar costs 83pt of every screen, and the live stats the old link list carried are gone." },
+    { "id": "note-diary", "page": "page-1", "x": 560, "y": -220, "w": 390, "text": "B · Diary (chosen)\nEditorial. The date is the title, then one written sentence summarises the day. Sections sit under it as a scrolling shelf, each carrying its live number. The agenda runs down a single timeline rail with serif day headings.\n\nFor: leans hardest into the notebook brand, and the sentence makes the screen feel alive.\nAgainst: the summary has to read well in every state (empty, overdue, ten bills), and a horizontal shelf is easy to miss." },
+    { "id": "note-tiles", "page": "page-1", "x": 1120, "y": -220, "w": 390, "text": "C · Tiles\nAt a glance. Four equal tiles, one per section, each showing the thing you'd open it to find out. The tile is the link, so navigation and information are the same object. Below, one flat list in date order with a day gutter.\n\nFor: answers everything in one glance, nothing feels like an afterthought.\nAgainst: densest option and the closest to the 'productivity dashboard' the brief warns against. Tiles need good empty states." },
+
+    { "id": "looks-brief", "page": "page-2", "x": 0, "y": -400, "w": 1400, "text": "Looks explored on the Diary skeleton before choosing. The brand brief was set aside on purpose: different fonts, palettes and surfaces in each. Same content in all so only the look changes. The chosen one, Brutal calmer, now lives on the Today page." },
+    { "id": "note-quiet", "page": "page-2", "x": 0, "y": -220, "w": 390, "text": "Quiet\nWarm minimalism, the 'quiet luxury' end of the trend. Cream paper, one bronze accent, Instrument Serif at display size, no cards and no icons anywhere. The summary sentence is the whole header.\n\nBest at: calm and stillness. Weak at: dense weeks; there is nowhere for a fifth bin or an overdue badge to go." },
+    { "id": "note-acid", "page": "page-2", "x": 560, "y": -220, "w": 390, "text": "Acid\nMonochrome dark with one acid accent, the current developer-tool look. Geist and Geist Mono, hairlines, a time column, numbers set in mono. Lime is used exactly twice.\n\nBest at: precision, feels engineered. Weak at: warmth; it can read cold for a home app." },
+    { "id": "note-swiss", "page": "page-2", "x": 1120, "y": -220, "w": 390, "text": "Swiss\nFlat design taken to its typographic root. Black on white, a giant date numeral, rules instead of cards, one signal red. Archivo plus IBM Plex Mono.\n\nBest at: hierarchy and print-like clarity. Weak at: friendliness; it is confident rather than cosy." },
+    { "id": "note-glass", "page": "page-2", "x": 1680, "y": -220, "w": 390, "text": "Liquid Glass\nApple's current system language: translucent panels with blur, a specular top edge and soft light blobs behind. Bin dots glow.\n\nBest at: feeling native on iOS 26 and genuinely lively. Weak at: minimalism; the backdrop does a lot of talking, and legibility depends on what is behind the glass." },
+    { "id": "note-soft", "page": "page-2", "x": 2240, "y": -220, "w": 390, "text": "Soft\nNeumorphism. One pale surface everywhere; elements are pressed out of it or into it with paired shadows. Manrope, one teal accent.\n\nBest at: tactile, calm, everything feels like one material. Weak at: contrast; controls are subtle enough to miss, and it does not translate to dark mode well." },
+    { "id": "note-brutal", "page": "page-2", "x": 2800, "y": -220, "w": 390, "text": "Brutal\nNeo-brutalism at full volume. Two-pixel black borders, hard offset shadows, square bin swatches, one lime fill. Space Grotesk. The calmer version of this is the one that was chosen." },
+    { "id": "note-brutal-colour", "page": "page-2", "x": 3360, "y": -220, "w": 390, "text": "Brutal, colour-block\nThe most common form of the trend: every block gets its own flat pastel, black borders and offset shadows hold it together. Header on lime, one colour per section, so colour is navigation.\n\nLoudest of the set. Best at joy and wayfinding; worst at calm." },
+    { "id": "note-brutal-mono", "page": "page-2", "x": 3920, "y": -220, "w": 390, "text": "Brutal, mono\nZine brutalism. Pure black and white, 3px borders, 6px shadows, Archivo Black for the date and every number, solid black day bars. The only colour is the bin lids.\n\nMost minimal of the brutalist set. Reads as printed, not designed." },
+    { "id": "note-brutal-sticker", "page": "page-2", "x": 4480, "y": -220, "w": 390, "text": "Brutal, sticker\nThe playful branch: pills instead of boxes, slightly rotated day tags like stuck-on labels, dashed rules, a dot-grid paper behind. Section stats become a wrapping row of sticker chips instead of tiles.\n\nFriendliest brutalism; the rotation is the risk, it can tip into novelty." },
+    { "id": "note-brutal-grid", "page": "page-2", "x": 5040, "y": -220, "w": 390, "text": "Brutal, grid\nRaw-HTML brutalism. One continuous table: every cell bordered, no gaps, no shadows, Space Mono for labels and times, lime only on the Tonight row. Section stats are four tight columns.\n\nDensest and most honest. Best on data; hardest for small type." }
+  ],
+  "launch": { "view": "canvas", "page": "page-0" }
+}

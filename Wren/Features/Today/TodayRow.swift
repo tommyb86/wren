@@ -8,7 +8,7 @@ struct TodayRowModel: Identifiable {
     let item: TodayItem
     let title: String
     let detail: String
-    /// Bin lid colour; nil for tasks and bills, which use the palette.
+    /// Bin lid colour; nil for tasks and bills.
     let tint: Color?
     let action: (() -> Void)?
 
@@ -24,54 +24,36 @@ struct TodayRow: View {
 
     var body: some View {
         HStack(spacing: Space.m) {
-            marker
+            if let tint = model.tint {
+                WrenLidSwatch(color: tint)
+            }
 
-            VStack(alignment: .leading, spacing: 2) {
+            VStack(alignment: .leading, spacing: 1) {
                 Text(model.title)
-                    .font(.body.weight(.medium))
+                    .font(.body.weight(.bold))
                     .foregroundStyle(Color.wren.textPrimary)
                 Text(model.detail)
-                    .font(.caption)
+                    .font(.caption.weight(.medium))
+                    .monospacedDigit()
                     .foregroundStyle(item.isOverdue ? Color.wren.alert : Color.wren.textSecondary)
             }
 
-            Spacer()
-
-            if let amountCents = item.amountCents {
-                Text(Money.format(cents: amountCents))
-                    .font(.caption)
-                    .monospacedDigit()
-                    .foregroundStyle(Color.wren.textSecondary)
-            }
+            Spacer(minLength: Space.s)
 
             if let action = model.action {
-                Button(action: action) {
-                    Image(systemName: item.kind == .bill ? "plus.circle" : "circle")
-                        .font(.title3)
-                        .foregroundStyle(Color.wren.accent)
+                switch item.kind {
+                case .bill:
+                    Button("Paid", action: action)
+                        .buttonStyle(WrenCompactButtonStyle())
+                        .accessibilityLabel("Record a payment")
+                        .padding(.vertical, Space.xs)
+                case .task, .bin:
+                    WrenCheckbox(isOn: false, action: action)
+                        .accessibilityLabel("Mark done")
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(item.kind == .bill ? "Record a payment" : "Mark done")
             }
         }
         .padding(.vertical, Space.xs)
         .contentShape(.rect)
-    }
-
-    /// Bins get their lid colour as a bar — they map to a physical object.
-    /// Tasks and bills get a glyph, since a symbol reads faster than a swatch
-    /// when there's nothing to colour-match against.
-    @ViewBuilder
-    private var marker: some View {
-        if let tint = model.tint {
-            RoundedRectangle(cornerRadius: 3)
-                .fill(tint)
-                .frame(width: 6, height: 34)
-        } else {
-            Image(systemName: item.kind == .task ? "checklist" : "banknote")
-                .font(.caption)
-                .foregroundStyle(item.isOverdue ? Color.wren.alert : Color.wren.textSecondary)
-                .frame(width: 20)
-        }
     }
 }

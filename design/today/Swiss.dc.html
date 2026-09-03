@@ -1,0 +1,131 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;700;800&amp;family=IBM+Plex+Mono:wght@400;500&amp;display=swap">
+  <style>
+    body { margin: 0; background: #FFFFFF; }
+    .screen { font-family: "Archivo", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .mono { font-family: "IBM Plex Mono", ui-monospace, Menlo, Consolas, monospace; font-variant-numeric: tabular-nums; }
+    a { color: #FF3B1F; } a:hover { color: #C92A12; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1100px; background: #FFFFFF; color: #111111; display: flex; flex-direction: column; padding: 62px 20px 48px 20px; box-sizing: border-box;">
+
+  <div style="display: flex; justify-content: space-between; align-items: flex-start; border-top: 2px solid #111111; padding-top: 8px;">
+    <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase;">Today</div>
+    <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase;">Week 36</div>
+  </div>
+
+  <div style="display: flex; align-items: flex-end; gap: 12px; padding: 12px 0 0 0;">
+    <div class="mono" style="font-size: 124px; line-height: 104px; font-weight: 500; letter-spacing: -0.06em; color: #111111;">03</div>
+    <div style="display: flex; flex-direction: column; gap: 2px; padding-bottom: 6px;">
+      <div style="font-size: 22px; line-height: 24px; font-weight: 800; letter-spacing: -0.02em; text-transform: uppercase;">Thursday</div>
+      <div style="font-size: 22px; line-height: 24px; font-weight: 400; letter-spacing: -0.02em; text-transform: uppercase; color: #111111;">September</div>
+    </div>
+  </div>
+
+  <div style="font-size: 20px; line-height: 27px; font-weight: 500; letter-spacing: -0.01em; padding: 24px 0 28px 0; text-wrap: pretty;">Two bins go out tonight. One thing to do tomorrow, and <span class="mono" style="color: #FF3B1F;">$510.72</span> in bills by Sunday.</div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); border-top: 1px solid #111111; border-left: 1px solid #111111;">
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 10px 12px 12px 12px; border-right: 1px solid #111111; border-bottom: 1px solid #111111;">
+      <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6B6B;">Bins</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="display: flex; align-items: center; gap: 8px;"><div style="width: 10px; height: 10px; background: #D9A82E;"></div><div style="font-size: 17px; line-height: 20px; font-weight: 700;">Recycling wk</div></div>
+        <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">FROM THU 10</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 10px 12px 12px 12px; border-right: 1px solid #111111; border-bottom: 1px solid #111111;">
+      <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6B6B;">Bills</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div class="mono" style="font-size: 17px; line-height: 20px; font-weight: 500;">$1,240/mo</div>
+        <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">3 DUE THIS WEEK</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 10px 12px 12px 12px; border-right: 1px solid #111111; border-bottom: 1px solid #111111;">
+      <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6B6B;">Tasks</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div style="font-size: 17px; line-height: 20px; font-weight: 700;">2 active</div>
+        <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">NOTHING OVERDUE</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; justify-content: space-between; gap: 22px; padding: 10px 12px 12px 12px; border-right: 1px solid #111111; border-bottom: 1px solid #111111;">
+      <div class="mono" style="font-size: 11px; line-height: 16px; letter-spacing: 0.08em; text-transform: uppercase; color: #6B6B6B;">Receipts</div>
+      <div style="display: flex; flex-direction: column; gap: 2px;">
+        <div class="mono" style="font-size: 17px; line-height: 20px; font-weight: 500;">$3,410</div>
+        <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">FY26 SO FAR</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; padding-top: 32px;">
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #111111; padding-bottom: 6px;">
+      <div style="font-size: 15px; line-height: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Tonight</div>
+      <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">THU 03</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">06:00</div>
+      <div style="width: 10px; height: 10px; background: #B4453C;"></div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">General waste</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">06:00</div>
+      <div style="width: 10px; height: 10px; background: #5C8C3F;"></div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">Green waste</div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #111111; padding: 28px 0 6px 0;">
+      <div style="font-size: 15px; line-height: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Tomorrow</div>
+      <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">FRI 04</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">11:30</div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">Pick up Freddie</div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 20px; height: 20px; border: 1.5px solid #111111; box-sizing: border-box;"></div></div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">16:30</div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">Neurodiverse Playhouse</div>
+      <div class="mono" style="font-size: 13px; line-height: 16px;">$161.99</div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; margin: 6px 0; background: #111111; color: #FFFFFF; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Paid</div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #111111; padding: 28px 0 6px 0;">
+      <div style="font-size: 15px; line-height: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Saturday</div>
+      <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">SAT 05</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">—</div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">AGL</div>
+      <div class="mono" style="font-size: 13px; line-height: 16px;">$150.00</div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; margin: 6px 0; background: #111111; color: #FFFFFF; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Paid</div>
+    </div>
+
+    <div style="display: flex; align-items: baseline; justify-content: space-between; border-bottom: 2px solid #111111; padding: 28px 0 6px 0;">
+      <div style="font-size: 15px; line-height: 20px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.02em;">Sunday</div>
+      <div class="mono" style="font-size: 11px; line-height: 16px; color: #6B6B6B;">SUN 06</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">—</div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">Zurich</div>
+      <div class="mono" style="font-size: 13px; line-height: 16px;">$198.73</div>
+      <div style="display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; margin: 6px 0; background: #111111; color: #FFFFFF; font-size: 11px; line-height: 16px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;">Paid</div>
+    </div>
+    <div style="display: flex; align-items: center; gap: 12px; padding: 6px 0; border-bottom: 1px solid #DADADA;">
+      <div class="mono" style="width: 52px; flex-shrink: 0; font-size: 12px; line-height: 16px; color: #6B6B6B;">—</div>
+      <div style="flex-grow: 1; font-size: 16px; line-height: 20px; font-weight: 500;">Iron uniforms</div>
+      <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;"><div style="width: 20px; height: 20px; border: 1.5px solid #111111; box-sizing: border-box;"></div></div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
