@@ -24,8 +24,24 @@ struct ZoomableImage: UIViewRepresentable {
 
         let imageView = UIImageView(image: image)
         imageView.contentMode = .scaleAspectFit
-        imageView.frame = scrollView.bounds
+        // Constrained rather than frame-set: inside a paged TabView this view is
+        // built before it has any bounds, so a frame taken from `scrollView`
+        // here would be zero and the page would look empty until some later
+        // layout pass — which is exactly what a swipe used to trigger.
+        imageView.translatesAutoresizingMaskIntoConstraints = false
         scrollView.addSubview(imageView)
+
+        NSLayoutConstraint.activate([
+            imageView.leadingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.leadingAnchor),
+            imageView.trailingAnchor.constraint(equalTo: scrollView.contentLayoutGuide.trailingAnchor),
+            imageView.topAnchor.constraint(equalTo: scrollView.contentLayoutGuide.topAnchor),
+            imageView.bottomAnchor.constraint(equalTo: scrollView.contentLayoutGuide.bottomAnchor),
+            // At zoom 1 the image fills the viewport, whatever size that turns
+            // out to be; zooming then grows the content from there.
+            imageView.widthAnchor.constraint(equalTo: scrollView.frameLayoutGuide.widthAnchor),
+            imageView.heightAnchor.constraint(equalTo: scrollView.frameLayoutGuide.heightAnchor)
+        ])
+
         context.coordinator.imageView = imageView
 
         let doubleTap = UITapGestureRecognizer(
@@ -38,26 +54,15 @@ struct ZoomableImage: UIViewRepresentable {
         return scrollView
     }
 
-    func updateUIView(_ scrollView: UIScrollView, context: Context) {
-        // The image view tracks the scroll view's bounds at zoom scale 1, so
-        // rotation and Dynamic Type changes don't leave it mis-sized.
-        guard scrollView.zoomScale == scrollView.minimumZoomScale else { return }
-        context.coordinator.imageView?.frame = CGRect(origin: .zero, size: scrollView.bounds.size)
-    }
+    /// Nothing to do: the constraints keep the image sized to the scroll view
+    /// through rotation and every other layout change, so there is no frame to
+    /// maintain here.
+    func updateUIView(_ scrollView: UIScrollView, context: Context) {}
 
     final class Coordinator: NSObject, UIScrollViewDelegate {
         weak var imageView: UIImageView?
 
         func viewForZooming(in scrollView: UIScrollView) -> UIView? { imageView }
-
-        /// Keeps the image centred while it is smaller than the viewport,
-        /// otherwise a zoomed-out page drifts into the corner.
-        func scrollViewDidZoom(_ scrollView: UIScrollView) {
-            guard let imageView else { return }
-            let horizontal = max(0, (scrollView.bounds.width - imageView.frame.width) / 2)
-            let vertical = max(0, (scrollView.bounds.height - imageView.frame.height) / 2)
-            scrollView.contentInset = UIEdgeInsets(top: vertical, left: horizontal, bottom: vertical, right: horizontal)
-        }
 
         @objc func handleDoubleTap(_ gesture: UITapGestureRecognizer) {
             guard let scrollView = gesture.view as? UIScrollView else { return }
