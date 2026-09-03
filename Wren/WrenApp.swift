@@ -15,7 +15,7 @@ struct WrenApp: App {
 
     var body: some Scene {
         WindowGroup {
-            HomeView()
+            TodayView()
                 .tint(Color.wren.accent)
         }
         .modelContainer(container)
