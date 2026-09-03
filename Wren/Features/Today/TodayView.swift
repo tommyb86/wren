@@ -101,7 +101,7 @@ struct TodayView: View {
             }
 
             Text(summaryText(TodaySummary.make(for: agenda, hasAnythingSetUp: hasAnythingSetUp)))
-                .font(.body.weight(.medium))
+                .font(WrenFont.sentence)
                 .lineSpacing(3)
                 .foregroundStyle(Color.wren.textPrimary)
                 .fixedSize(horizontal: false, vertical: true)
@@ -114,7 +114,7 @@ struct TodayView: View {
         if let highlight = summary.highlight, let range = text.range(of: highlight) {
             text[range].backgroundColor = Color.wren.highlight
             text[range].foregroundColor = Color.wren.onHighlight
-            text[range].font = .body.weight(.bold)
+            text[range].font = WrenFont.display(18, relativeTo: .body)
         }
         return text
     }
@@ -292,7 +292,7 @@ struct TodayView: View {
         WrenCard {
             VStack(alignment: .leading, spacing: Space.s) {
                 Text(hasAnythingSetUp ? "Nothing this week" : "Nothing set up yet")
-                    .font(.title3.weight(.bold))
+                    .font(WrenFont.title3)
                     .foregroundStyle(Color.wren.textPrimary)
                 Text(hasAnythingSetUp
                      ? "No bins, tasks or bills due in the next seven days."

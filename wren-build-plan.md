@@ -435,7 +435,7 @@ Define as colour sets in `Assets.xcassets` (hand-written `Contents.json`), expos
 
 **Line:** every box, chip and swatch has a 1.5pt ink border (`Stroke.border`), corner radius 6 on cards and 3 on chips. No drop shadows. Anything pressable gets a hard 2pt offset block of ink behind it (`.wrenHardShadow`), and pressing pushes it into that shadow. Rows separate with a 1pt `divider` rule.
 
-**Typography:** SF Pro with Dynamic Type. Screen titles are `.largeTitle` bold with tight tracking; section labels are uppercase, tracked, bold `.subheadline`. No serif anywhere. Monospaced digits on all amounts. (Space Grotesk was the stand-in in the HTML mockups; bundling it is an option, not a requirement.)
+**Typography:** Space Grotesk (SIL OFL, one variable TTF in `Wren/Fonts`, registered via `UIAppFonts`) for anything that carries the look — titles, section labels, chips, row titles, tile values, the summary sentence, money headlines — always through `WrenFont` so size and Dynamic Type anchor are decided once. SF Pro for reading: body copy, editors, list subtitles. No serif anywhere. Monospaced digits on all amounts. Diagnostics reports whether the family registered, because `Font.custom` falls back silently.
 
 **Spacing:** 4pt scale (4, 8, 12, 16, 24, 32). Generous vertical rhythm.
 

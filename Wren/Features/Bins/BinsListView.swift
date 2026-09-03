@@ -99,7 +99,7 @@ struct BinsListView: View {
             WrenMark(size: 64)
                 .padding(.bottom, Space.xs)
             Text("No bins yet")
-                .font(.title3.weight(.bold))
+                .font(WrenFont.title3)
                 .foregroundStyle(Color.wren.textPrimary)
             Text("Most councils run general waste weekly and recycling fortnightly. Add one bin per lid.")
                 .font(.subheadline)

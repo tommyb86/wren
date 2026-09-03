@@ -13,7 +13,7 @@ struct TodayTile: View {
     var body: some View {
         VStack(alignment: .leading, spacing: Space.l) {
             Text(label)
-                .font(.caption.weight(.bold))
+                .font(WrenFont.caption)
                 .tracking(0.8)
                 .textCase(.uppercase)
                 .foregroundStyle(Color.wren.textSecondary)
@@ -26,14 +26,14 @@ struct TodayTile: View {
                         WrenLidSwatch(color: swatch)
                     }
                     Text(value)
-                        .font(.body.weight(.bold))
+                        .font(WrenFont.heading)
                         .monospacedDigit()
                         .lineLimit(1)
                         .minimumScaleFactor(0.8)
                         .foregroundStyle(Color.wren.textPrimary)
                 }
                 Text(detail)
-                    .font(.caption.weight(.medium))
+                    .font(WrenFont.detail)
                     .monospacedDigit()
                     .lineLimit(1)
                     .foregroundStyle(detailColor)

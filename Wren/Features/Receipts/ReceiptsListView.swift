@@ -273,7 +273,7 @@ struct ReceiptsListView: View {
             WrenMark(size: 64)
                 .padding(.bottom, Space.xs)
             Text("No receipts yet")
-                .font(.title3.weight(.bold))
+                .font(WrenFont.title3)
                 .foregroundStyle(Color.wren.textPrimary)
             Text("Scan a paper receipt, or import a PDF or screenshot. Wren reads the vendor, amount and date for you to confirm, then files it by financial year.")
                 .font(.subheadline)

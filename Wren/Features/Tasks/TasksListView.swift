@@ -138,7 +138,7 @@ struct TasksListView: View {
             WrenMark(size: 64)
                 .padding(.bottom, Space.xs)
             Text("No tasks yet")
-                .font(.title3.weight(.bold))
+                .font(WrenFont.title3)
                 .foregroundStyle(Color.wren.textPrimary)
             Text("Anything that comes round again — filters, smoke alarms, the car service — or a one-off reminder.")
                 .font(.subheadline)

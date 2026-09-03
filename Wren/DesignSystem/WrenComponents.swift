@@ -63,7 +63,7 @@ struct WrenCard<Content: View>: View {
 struct WrenPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.body.weight(.bold))
+            .font(WrenFont.button)
             .foregroundStyle(Color.wren.onHighlight)
             .padding(.vertical, Space.m)
             .padding(.horizontal, Space.l)
@@ -83,7 +83,7 @@ struct WrenCompactButtonStyle: ButtonStyle {
 
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.caption.weight(.bold))
+            .font(WrenFont.caption)
             .textCase(.uppercase)
             .foregroundStyle(foreground)
             .padding(.vertical, Space.s)
@@ -134,7 +134,7 @@ struct WrenTitle: View {
 
     var body: some View {
         Text(text)
-            .font(.system(.largeTitle, design: .default, weight: .bold))
+            .font(WrenFont.title)
             .tracking(-0.8)
             .foregroundStyle(Color.wren.textPrimary)
     }
@@ -147,7 +147,7 @@ struct WrenSectionLabel: View {
 
     var body: some View {
         Text(text)
-            .font(.subheadline.weight(.bold))
+            .font(WrenFont.label)
             .tracking(0.8)
             .textCase(.uppercase)
             .foregroundStyle(color)
@@ -163,7 +163,7 @@ struct WrenChip: View {
 
     var body: some View {
         Text(text)
-            .font(.caption.weight(.bold))
+            .font(WrenFont.caption)
             .monospacedDigit()
             .tracking(0.8)
             .textCase(.uppercase)

@@ -42,6 +42,12 @@
 		<key>UIColorName</key>
 		<string>LaunchBackground</string>
 	</dict>
+	<!-- Space Grotesk, the display face. One variable file; iOS exposes its
+	     named instances (SpaceGrotesk-Bold etc.) once registered here. -->
+	<key>UIAppFonts</key>
+	<array>
+		<string>SpaceGrotesk-Variable.ttf</string>
+	</array>
 	<key>UIRequiredDeviceCapabilities</key>
 	<array>
 		<string>arm64</string>

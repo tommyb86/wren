@@ -30,10 +30,10 @@ struct TodayRow: View {
 
             VStack(alignment: .leading, spacing: 1) {
                 Text(model.title)
-                    .font(.body.weight(.bold))
+                    .font(WrenFont.heading)
                     .foregroundStyle(Color.wren.textPrimary)
                 Text(model.detail)
-                    .font(.caption.weight(.medium))
+                    .font(WrenFont.detail)
                     .monospacedDigit()
                     .foregroundStyle(item.isOverdue ? Color.wren.alert : Color.wren.textSecondary)
             }

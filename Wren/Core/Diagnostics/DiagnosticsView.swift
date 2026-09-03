@@ -68,6 +68,9 @@ struct DiagnosticsView: View {
             row("Commit", BuildInfo.gitSHA)
             row("Bundle ID", BuildInfo.bundleID)
             row("iOS", ProcessInfo.processInfo.operatingSystemVersionString)
+            // Font.custom falls back to the system face without a word, so a
+            // wrong PostScript name or a missing plist entry only shows here.
+            row("Display font", WrenFont.isInstalled ? "\(WrenFont.family) installed" : "\(WrenFont.family) missing")
         }
     }
 
