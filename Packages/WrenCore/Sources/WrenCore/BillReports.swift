@@ -13,6 +13,10 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
     public let isVariableAmount: Bool
     public let schedule: Schedule
     public let category: String
+    /// Optional, for a shared household. Carried through to occurrences because
+    /// two people can hold separate bills with identical names — two car
+    /// registrations are only tellable apart by whose it is.
+    public let paidBy: String
     public let isActive: Bool
 
     public init(
@@ -22,6 +26,7 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
         isVariableAmount: Bool = false,
         schedule: Schedule,
         category: String = "",
+        paidBy: String = "",
         isActive: Bool = true
     ) {
         self.id = id
@@ -30,6 +35,7 @@ public struct BillSpec: Hashable, Sendable, Identifiable {
         self.isVariableAmount = isVariableAmount
         self.schedule = schedule
         self.category = category
+        self.paidBy = paidBy
         self.isActive = isActive
     }
 }
@@ -66,9 +72,17 @@ public struct CategoryTotal: Hashable, Sendable, Identifiable {
 public struct BillOccurrence: Hashable, Sendable, Identifiable {
     public let billID: UUID
     public let name: String
+    /// Whose bill it is, when the household records that.
+    public let paidBy: String
     public let dueDate: Date
     public let expectedCents: Int
     public let paidCents: Int?
+
+    /// Name qualified by owner, so two "Car registration" rows are tellable
+    /// apart in a list without opening either.
+    public var label: String {
+        paidBy.isEmpty ? name : "\(name) · \(paidBy)"
+    }
 
     public var isPaid: Bool { paidCents != nil }
     /// What is still owed on this occurrence.
@@ -289,6 +303,7 @@ public enum BillReports {
                         return BillOccurrence(
                             billID: bill.id,
                             name: bill.name,
+                            paidBy: bill.paidBy,
                             dueDate: due,
                             expectedCents: bill.amountCents,
                             paidCents: payment?.amountCents

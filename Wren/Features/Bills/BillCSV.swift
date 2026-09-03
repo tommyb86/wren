@@ -15,7 +15,7 @@ enum BillCSV {
             rows.append(row(
                 spec.name,
                 spec.category,
-                "",
+                spec.paidBy,
                 decimal(spec.amountCents),
                 BillingPeriod.cadenceDescription(spec.schedule),
                 spec.isVariableAmount ? "yes" : "no",
@@ -30,14 +30,18 @@ enum BillCSV {
     /// Payment history across every bill, with the variance per payment.
     static func payments(_ specs: [BillSpec], payments: [BillPaymentRecord]) -> String {
         let names = Dictionary(uniqueKeysWithValues: specs.map { ($0.id, $0.name) })
+        let owners = Dictionary(uniqueKeysWithValues: specs.map { ($0.id, $0.paidBy) })
         let expected = Dictionary(uniqueKeysWithValues: specs.map { ($0.id, $0.amountCents) })
 
-        var rows = [row("Bill", "Due date", "Paid on", "Expected", "Paid", "Difference")]
+        // Owner is its own column rather than folded into the name — a
+        // spreadsheet wants to filter and pivot on it.
+        var rows = [row("Bill", "Paid by", "Due date", "Paid on", "Expected", "Paid", "Difference")]
 
         for payment in payments.sorted(by: { $0.dueDate > $1.dueDate }) {
             let expectedCents = expected[payment.billID] ?? 0
             rows.append(row(
                 names[payment.billID] ?? "Unknown",
+                owners[payment.billID] ?? "",
                 iso(payment.dueDate),
                 iso(payment.paidAt),
                 decimal(expectedCents),

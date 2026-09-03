@@ -67,6 +67,7 @@ extension Bill {
             isVariableAmount: isVariableAmount,
             schedule: schedule,
             category: category,
+            paidBy: paidBy,
             isActive: isActive
         )
     }

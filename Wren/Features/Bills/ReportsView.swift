@@ -109,7 +109,7 @@ struct ReportsView: View {
                         .font(.caption)
                         .foregroundStyle(occurrence.isPaid ? Color.wren.accent : Color.wren.textSecondary)
                     VStack(alignment: .leading, spacing: 1) {
-                        Text(occurrence.name)
+                        Text(occurrence.label)
                             .font(.caption.weight(.medium))
                             .foregroundStyle(Color.wren.textPrimary)
                         Text(occurrence.dueDate.formatted(.dateTime.day().month()))
@@ -140,7 +140,7 @@ struct ReportsView: View {
             if let selected = selectedForecastMonth {
                 ForEach(selected.occurrences) { occurrence in
                     HStack {
-                        Text(occurrence.name)
+                        Text(occurrence.label)
                             .font(.caption)
                             .foregroundStyle(Color.wren.textPrimary)
                         Spacer()
@@ -205,7 +205,10 @@ struct ReportsView: View {
 
     private var varianceSection: some View {
         let variances = BillReports.variances(bills: specs, payments: payments)
-        let names = Dictionary(uniqueKeysWithValues: specs.map { ($0.id, $0.name) })
+        // Owner-qualified, so two bills sharing a name do not collide here either.
+        let labels = Dictionary(uniqueKeysWithValues: specs.map {
+            ($0.id, $0.paidBy.isEmpty ? $0.name : "($0.name) · ($0.paidBy)")
+        })
 
         return Group {
             if variances.isEmpty {
@@ -221,7 +224,7 @@ struct ReportsView: View {
                     ForEach(variances, id: \.billID) { variance in
                         HStack {
                             VStack(alignment: .leading, spacing: 1) {
-                                Text(names[variance.billID] ?? "Unknown")
+                                Text(labels[variance.billID] ?? "Unknown")
                                     .font(.subheadline.weight(.medium))
                                     .foregroundStyle(Color.wren.textPrimary)
                                 Text("\(variance.paymentCount) payment\(variance.paymentCount == 1 ? "" : "s")")

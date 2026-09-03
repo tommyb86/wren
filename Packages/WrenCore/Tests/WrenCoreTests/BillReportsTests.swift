@@ -272,6 +272,56 @@ final class BillReportsTests: XCTestCase {
         XCTAssertEqual(history.map(\.amountCents), [52_000, 41_000])
     }
 
+    // MARK: - Shared households
+
+    /// Two people holding the same bill separately: identical names, different
+    /// owners. Without `paidBy` on the occurrence they are indistinguishable in
+    /// any list.
+    func testIdenticallyNamedBillsAreTellableApartByOwner() {
+        let mine = UUID()
+        let hers = UUID()
+        let bills = [
+            BillSpec(
+                id: mine,
+                name: "Car registration",
+                amountCents: 90_000,
+                schedule: Schedule(frequency: .yearly, anchorDate: date(2026, 3, 20)),
+                category: "Car",
+                paidBy: "Tom"
+            ),
+            BillSpec(
+                id: hers,
+                name: "Car registration",
+                amountCents: 84_000,
+                schedule: Schedule(frequency: .yearly, anchorDate: date(2026, 3, 28)),
+                category: "Car",
+                paidBy: "Sam"
+            )
+        ]
+
+        let march = BillReports.monthSummary(
+            bills: bills,
+            payments: [],
+            containing: date(2026, 3, 10),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(march.occurrences.count, 2)
+        XCTAssertEqual(march.occurrences.map(\.label), ["Car registration · Tom", "Car registration · Sam"])
+        XCTAssertEqual(march.dueCents, 174_000)
+    }
+
+    func testLabelFallsBackToTheBareNameWhenNobodyIsNamed() {
+        let summary = BillReports.monthSummary(
+            bills: household(),
+            payments: [],
+            containing: date(2026, 1, 20),
+            calendar: brisbane
+        )
+
+        XCTAssertEqual(summary.occurrences.first?.label, "Internet", "no owner means no separator")
+    }
+
     // MARK: - Variance
 
     /// The interesting signal on a variable bill: the power bill went up.

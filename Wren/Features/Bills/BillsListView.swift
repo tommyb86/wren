@@ -102,7 +102,7 @@ struct BillsListView: View {
                             .background(Color.wren.accentSoft, in: RoundedRectangle(cornerRadius: 4))
                     }
                 }
-                Text(subtitle(bill))
+                subtitle(bill)
                     .font(.caption)
                     .foregroundStyle(Color.wren.textSecondary)
             }
@@ -128,10 +128,18 @@ struct BillsListView: View {
         .padding(.vertical, Space.xs)
     }
 
-    private func subtitle(_ bill: Bill) -> String {
-        guard let schedule = bill.schedule else { return "No schedule" }
-        let amount = Money.format(cents: bill.amountCents)
-        return "\(amount) \(BillingPeriod.cadenceDescription(schedule))"
+    /// Returns `Text` rather than a String so the owner's name can carry primary
+    /// ink while the amount and cadence stay recessive — with two bills sharing a
+    /// name, whose it is is the part being scanned for.
+    private func subtitle(_ bill: Bill) -> Text {
+        guard let schedule = bill.schedule else { return Text("No schedule") }
+
+        let cadence = Text("\(Money.format(cents: bill.amountCents)) \(BillingPeriod.cadenceDescription(schedule))")
+        guard !bill.paidBy.isEmpty else { return cadence }
+
+        return cadence
+            + Text(" · ")
+            + Text(bill.paidBy).foregroundStyle(Color.wren.textPrimary)
     }
 
     private var emptyState: some View {
