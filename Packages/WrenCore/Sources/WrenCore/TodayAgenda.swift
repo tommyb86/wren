@@ -197,7 +197,7 @@ public struct TodayAgenda: Hashable, Sendable {
             // debit must never resurface as something to chase.
             guard !occurrence.isSettled else { return nil }
 
-            let itemStatus: Status
+            let itemStatus: TodayItem.Status
             if let ahead = status(for: occurrence.dueDate, now: now, calendar: calendar) {
                 itemStatus = ahead
             } else {
@@ -218,7 +218,7 @@ public struct TodayAgenda: Hashable, Sendable {
     // MARK: - Helpers
 
     /// Bucket for a date at or after today, or nil when it is in the past.
-    private static func status(for date: Date, now: Date, calendar: Calendar) -> Status? {
+    private static func status(for date: Date, now: Date, calendar: Calendar) -> TodayItem.Status? {
         let day = calendar.startOfDay(for: date)
         let today = calendar.startOfDay(for: now)
 
