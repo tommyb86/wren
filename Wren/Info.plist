@@ -20,6 +20,10 @@
 	<string>$(MARKETING_VERSION)</string>
 	<key>CFBundleVersion</key>
 	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<!-- VNDocumentCameraViewController needs this; without it the app is
+	     terminated the moment the scanner opens. -->
+	<key>NSCameraUsageDescription</key>
+	<string>Wren uses the camera to scan receipts. Scans stay on this device.</string>
 	<key>LSRequiresIPhoneOS</key>
 	<true/>
 	<key>ITSAppUsesNonExemptEncryption</key>

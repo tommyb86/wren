@@ -17,6 +17,10 @@ struct DiagnosticsView: View {
     @State private var completionCount = 0
     @State private var billCount = 0
     @State private var paymentCount = 0
+    @State private var receiptCount = 0
+    @State private var receiptFileCount = 0
+    @State private var receiptBytes: Int64 = 0
+    @State private var orphanedFileCount = 0
     @State private var showingExport = false
 
     var body: some View {
@@ -24,6 +28,7 @@ struct DiagnosticsView: View {
             environmentSection
             notificationSection
             storageSection
+            receiptFilesSection
             logSection
             colophon
         }
@@ -123,6 +128,25 @@ struct DiagnosticsView: View {
             row("TaskCompletion", "\(completionCount) rows")
             row("Bill", "\(billCount) rows")
             row("BillPayment", "\(paymentCount) rows")
+            row("Receipt", "\(receiptCount) rows")
+        }
+    }
+
+    private var receiptFilesSection: some View {
+        Section {
+            row("Files", "\(receiptFileCount)")
+            row("On disk", "\(receiptBytes / 1024)KB")
+            if orphanedFileCount > 0 {
+                // Surfaced rather than swept up automatically: deleting a
+                // user's files on a hunch is worse than a few stray kilobytes,
+                // and an orphan usually means a delete half-failed, which is
+                // worth knowing about.
+                row("Unreferenced", "\(orphanedFileCount)")
+            }
+        } header: {
+            Text("Receipt images")
+        } footer: {
+            Text("JPEGs in Documents/receipts, referenced by filename from SwiftData rather than stored as blobs.")
         }
     }
 
@@ -207,6 +231,14 @@ struct DiagnosticsView: View {
             completionCount = try context.fetchCount(FetchDescriptor<TaskCompletion>())
             billCount = try context.fetchCount(FetchDescriptor<Bill>())
             paymentCount = try context.fetchCount(FetchDescriptor<BillPayment>())
+            receiptCount = try context.fetchCount(FetchDescriptor<Receipt>())
+
+            // Cross-checks the filesystem against what the store references, so
+            // a half-failed delete is visible rather than silently leaking.
+            let referenced = Set(try context.fetch(FetchDescriptor<Receipt>()).flatMap(\.imageFilenames))
+            receiptFileCount = ReceiptFileStore.fileCount()
+            receiptBytes = ReceiptFileStore.totalBytes()
+            orphanedFileCount = ReceiptFileStore.orphanedFiles(referenced: referenced).count
         } catch {
             Logger.shared.error("diagnostics", "row count failed: \(error.localizedDescription)")
         }

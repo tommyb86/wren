@@ -14,6 +14,7 @@ struct TodayView: View {
     @Query(sort: \BinCollection.sortOrder) private var bins: [BinCollection]
     @Query(sort: \RecurringTask.sortOrder) private var tasks: [RecurringTask]
     @Query(sort: \Bill.sortOrder) private var bills: [Bill]
+    @Query(sort: \Receipt.date, order: .reverse) private var receipts: [Receipt]
     @StateObject private var scheduler = NotificationScheduler.shared
 
     @State private var recordingPaymentFor: Bill?
@@ -221,6 +222,8 @@ struct TodayView: View {
             Divider().overlay(Color.wren.divider)
             link("Bills", detail: billsDetail) { BillsListView() }
             Divider().overlay(Color.wren.divider)
+            link("Receipts", detail: receiptsDetail) { ReceiptsListView() }
+            Divider().overlay(Color.wren.divider)
             link("Diagnostics", detail: "\(scheduler.pending.count) reminder\(scheduler.pending.count == 1 ? "" : "s") scheduled") { DiagnosticsView() }
         }
         .background(Color.wren.surface, in: RoundedRectangle(cornerRadius: Radius.card))
@@ -265,6 +268,14 @@ struct TodayView: View {
         guard !tasks.isEmpty else { return "Not set up" }
         let overdue = agenda.overdue.filter { $0.kind == .task }.count
         return overdue > 0 ? "\(overdue) overdue" : "\(tasks.filter(\.isActive).count) active"
+    }
+
+    private var receiptsDetail: String {
+        let current = FinancialYear.current(calendar: calendar)
+        let thisYear = receipts.filter { current.contains($0.date, calendar: calendar) }
+        guard !thisYear.isEmpty else { return receipts.isEmpty ? "Not set up" : "None this FY" }
+        let total = thisYear.reduce(0) { $0 + $1.amountCents }
+        return "\(Money.formatWholeDollars(cents: total)) in \(current.label)"
     }
 
     private var billsDetail: String {
