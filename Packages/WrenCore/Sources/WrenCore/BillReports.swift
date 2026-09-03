@@ -169,6 +169,48 @@ public struct ForecastMonth: Hashable, Sendable, Identifiable {
     public var id: Date { monthStart }
 }
 
+/// One recorded payment, positioned for charting.
+public struct TrendPoint: Hashable, Sendable, Identifiable {
+    public let dueDate: Date
+    public let amountCents: Int
+    /// Far enough from the median to be worth a second look. Often it means the
+    /// payment doesn't belong to this bill at all rather than that a real
+    /// spike happened.
+    public let isOutlier: Bool
+
+    public var id: Date { dueDate }
+}
+
+/// Recorded payments for one bill over time, with the summary statistics needed
+/// to read them.
+///
+/// Deliberately offers no fitted trendline. Utilities are seasonal — a rising
+/// line through a Brisbane summer is aircon, not a price rise — and a regression
+/// through a handful of points from one season would state the wrong conclusion
+/// confidently. Answering "has it gone up" properly needs the same quarter a
+/// year earlier, which needs a year of history.
+public struct PaymentTrend: Hashable, Sendable {
+    /// Oldest first, so the series reads left to right.
+    public let points: [TrendPoint]
+    public let medianCents: Int
+    public let minCents: Int
+    public let maxCents: Int
+
+    /// Below this the history list says everything a chart would, and a
+    /// two-point "trend" is a line between two numbers pretending to be
+    /// information.
+    public static let minimumPoints = 3
+    /// Distance from the median, as a fraction, before a point is flagged.
+    public static let outlierThreshold = 0.40
+
+    public var isEmpty: Bool { points.isEmpty }
+    public var isChartable: Bool { points.count >= Self.minimumPoints }
+    public var latest: TrendPoint? { points.last }
+    public var outliers: [TrendPoint] { points.filter(\.isOutlier) }
+    /// Spread of recorded amounts — the honest one-line summary of a variable bill.
+    public var rangeCents: Int { maxCents - minCents }
+}
+
 /// Expected versus actual for one bill.
 public struct BillVariance: Hashable, Sendable {
     public let billID: UUID
@@ -323,6 +365,55 @@ public enum BillReports {
         guard !mine.isEmpty else { return nil }
         let total = mine.reduce(0) { $0 + $1.amountCents }
         return Int((Double(total) / Double(mine.count)).rounded())
+    }
+
+    /// Recorded payments for one bill as a chartable series.
+    ///
+    /// Outliers are measured against the **median**, not the mean: with a
+    /// handful of points one unusual payment drags a mean far enough to hide
+    /// itself.
+    public static func trend(billID: UUID, payments: [BillPaymentRecord]) -> PaymentTrend {
+        let mine = payments
+            .filter { $0.billID == billID }
+            .sorted { $0.dueDate < $1.dueDate }
+
+        guard !mine.isEmpty else {
+            return PaymentTrend(points: [], medianCents: 0, minCents: 0, maxCents: 0)
+        }
+
+        let amounts = mine.map(\.amountCents)
+        let median = medianCents(of: amounts)
+
+        let points = mine.map { payment in
+            TrendPoint(
+                dueDate: payment.dueDate,
+                amountCents: payment.amountCents,
+                isOutlier: isOutlier(payment.amountCents, median: median)
+            )
+        }
+
+        return PaymentTrend(
+            points: points,
+            medianCents: median,
+            minCents: amounts.min() ?? 0,
+            maxCents: amounts.max() ?? 0
+        )
+    }
+
+    static func medianCents(of amounts: [Int]) -> Int {
+        guard !amounts.isEmpty else { return 0 }
+        let sorted = amounts.sorted()
+        let middle = sorted.count / 2
+
+        guard sorted.count % 2 == 0 else { return sorted[middle] }
+        return Int((Double(sorted[middle - 1] + sorted[middle]) / 2).rounded())
+    }
+
+    static func isOutlier(_ amountCents: Int, median: Int) -> Bool {
+        // Every amount is equally "normal" when there is nothing to compare to.
+        guard median != 0 else { return false }
+        let deviation = Double(abs(amountCents - median)) / Double(abs(median))
+        return deviation > PaymentTrend.outlierThreshold
     }
 
     /// Expected versus actual across every recorded payment for a bill.

@@ -12,6 +12,7 @@ struct BillDetailView: View {
     @Environment(\.modelContext) private var context
     @State private var isRecordingPayment = false
     @State private var isEditing = false
+    @State private var selectedPoint: TrendPoint?
 
     private let calendar = Calendar.current
 
@@ -24,9 +25,19 @@ struct BillDetailView: View {
         return BillReports.variance(bill: spec, payments: bill.paymentRecords)
     }
 
+    private var trend: PaymentTrend {
+        BillReports.trend(billID: bill.billID, payments: bill.paymentRecords)
+    }
+
     var body: some View {
         List {
             summarySection
+            // Only for variable bills: a fixed one would draw a flat line and
+            // say nothing. Below three points the history list is strictly
+            // better, which is `isChartable`.
+            if bill.isVariableAmount, trend.isChartable {
+                trendSection
+            }
             if let variance, variance.paymentCount > 0 {
                 varianceSection(variance)
             }
@@ -80,6 +91,26 @@ struct BillDetailView: View {
             Text(bill.paysAutomatically
                  ? "Pays automatically, so occurrences count as settled once due. Wren has no bank feed, so that's an assumption — and the amount is only ever what you record."
                  : "Bills are informative only — Wren doesn't send reminders for them.")
+        }
+    }
+
+    private var trendSection: some View {
+        let current = trend
+
+        return Section {
+            PaymentTrendChart(
+                trend: current,
+                expectedCents: bill.amountCents,
+                selection: $selectedPoint
+            )
+        } header: {
+            Text("Recorded payments")
+        } footer: {
+            // Says what the picture does and does not support. Seasonal bills
+            // rise and fall for reasons that have nothing to do with price.
+            Text("Dashed line is the \(Money.format(cents: bill.amountCents)) expected amount."
+                 + " Range \(Money.format(cents: current.minCents))–\(Money.format(cents: current.maxCents))."
+                 + " Seasonal bills swing on their own, so comparing the same period a year apart says more than the shape here.")
         }
     }
 
