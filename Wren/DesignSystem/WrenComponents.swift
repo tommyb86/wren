@@ -232,12 +232,12 @@ struct WrenLidSwatch: View {
     }
 }
 
-/// The app's mark, framed the way iOS frames it on the home screen.
+/// The app's mark, framed as a bordered tile like everything else here.
 ///
-/// The artwork is opaque RGB with its warm-paper background baked in, so it
-/// cannot float on a dark surface without showing a pale square. Presenting it
-/// deliberately as a tile — a bookplate, a stamp — is honest about that and
-/// reads as intentional in both themes.
+/// The artwork is opaque RGB with its paper background baked in, so it cannot
+/// float on a dark surface without showing a pale square. Framing it as a
+/// deliberate tile — a bookplate, a stamp — is honest about that and reads as
+/// intentional in both themes.
 struct WrenMark: View {
     var size: CGFloat = 60
 
