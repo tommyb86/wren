@@ -66,10 +66,12 @@ struct WrenCard<Content: View>: View {
 /// the block down into its shadow.
 struct WrenPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        Body(configuration: configuration)
+        Rendered(configuration: configuration)
     }
 
-    private struct Body: View {
+    // Not named `Body`: that is ButtonStyle's own associated type, and a
+    // private nested type cannot satisfy the protocol's requirement.
+    private struct Rendered: View {
         let configuration: ButtonStyleConfiguration
         @Environment(\.wrenTheme) private var theme
 
@@ -96,10 +98,10 @@ struct WrenCompactButtonStyle: ButtonStyle {
     var foreground: Color? = nil
 
     func makeBody(configuration: Configuration) -> some View {
-        Body(configuration: configuration, fill: fill, foreground: foreground)
+        Rendered(configuration: configuration, fill: fill, foreground: foreground)
     }
 
-    private struct Body: View {
+    private struct Rendered: View {
         let configuration: ButtonStyleConfiguration
         let fill: Color?
         let foreground: Color?
