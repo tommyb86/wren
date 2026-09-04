@@ -83,8 +83,11 @@ struct WrenListHeader: View {
         .padding(.top, Space.xl)
         .padding(.bottom, Space.s + 2)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .background(Color.wren.background)
         .listRowInsets(EdgeInsets())
+        // The row's own background, not just the label's: a plain list still
+        // paints its rows, which showed as white bands around the text.
+        .listRowBackground(Color.wren.background)
+        .listRowSeparator(.hidden)
         .textCase(nil)
     }
 }
@@ -100,9 +103,11 @@ struct WrenListFooter: View {
             .foregroundStyle(Color.wren.textSecondary)
             .padding(.horizontal, Space.l)
             .padding(.top, Space.s)
+            .padding(.bottom, Space.xs)
             .frame(maxWidth: .infinity, alignment: .leading)
-            .background(Color.wren.background)
             .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.wren.background)
+            .listRowSeparator(.hidden)
             .textCase(nil)
     }
 }

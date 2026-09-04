@@ -43,8 +43,9 @@ struct MoneyField: View {
             guard !didLoad else { return }
             didLoad = true
             // Seed from the model, but leave a genuinely zero amount blank so the
-            // placeholder does the talking.
-            text = cents == 0 ? "" : Money.plainFormat(cents: cents)
+            // placeholder does the talking. No symbol: the field draws its own,
+            // and seeding one gave "$$1183.07".
+            text = cents == 0 ? "" : Money.plainFormat(cents: cents, showsSymbol: false)
         }
         .onChange(of: text) { _, new in
             if let parsed = Money.parse(new) { cents = parsed }

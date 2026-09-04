@@ -43,7 +43,9 @@ public enum Money {
     /// locale-formatted string would be wrong or unparseable. Also what `format`
     /// falls back to, and what tests assert against, since swift-corelibs and
     /// Darwin disagree on currency formatting details.
-    public static func plainFormat(cents: Int, showsCents: Bool = true) -> String {
+    /// - Parameter showsSymbol: pass `false` to get just the number, for
+    ///   seeding a text field that draws its own currency sign.
+    public static func plainFormat(cents: Int, showsCents: Bool = true, showsSymbol: Bool = true) -> String {
         let negative = cents < 0
         let magnitude = abs(cents)
         let body: String
@@ -52,7 +54,7 @@ public enum Money {
         } else {
             body = "\(magnitude / 100)"
         }
-        return "\(negative ? "-" : "")$\(body)"
+        return "\(negative ? "-" : "")\(showsSymbol ? "$" : "")\(body)"
     }
 
     static func roundToNearestDollar(_ cents: Int) -> Int {

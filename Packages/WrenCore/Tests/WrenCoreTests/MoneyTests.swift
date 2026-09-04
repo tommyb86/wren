@@ -93,6 +93,14 @@ final class MoneyTests: XCTestCase {
         XCTAssertEqual(Money.plainFormat(cents: 5, showsCents: true), "$0.05")
         XCTAssertEqual(Money.plainFormat(cents: 12_000, showsCents: false), "$120")
         XCTAssertEqual(Money.plainFormat(cents: -1_240, showsCents: true), "-$12.40")
+
+        // Seeding a field that draws its own sign: the symbol has to come off,
+        // and the minus has to stay on.
+        XCTAssertEqual(Money.plainFormat(cents: 118_307, showsSymbol: false), "1183.07")
+        XCTAssertEqual(Money.plainFormat(cents: -1_240, showsSymbol: false), "-12.40")
+        XCTAssertEqual(Money.plainFormat(cents: 12_000, showsCents: false, showsSymbol: false), "120")
+        // A round trip has to survive, or editing an amount would corrupt it.
+        XCTAssertEqual(Money.parse(Money.plainFormat(cents: 118_307, showsSymbol: false)), 118_307)
     }
 
     func testFormatProducesSomethingContainingTheAmount() {
