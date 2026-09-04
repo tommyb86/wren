@@ -6,8 +6,8 @@ import WrenCore
 /// A line rather than bars: bars invite comparison between discrete things,
 /// a line says "this is one thing changing", which is the question being asked.
 /// Single series, so no legend — the section title names it. The expected
-/// amount sits behind as a recessive reference line, so over and under read at
-/// a glance without spending a second colour.
+/// amount sits behind as a dashed reference line, so over and under read at a
+/// glance without spending a second colour.
 ///
 /// Deliberately no fitted trendline, and the title never says "trend": see
 /// `PaymentTrend` for why a regression here would mislead.
@@ -74,7 +74,7 @@ struct PaymentTrendChart: View {
             path.move(to: CGPoint(x: 0, y: position))
             path.addLine(to: CGPoint(x: width, y: position))
         }
-        .stroke(Color.wren.divider, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
+        .stroke(Color.wren.textSecondary, style: StrokeStyle(lineWidth: 1, dash: [3, 3]))
     }
 
     private func connectingLine(width: CGFloat, height: CGFloat) -> some View {
@@ -88,29 +88,33 @@ struct PaymentTrendChart: View {
                 }
             }
         }
-        .stroke(Color.wren.accent, style: StrokeStyle(lineWidth: 2, lineCap: .round, lineJoin: .round))
+        .stroke(Color.wren.textPrimary, style: StrokeStyle(lineWidth: 2, lineCap: .square, lineJoin: .miter))
     }
 
+    /// Square marks, matching the tick boxes and lid swatches elsewhere. Solid
+    /// ink normally, hollow for an outlier, lime when selected.
     private func markers(width: CGFloat, height: CGFloat) -> some View {
         ForEach(Array(trend.points.enumerated()), id: \.element.id) { index, point in
             let isSelected = selection?.id == point.id
+            let size = isSelected ? markerSize + 3 : markerSize
 
-            Circle()
-                .fill(point.isOutlier ? Color.wren.surface : Color.wren.accent)
-                .overlay(
-                    Circle().strokeBorder(Color.wren.accent, lineWidth: point.isOutlier ? 2 : 0)
-                )
-                // A 2px surface ring keeps overlapping marks legible.
-                .overlay(
-                    Circle().strokeBorder(Color.wren.surface, lineWidth: isSelected ? 0 : 2).blendMode(.destinationOver)
-                )
-                .frame(width: isSelected ? markerSize + 4 : markerSize,
-                       height: isSelected ? markerSize + 4 : markerSize)
+            Rectangle()
+                .fill(markerFill(point: point, isSelected: isSelected))
+                .frame(width: size, height: size)
+                .overlay(Rectangle().strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border))
+                // A surface ring keeps overlapping marks legible.
+                .padding(2)
+                .background(Color.wren.surface)
                 .position(x: x(for: index, in: width), y: y(for: point.amountCents, in: height))
         }
     }
 
-    /// Hit targets are the full column, not the 9pt dot.
+    private func markerFill(point: TrendPoint, isSelected: Bool) -> Color {
+        if isSelected { return .wren.highlight }
+        return point.isOutlier ? .wren.surface : .wren.textPrimary
+    }
+
+    /// Hit targets are the full column, not the 9pt mark.
     private func hitTargets(width: CGFloat, height: CGFloat) -> some View {
         HStack(spacing: 0) {
             ForEach(trend.points) { point in
@@ -141,20 +145,20 @@ struct PaymentTrendChart: View {
             if let highlighted {
                 HStack(spacing: Space.xs) {
                     Text(Money.format(cents: highlighted.amountCents))
-                        .font(.caption.weight(.medium))
+                        .font(WrenFont.detail)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textPrimary)
                     Text(highlighted.dueDate.formatted(.dateTime.day().month().year()))
-                        .font(.caption)
+                        .font(.caption2.weight(.medium))
                         .foregroundStyle(Color.wren.textSecondary)
                     if selection == nil {
                         Text("· latest")
-                            .font(.caption)
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(Color.wren.textSecondary)
                     }
-                    Spacer()
+                    Spacer(minLength: Space.xs)
                     Text("median \(Money.formatWholeDollars(cents: trend.medianCents))")
-                        .font(.caption)
+                        .font(.caption2.weight(.medium))
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textSecondary)
                 }
@@ -164,7 +168,7 @@ struct PaymentTrendChart: View {
                 // Naming the likely cause, because in a short series an outlier
                 // is more often a misfiled payment than a real spike.
                 Text("Well off the median — worth checking it belongs to this bill.")
-                    .font(.caption2)
+                    .font(.caption2.weight(.medium))
                     .foregroundStyle(Color.wren.alert)
             }
         }

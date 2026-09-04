@@ -95,33 +95,74 @@ struct WrenCompactButtonStyle: ButtonStyle {
     }
 }
 
-/// A square tick box with a hard shadow. `isOn` fills it lime; the hit area
-/// is the full 44pt whatever the box draws at.
+/// A square tick box as a readout. No shadow, because a shadow in this look
+/// means "you can press this" — see `WrenCheckbox` for the control.
+struct WrenTickBox: View {
+    enum Fill {
+        case empty
+        /// Settled, but not verified — an assumed direct debit.
+        case assumed
+        case done
+    }
+
+    var fill: Fill
+    var size: CGFloat = 22
+
+    var body: some View {
+        RoundedRectangle(cornerRadius: 2, style: .continuous)
+            .fill(fill == .done ? Color.wren.highlight : Color.wren.surface)
+            .frame(width: size, height: size)
+            .overlay(
+                RoundedRectangle(cornerRadius: 2, style: .continuous)
+                    .strokeBorder(
+                        fill == .assumed ? Color.wren.textSecondary : Color.wren.textPrimary,
+                        lineWidth: Stroke.border
+                    )
+            )
+            .overlay {
+                if fill != .empty {
+                    Image(systemName: "checkmark")
+                        .font(.system(size: size * 0.55, weight: .black))
+                        .foregroundStyle(fill == .done ? Color.wren.onHighlight : Color.wren.textSecondary)
+                }
+            }
+    }
+}
+
+/// The tick box as a control: a hard shadow marks it pressable, and the hit
+/// area is the full 44pt whatever the box draws at.
 struct WrenCheckbox: View {
     var isOn: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                .fill(isOn ? Color.wren.highlight : Color.wren.surface)
-                .frame(width: 24, height: 24)
-                .overlay(
-                    RoundedRectangle(cornerRadius: 2, style: .continuous)
-                        .strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
-                )
-                .overlay {
-                    if isOn {
-                        Image(systemName: "checkmark")
-                            .font(.system(size: 13, weight: .black))
-                            .foregroundStyle(Color.wren.onHighlight)
-                    }
-                }
+            WrenTickBox(fill: isOn ? .done : .empty, size: 24)
                 .wrenHardShadow(radius: 2)
                 .frame(width: 44, height: 44)
                 .contentShape(.rect)
         }
         .buttonStyle(.plain)
+    }
+}
+
+/// A bordered meter: ink fill in an ink-ruled track. Magnitude by length only,
+/// so it never needs a second colour.
+struct WrenMeter: View {
+    /// 0...1.
+    let fraction: Double
+    var height: CGFloat = 8
+
+    var body: some View {
+        GeometryReader { geometry in
+            Rectangle()
+                .fill(Color.wren.textPrimary)
+                .frame(width: max(geometry.size.width * min(max(fraction, 0), 1), 2))
+        }
+        .frame(height: height)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(Color.wren.background)
+        .overlay(Rectangle().strokeBorder(Color.wren.textPrimary, lineWidth: 1))
     }
 }
 

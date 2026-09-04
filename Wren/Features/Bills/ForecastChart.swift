@@ -5,10 +5,9 @@ import WrenCore
 /// visible before they arrive.
 ///
 /// One measure over time, so: bars, one axis, a single series and therefore no
-/// legend (the title names it). Magnitude is carried by height alone. Colouring
-/// the expensive months differently would both encode by rank and spend the
-/// terracotta that this app reserves for overdue, so instead the average sits
-/// behind the bars as a recessive reference line.
+/// legend (the title names it). Magnitude is carried by height alone. Bars are
+/// solid ink with square ends; lime marks the selected month only, which is
+/// the same rule the rest of the app follows — lime means you pressed it.
 @MainActor
 struct ForecastChart: View {
     let months: [ForecastMonth]
@@ -35,24 +34,34 @@ struct ForecastChart: View {
 
     private var plot: some View {
         ZStack(alignment: .bottom) {
-            // Reference line, deliberately recessive.
+            // Reference line, dashed so it reads as an annotation rather than
+            // as data.
             if averageCents > 0 {
                 VStack(spacing: 0) {
                     Spacer()
-                    Rectangle()
-                        .fill(Color.wren.divider)
+                    DashedRule()
+                        .stroke(
+                            Color.wren.textSecondary,
+                            style: StrokeStyle(lineWidth: 1, dash: [3, 3])
+                        )
                         .frame(height: 1)
                         .padding(.bottom, plotHeight * CGFloat(averageCents) / CGFloat(maxCents))
                 }
             }
 
-            HStack(alignment: .bottom, spacing: 2) { // 2px surface gap between bars
+            HStack(alignment: .bottom, spacing: 2) {
                 ForEach(months) { month in
                     bar(month)
                 }
             }
         }
         .frame(height: plotHeight)
+        // The baseline is a real rule, not an implied one.
+        .overlay(alignment: .bottom) {
+            Rectangle()
+                .fill(Color.wren.textPrimary)
+                .frame(height: Stroke.border)
+        }
     }
 
     private func bar(_ month: ForecastMonth) -> some View {
@@ -61,10 +70,14 @@ struct ForecastChart: View {
 
         return VStack(spacing: 0) {
             Spacer(minLength: 0)
-            // 4px rounded data-end, anchored square to the baseline.
-            UnevenRoundedRectangle(topLeadingRadius: 4, topTrailingRadius: 4)
-                .fill(Color.wren.accent.opacity(isSelected ? 1 : 0.72))
+            Rectangle()
+                .fill(isSelected ? Color.wren.highlight : Color.wren.textPrimary)
                 .frame(height: max(height, month.totalCents > 0 ? 2 : 0))
+                .overlay {
+                    if isSelected {
+                        Rectangle().strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
+                    }
+                }
         }
         .frame(maxWidth: .infinity)
         .frame(height: plotHeight)
@@ -83,14 +96,11 @@ struct ForecastChart: View {
     private var axis: some View {
         HStack(spacing: 2) {
             ForEach(months) { month in
+                let isSelected = selection?.monthStart == month.monthStart
                 Text(monthInitial(month.monthStart))
-                    .font(.caption2)
+                    .font(.caption2.weight(isSelected ? .black : .medium))
                     .monospacedDigit()
-                    .foregroundStyle(
-                        selection?.monthStart == month.monthStart
-                            ? Color.wren.textPrimary
-                            : Color.wren.textSecondary
-                    )
+                    .foregroundStyle(isSelected ? Color.wren.textPrimary : Color.wren.textSecondary)
                     .frame(maxWidth: .infinity)
             }
         }
@@ -105,21 +115,21 @@ struct ForecastChart: View {
             if let highlighted {
                 HStack(spacing: Space.xs) {
                     Text(highlighted.monthStart.formatted(.dateTime.month(.wide).year()))
-                        .font(.caption.weight(.medium))
+                        .font(WrenFont.detail)
                         .foregroundStyle(Color.wren.textPrimary)
                     Text(Money.format(cents: highlighted.totalCents))
-                        .font(.caption)
+                        .font(WrenFont.detail)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textPrimary)
                     if selection == nil {
                         Text("· highest")
-                            .font(.caption)
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(Color.wren.textSecondary)
                     }
-                    Spacer()
+                    Spacer(minLength: Space.xs)
                     if averageCents > 0 {
                         Text("avg \(Money.formatWholeDollars(cents: averageCents))")
-                            .font(.caption)
+                            .font(.caption2.weight(.medium))
                             .monospacedDigit()
                             .foregroundStyle(Color.wren.textSecondary)
                     }
@@ -132,5 +142,16 @@ struct ForecastChart: View {
         let symbols = calendar.veryShortMonthSymbols
         let index = calendar.component(.month, from: date) - 1
         return symbols.indices.contains(index) ? symbols[index] : "?"
+    }
+}
+
+/// A horizontal rule that can carry a dash pattern. `Rectangle` cannot, since a
+/// filled shape has no stroke to dash.
+private struct DashedRule: Shape {
+    func path(in rect: CGRect) -> Path {
+        Path { path in
+            path.move(to: CGPoint(x: 0, y: rect.midY))
+            path.addLine(to: CGPoint(x: rect.width, y: rect.midY))
+        }
     }
 }

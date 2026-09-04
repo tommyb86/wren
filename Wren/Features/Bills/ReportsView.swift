@@ -27,6 +27,8 @@ struct ReportsView: View {
                     Text("Add a bill and the reports fill in.")
                         .font(.subheadline)
                         .foregroundStyle(Color.wren.textSecondary)
+                        .padding(.vertical, Space.xs)
+                        .wrenRow(first: true, last: true)
                 }
             } else {
                 commitmentSection
@@ -37,9 +39,7 @@ struct ReportsView: View {
                 exportSection
             }
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(Color.wren.background)
+        .wrenListStyle()
         .navigationTitle("Reports")
         .sheet(item: Binding(
             get: { exportText.map(ExportPayload.init) },
@@ -52,24 +52,32 @@ struct ReportsView: View {
     // MARK: - Headline
 
     private var commitmentSection: some View {
-        Section {
-            VStack(alignment: .leading, spacing: Space.xs) {
+        let stats = [
+            ("Annual", Money.format(cents: BillReports.annualCommitmentCents(specs))),
+            ("Weekly", Money.format(cents: weeklyCents))
+        ]
+
+        return Section {
+            VStack(alignment: .leading, spacing: 2) {
                 Text(Money.format(cents: BillReports.monthlyCommitmentCents(specs)))
                     .font(WrenFont.title)
                     .monospacedDigit()
                     .foregroundStyle(Color.wren.textPrimary)
                 Text("a month")
-                    .font(.subheadline)
+                    .font(.caption.weight(.medium))
                     .foregroundStyle(Color.wren.textSecondary)
             }
             .padding(.vertical, Space.xs)
+            .wrenRow(first: true)
 
-            row("Annual", Money.format(cents: BillReports.annualCommitmentCents(specs)))
-            row("Weekly", Money.format(cents: weeklyCents))
+            ForEach(Array(stats.enumerated()), id: \.offset) { index, stat in
+                WrenStatRow(label: stat.0, value: stat.1)
+                    .wrenRow(last: index == stats.count - 1)
+            }
         } header: {
-            Text("Monthly commitment")
+            WrenListHeader(text: "Monthly commitment")
         } footer: {
-            Text("Every bill converted to a monthly equivalent. A quarterly bill counts as a third of itself each month, so this is what the household costs on average — not what lands this month.")
+            WrenListFooter(text: "Every bill converted to a monthly equivalent. A quarterly bill counts as a third of itself each month, so this is what the household costs on average — not what lands this month.")
         }
     }
 
@@ -89,63 +97,63 @@ struct ReportsView: View {
             calendar: calendar
         )
 
+        var stats: [(String, String, Bool)] = [
+            ("Due", Money.format(cents: summary.dueCents), false),
+            ("Recorded", Money.format(cents: summary.recordedCents), false)
+        ]
+        // Never folded into "Recorded": an assumed direct debit is not a
+        // verified figure, and presenting it as one would be a lie.
+        if summary.assumedCents > 0 {
+            stats.append(("Assumed paid", Money.format(cents: summary.assumedCents), false))
+        }
+        stats.append(("Outstanding", Money.format(cents: summary.outstandingCents), true))
+
         return Section {
-            row("Due", Money.format(cents: summary.dueCents))
-            row("Recorded", Money.format(cents: summary.recordedCents))
-            if summary.assumedCents > 0 {
-                // Never folded into "Recorded": an assumed direct debit is not a
-                // verified figure, and presenting it as one would be a lie.
-                row("Assumed paid", Money.format(cents: summary.assumedCents))
-            }
-            HStack {
-                Text("Outstanding")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.wren.textSecondary)
-                Spacer()
-                Text(Money.format(cents: summary.outstandingCents))
-                    .font(.subheadline.weight(.medium))
-                    .monospacedDigit()
-                    .foregroundStyle(Color.wren.textPrimary)
+            ForEach(Array(stats.enumerated()), id: \.offset) { index, stat in
+                WrenStatRow(label: stat.0, value: stat.1, emphasised: stat.2)
+                    .wrenRow(first: index == 0, last: summary.occurrences.isEmpty && index == stats.count - 1)
             }
 
-            ForEach(summary.occurrences) { occurrence in
-                HStack {
-                    // A dashed tick for assumed: settled, but not verified.
-                    Image(systemName: settlementSymbol(occurrence))
-                        .font(.caption)
-                        .foregroundStyle(occurrence.isSettled ? Color.wren.accent : Color.wren.textSecondary)
-                    VStack(alignment: .leading, spacing: 1) {
-                        Text(occurrence.label)
-                            .font(.caption.weight(.medium))
-                            .foregroundStyle(Color.wren.textPrimary)
-                        Text(settlementDetail(occurrence))
-                            .font(.caption2)
-                            .foregroundStyle(Color.wren.textSecondary)
-                    }
-                    Spacer()
-                    Text(Money.format(cents: occurrence.recordedCents ?? occurrence.expectedCents))
-                        .font(.caption)
-                        .monospacedDigit()
-                        .foregroundStyle(Color.wren.textSecondary)
-                }
-            }
-
-            if !summary.needsAmountRecorded.isEmpty {
-                let count = summary.needsAmountRecorded.count
-                Text("\(count) variable bill\(count == 1 ? "" : "s") went out automatically without a recorded amount. Entering the real figures keeps the trend meaningful.")
-                    .font(.caption)
-                    .foregroundStyle(Color.wren.textSecondary)
+            ForEach(Array(summary.occurrences.enumerated()), id: \.element.id) { index, occurrence in
+                occurrenceRow(occurrence)
+                    .wrenRow(last: index == summary.occurrences.count - 1)
             }
         } header: {
-            Text(Date().formatted(.dateTime.month(.wide).year()))
+            WrenListHeader(text: Date().formatted(.dateTime.month(.wide).year()))
+        } footer: {
+            if !summary.needsAmountRecorded.isEmpty {
+                let count = summary.needsAmountRecorded.count
+                WrenListFooter(text: "\(count) variable bill\(count == 1 ? "" : "s") went out automatically without a recorded amount. Entering the real figures keeps the trend meaningful.")
+            }
         }
     }
 
-    private func settlementSymbol(_ occurrence: BillOccurrence) -> String {
+    private func occurrenceRow(_ occurrence: BillOccurrence) -> some View {
+        HStack(spacing: Space.m) {
+            WrenTickBox(fill: settlementFill(occurrence), size: 18)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(occurrence.label)
+                    .font(WrenFont.detail)
+                    .foregroundStyle(Color.wren.textPrimary)
+                Text(settlementDetail(occurrence))
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            Spacer(minLength: Space.s)
+            Text(Money.format(cents: occurrence.recordedCents ?? occurrence.expectedCents))
+                .font(WrenFont.detail)
+                .monospacedDigit()
+                .foregroundStyle(Color.wren.textSecondary)
+        }
+        .padding(.vertical, 2)
+    }
+
+    /// A greyed tick for assumed: settled, but not verified.
+    private func settlementFill(_ occurrence: BillOccurrence) -> WrenTickBox.Fill {
         switch occurrence.settlement {
-        case .recorded: return "checkmark.circle.fill"
-        case .assumed: return "checkmark.circle.dotted"
-        case .outstanding: return "circle"
+        case .recorded: return .done
+        case .assumed: return .assumed
+        case .outstanding: return .empty
         }
     }
 
@@ -164,35 +172,40 @@ struct ReportsView: View {
     // MARK: - Forecast
 
     private var forecastSection: some View {
-        Section {
+        let selected = selectedForecastMonth
+
+        return Section {
             ForecastChart(months: forecast, calendar: calendar, selection: $selectedForecastMonth)
                 .padding(.vertical, Space.s)
+                .wrenRow(first: true, last: selected == nil)
 
             // Tapping a bar reveals that month's bills — the table view behind
             // the chart, rather than a tooltip that can't exist on a phone.
-            if let selected = selectedForecastMonth {
-                ForEach(selected.occurrences) { occurrence in
-                    HStack {
+            if let selected {
+                ForEach(Array(selected.occurrences.enumerated()), id: \.element.id) { index, occurrence in
+                    HStack(spacing: Space.m) {
                         Text(occurrence.label)
-                            .font(.caption)
+                            .font(WrenFont.detail)
                             .foregroundStyle(Color.wren.textPrimary)
-                        Spacer()
+                        Spacer(minLength: Space.s)
                         Text(occurrence.dueDate.formatted(.dateTime.day().month()))
-                            .font(.caption2)
+                            .font(.caption2.weight(.medium))
                             .foregroundStyle(Color.wren.textSecondary)
                         Text(Money.format(cents: occurrence.expectedCents))
-                            .font(.caption)
+                            .font(WrenFont.detail)
                             .monospacedDigit()
                             .foregroundStyle(Color.wren.textPrimary)
                     }
+                    .padding(.vertical, 2)
+                    .wrenRow(last: index == selected.occurrences.count - 1)
                 }
             }
         } header: {
-            Text("Next 12 months")
+            WrenListHeader(text: "Next 12 months")
         } footer: {
-            Text(selectedForecastMonth == nil
-                 ? "Tap a month to see what falls in it. The line is the 12-month average."
-                 : "The line is the 12-month average.")
+            WrenListFooter(text: selected == nil
+                           ? "Tap a month to see what falls in it. The line is the 12-month average."
+                           : "The line is the 12-month average.")
         }
     }
 
@@ -203,34 +216,30 @@ struct ReportsView: View {
         let maxMonthly = max(totals.map(\.monthlyCents).max() ?? 0, 1)
 
         return Section {
-            ForEach(totals) { total in
-                VStack(alignment: .leading, spacing: Space.xs) {
-                    HStack {
+            ForEach(Array(totals.enumerated()), id: \.element.id) { index, total in
+                VStack(alignment: .leading, spacing: Space.s) {
+                    HStack(spacing: Space.m) {
                         Text(total.category)
-                            .font(.subheadline.weight(.medium))
+                            .font(WrenFont.value)
                             .foregroundStyle(Color.wren.textPrimary)
-                        Spacer()
+                        Spacer(minLength: Space.s)
                         Text(Money.format(cents: total.monthlyCents))
-                            .font(.subheadline)
+                            .font(WrenFont.value)
                             .monospacedDigit()
                             .foregroundStyle(Color.wren.textPrimary)
                     }
-                    // A bar per category: same single-series encoding as the
+                    // A meter per category: same single-series encoding as the
                     // forecast, magnitude by length only.
-                    GeometryReader { geometry in
-                        RoundedRectangle(cornerRadius: 2)
-                            .fill(Color.wren.accent.opacity(0.72))
-                            .frame(width: geometry.size.width * CGFloat(total.monthlyCents) / CGFloat(maxMonthly))
-                    }
-                    .frame(height: 4)
+                    WrenMeter(fraction: Double(total.monthlyCents) / Double(maxMonthly))
                     Text("\(total.billCount) bill\(total.billCount == 1 ? "" : "s") · \(Money.formatWholeDollars(cents: total.annualCents)) a year")
-                        .font(.caption2)
+                        .font(.caption2.weight(.medium))
                         .foregroundStyle(Color.wren.textSecondary)
                 }
                 .padding(.vertical, Space.xs)
+                .wrenRow(first: index == 0, last: index == totals.count - 1)
             }
         } header: {
-            Text("By category")
+            WrenListHeader(text: "By category")
         }
     }
 
@@ -240,7 +249,7 @@ struct ReportsView: View {
         let variances = BillReports.variances(bills: specs, payments: payments)
         // Owner-qualified, so two bills sharing a name do not collide here either.
         let labels = Dictionary(uniqueKeysWithValues: specs.map {
-            ($0.id, $0.paidBy.isEmpty ? $0.name : "($0.name) · ($0.paidBy)")
+            ($0.id, $0.paidBy.isEmpty ? $0.name : "\($0.name) · \($0.paidBy)")
         })
 
         return Group {
@@ -249,32 +258,36 @@ struct ReportsView: View {
                     Text("Record what you actually pay and the difference from the expected amount shows up here.")
                         .font(.subheadline)
                         .foregroundStyle(Color.wren.textSecondary)
+                        .padding(.vertical, Space.xs)
+                        .wrenRow(first: true, last: true)
                 } header: {
-                    Text("Expected vs actual")
+                    WrenListHeader(text: "Expected vs actual")
                 }
             } else {
                 Section {
-                    ForEach(variances, id: \.billID) { variance in
-                        HStack {
+                    ForEach(Array(variances.enumerated()), id: \.element.billID) { index, variance in
+                        HStack(spacing: Space.m) {
                             VStack(alignment: .leading, spacing: 1) {
                                 Text(labels[variance.billID] ?? "Unknown")
-                                    .font(.subheadline.weight(.medium))
+                                    .font(WrenFont.value)
                                     .foregroundStyle(Color.wren.textPrimary)
                                 Text("\(variance.paymentCount) payment\(variance.paymentCount == 1 ? "" : "s")")
-                                    .font(.caption2)
+                                    .font(.caption2.weight(.medium))
                                     .foregroundStyle(Color.wren.textSecondary)
                             }
-                            Spacer()
+                            Spacer(minLength: Space.s)
                             Text(differenceLabel(variance))
-                                .font(.subheadline.weight(.medium))
+                                .font(WrenFont.value)
                                 .monospacedDigit()
-                                .foregroundStyle(variance.differenceCents > 0 ? Color.wren.alert : Color.wren.accent)
+                                .foregroundStyle(variance.differenceCents > 0 ? Color.wren.alert : Color.wren.textPrimary)
                         }
+                        .padding(.vertical, Space.xs)
+                        .wrenRow(first: index == 0, last: index == variances.count - 1)
                     }
                 } header: {
-                    Text("Expected vs actual")
+                    WrenListHeader(text: "Expected vs actual")
                 } footer: {
-                    Text("Worst overspend first. Positive means it cost more than the expected amount on the bill.")
+                    WrenListFooter(text: "Worst overspend first. Positive means it cost more than the expected amount on the bill.")
                 }
             }
         }
@@ -288,35 +301,36 @@ struct ReportsView: View {
     // MARK: - Export
 
     private var exportSection: some View {
-        Section {
-            Button("Bills and monthly equivalents") {
-                exportText = BillCSV.bills(specs)
-            }
-            Button("Payment history") {
-                exportText = BillCSV.payments(specs, payments: payments)
-            }
-            Button("12-month forecast") {
-                exportText = BillCSV.forecast(forecast)
+        let exports: [(String, () -> String)] = [
+            ("Bills and monthly equivalents", { BillCSV.bills(specs) }),
+            ("Payment history", { BillCSV.payments(specs, payments: payments) }),
+            ("12-month forecast", { BillCSV.forecast(forecast) })
+        ]
+
+        return Section {
+            ForEach(Array(exports.enumerated()), id: \.offset) { index, export in
+                Button {
+                    exportText = export.1()
+                } label: {
+                    HStack(spacing: Space.m) {
+                        Text(export.0)
+                            .font(WrenFont.value)
+                            .foregroundStyle(Color.wren.textPrimary)
+                        Spacer(minLength: Space.s)
+                        Image(systemName: "square.and.arrow.up")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(Color.wren.textPrimary)
+                    }
+                    .padding(.vertical, Space.xs)
+                    .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .wrenRow(first: index == 0, last: index == exports.count - 1)
             }
         } header: {
-            Text("Export CSV")
+            WrenListHeader(text: "Export CSV")
         } footer: {
-            Text("Opens the share sheet. Amounts are plain decimals for spreadsheets.")
-        }
-        .font(.subheadline.weight(.medium))
-        .foregroundStyle(Color.wren.accent)
-    }
-
-    private func row(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(Color.wren.textSecondary)
-            Spacer()
-            Text(value)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundStyle(Color.wren.textPrimary)
+            WrenListFooter(text: "Opens the share sheet. Amounts are plain decimals for spreadsheets.")
         }
     }
 }

@@ -89,6 +89,47 @@ struct WrenListHeader: View {
     }
 }
 
+/// Explanatory prose under a section box. Sits on the paper, outside the
+/// border, because it is commentary rather than content.
+struct WrenListFooter: View {
+    let text: String
+
+    var body: some View {
+        Text(text)
+            .font(.caption)
+            .foregroundStyle(Color.wren.textSecondary)
+            .padding(.horizontal, Space.l)
+            .padding(.top, Space.s)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.wren.background)
+            .listRowInsets(EdgeInsets())
+            .textCase(nil)
+    }
+}
+
+/// A label and its figure: the standard row inside a bordered stat box.
+struct WrenStatRow: View {
+    let label: String
+    let value: String
+    var valueColor: Color = .wren.textPrimary
+    /// The line the section is really about, e.g. what's still outstanding.
+    var emphasised: Bool = false
+
+    var body: some View {
+        HStack(alignment: .firstTextBaseline, spacing: Space.m) {
+            Text(label)
+                .font(emphasised ? WrenFont.value : .subheadline.weight(.medium))
+                .foregroundStyle(emphasised ? Color.wren.textPrimary : Color.wren.textSecondary)
+            Spacer(minLength: Space.s)
+            Text(value)
+                .font(WrenFont.value)
+                .monospacedDigit()
+                .foregroundStyle(valueColor)
+        }
+        .padding(.vertical, Space.xs)
+    }
+}
+
 /// The navigation-bar action as a small lime block.
 struct WrenToolbarIcon: View {
     let systemName: String

@@ -43,9 +43,7 @@ struct BillDetailView: View {
             }
             historySection
         }
-        .listStyle(.insetGrouped)
-        .scrollContentBackground(.hidden)
-        .background(Color.wren.background)
+        .wrenListStyle()
         .navigationTitle(bill.name.isEmpty ? "Bill" : bill.name)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
@@ -54,8 +52,9 @@ struct BillDetailView: View {
                     Button("Record a payment") { isRecordingPayment = true }
                     Button("Edit bill") { isEditing = true }
                 } label: {
-                    Image(systemName: "ellipsis.circle")
+                    WrenToolbarIcon(systemName: "ellipsis")
                 }
+                .accessibilityLabel("Bill actions")
             }
         }
         .sheet(isPresented: $isRecordingPayment) {
@@ -67,30 +66,38 @@ struct BillDetailView: View {
     }
 
     private var summarySection: some View {
-        Section {
-            row("Amount", Money.format(cents: bill.amountCents)
-                + (bill.isVariableAmount ? " (est.)" : ""))
-            if let schedule = bill.schedule {
-                row("Cadence", BillingPeriod.cadenceDescription(schedule).capitalized)
+        var stats: [(String, String)] = [
+            ("Amount", Money.format(cents: bill.amountCents) + (bill.isVariableAmount ? " (est.)" : ""))
+        ]
+        if let schedule = bill.schedule {
+            stats.append(("Cadence", BillingPeriod.cadenceDescription(schedule).capitalized))
+        }
+        stats.append(("Monthly equivalent", Money.format(cents: bill.monthlyEquivalentCents)))
+        stats.append(("Annual", Money.format(cents: bill.annualCents)))
+        if let next = bill.nextDue(calendar: calendar) {
+            stats.append(("Next due", next.formatted(.dateTime.weekday(.abbreviated).day().month().year())))
+        }
+        // Shown beside the estimate, never replacing it — the monthly
+        // commitment is meant to be a stable figure, not one that drifts as
+        // history accumulates.
+        if let average = BillReports.recordedAverageCents(billID: bill.billID, payments: bill.paymentRecords) {
+            stats.append(("Recorded average", Money.format(cents: average)))
+        }
+        if !bill.category.isEmpty { stats.append(("Category", bill.category)) }
+        if !bill.paidBy.isEmpty { stats.append(("Paid by", bill.paidBy)) }
+        if bill.paysAutomatically { stats.append(("Payment", "Automatic")) }
+
+        return Section {
+            ForEach(Array(stats.enumerated()), id: \.offset) { index, stat in
+                WrenStatRow(label: stat.0, value: stat.1)
+                    .wrenRow(first: index == 0, last: index == stats.count - 1)
             }
-            row("Monthly equivalent", Money.format(cents: bill.monthlyEquivalentCents))
-            row("Annual", Money.format(cents: bill.annualCents))
-            if let next = bill.nextDue(calendar: calendar) {
-                row("Next due", next.formatted(.dateTime.weekday(.abbreviated).day().month().year()))
-            }
-            // Shown beside the estimate, never replacing it — the monthly
-            // commitment is meant to be a stable figure, not one that drifts as
-            // history accumulates.
-            if let average = BillReports.recordedAverageCents(billID: bill.billID, payments: bill.paymentRecords) {
-                row("Recorded average", Money.format(cents: average))
-            }
-            if !bill.category.isEmpty { row("Category", bill.category) }
-            if !bill.paidBy.isEmpty { row("Paid by", bill.paidBy) }
-            if bill.paysAutomatically { row("Payment", "Automatic") }
+        } header: {
+            WrenListHeader(text: bill.isActive ? "This bill" : "Paused")
         } footer: {
-            Text(bill.paysAutomatically
-                 ? "Pays automatically, so occurrences count as settled once due. Wren has no bank feed, so that's an assumption — and the amount is only ever what you record."
-                 : "Bills are informative only — Wren doesn't send reminders for them.")
+            WrenListFooter(text: bill.paysAutomatically
+                           ? "Pays automatically, so occurrences count as settled once due. Wren has no bank feed, so that's an assumption — and the amount is only ever what you record."
+                           : "Bills are informative only — Wren doesn't send reminders for them.")
         }
     }
 
@@ -103,36 +110,39 @@ struct BillDetailView: View {
                 expectedCents: bill.amountCents,
                 selection: $selectedPoint
             )
+            .wrenRow(first: true, last: true)
         } header: {
-            Text("Recorded payments")
+            WrenListHeader(text: "Recorded payments")
         } footer: {
             // Says what the picture does and does not support. Seasonal bills
             // rise and fall for reasons that have nothing to do with price.
-            Text("Dashed line is the \(Money.format(cents: bill.amountCents)) expected amount."
-                 + " Range \(Money.format(cents: current.minCents))–\(Money.format(cents: current.maxCents))."
-                 + " Seasonal bills swing on their own, so comparing the same period a year apart says more than the shape here.")
+            WrenListFooter(text: "Dashed line is the \(Money.format(cents: bill.amountCents)) expected amount."
+                           + " Range \(Money.format(cents: current.minCents))–\(Money.format(cents: current.maxCents))."
+                           + " Seasonal bills swing on their own, so comparing the same period a year apart says more than the shape here.")
         }
     }
 
     /// Expected vs actual. On a variable bill this is the whole point.
     private func varianceSection(_ variance: BillVariance) -> some View {
         Section {
-            row("Expected", Money.format(cents: variance.expectedCents))
-            row("Actually paid", Money.format(cents: variance.actualCents))
-            HStack {
-                Text("Difference")
-                    .font(.subheadline)
-                    .foregroundStyle(Color.wren.textSecondary)
-                Spacer()
-                Text(differenceLabel(variance))
-                    .font(.subheadline.weight(.medium))
-                    .monospacedDigit()
-                    // Terracotta means "costs more than you thought", which is
-                    // the one thing here worth flagging.
-                    .foregroundStyle(variance.differenceCents > 0 ? Color.wren.alert : Color.wren.accent)
-            }
+            WrenStatRow(label: "Expected", value: Money.format(cents: variance.expectedCents))
+                .wrenRow(first: true)
+            WrenStatRow(label: "Actually paid", value: Money.format(cents: variance.actualCents))
+                .wrenRow()
+            // Red means "costs more than you thought", which is the one thing
+            // here worth flagging.
+            WrenStatRow(
+                label: "Difference",
+                value: differenceLabel(variance),
+                valueColor: variance.differenceCents > 0 ? .wren.alert : .wren.textPrimary,
+                emphasised: true
+            )
+            .wrenRow(last: true)
         } header: {
-            Text("Expected vs actual — \(variance.paymentCount) payment\(variance.paymentCount == 1 ? "" : "s")")
+            WrenListHeader(
+                text: "Expected vs actual",
+                trailing: "\(variance.paymentCount) payment\(variance.paymentCount == 1 ? "" : "s")"
+            )
         }
     }
 
@@ -149,42 +159,51 @@ struct BillDetailView: View {
                 Text("No payments recorded yet. Recording what you actually pay is what makes the reports honest.")
                     .font(.subheadline)
                     .foregroundStyle(Color.wren.textSecondary)
+                    .padding(.vertical, Space.xs)
+                    .wrenRow(first: true, last: true)
             } else {
-                ForEach(history) { payment in
-                    HStack {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(Money.format(cents: payment.amountCents))
-                                .font(.subheadline.weight(.medium))
-                                .monospacedDigit()
-                                .foregroundStyle(Color.wren.textPrimary)
-                            Text("for \(payment.dueDate.formatted(.dateTime.day().month().year()))")
-                                .font(.caption)
-                                .foregroundStyle(Color.wren.textSecondary)
+                ForEach(Array(history.enumerated()), id: \.element.persistentModelID) { index, payment in
+                    paymentRow(payment)
+                        .swipeActions(edge: .trailing) {
+                            Button("Delete", role: .destructive) { delete(payment) }
+                                .tint(Color.wren.alert)
                         }
-                        Spacer()
-                        VStack(alignment: .trailing, spacing: 2) {
-                            Text(deltaLabel(payment))
-                                .font(.caption.weight(.medium))
-                                .monospacedDigit()
-                                .foregroundStyle(payment.amountCents > bill.amountCents
-                                                 ? Color.wren.alert : Color.wren.textSecondary)
-                            Text("paid \(payment.paidAt.formatted(.dateTime.day().month()))")
-                                .font(.caption2)
-                                .foregroundStyle(Color.wren.textSecondary)
-                        }
-                    }
-                    .swipeActions(edge: .trailing) {
-                        Button("Delete", role: .destructive) { delete(payment) }
-                    }
+                        .wrenRow(first: index == 0, last: index == history.count - 1)
                 }
             }
         } header: {
-            Text("Payment history")
+            WrenListHeader(text: "Payment history")
         } footer: {
             if !history.isEmpty {
-                Text("Compared against the \(Money.format(cents: bill.amountCents)) expected amount.")
+                WrenListFooter(text: "Compared against the \(Money.format(cents: bill.amountCents)) expected amount.")
             }
         }
+    }
+
+    private func paymentRow(_ payment: BillPayment) -> some View {
+        HStack(spacing: Space.m) {
+            VStack(alignment: .leading, spacing: 2) {
+                Text(Money.format(cents: payment.amountCents))
+                    .font(WrenFont.heading)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.wren.textPrimary)
+                Text("for \(payment.dueDate.formatted(.dateTime.day().month().year()))")
+                    .font(WrenFont.detail)
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            Spacer(minLength: Space.s)
+            VStack(alignment: .trailing, spacing: 2) {
+                Text(deltaLabel(payment))
+                    .font(WrenFont.detail)
+                    .monospacedDigit()
+                    .foregroundStyle(payment.amountCents > bill.amountCents
+                                     ? Color.wren.alert : Color.wren.textSecondary)
+                Text("paid \(payment.paidAt.formatted(.dateTime.day().month()))")
+                    .font(.caption2.weight(.medium))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+        }
+        .padding(.vertical, Space.xs)
     }
 
     private func deltaLabel(_ payment: BillPayment) -> String {
@@ -201,19 +220,6 @@ struct BillDetailView: View {
             try context.save()
         } catch {
             Logger.shared.error("bills", "payment delete failed: \(error.localizedDescription)")
-        }
-    }
-
-    private func row(_ label: String, _ value: String) -> some View {
-        HStack {
-            Text(label)
-                .font(.subheadline)
-                .foregroundStyle(Color.wren.textSecondary)
-            Spacer()
-            Text(value)
-                .font(.subheadline)
-                .monospacedDigit()
-                .foregroundStyle(Color.wren.textPrimary)
         }
     }
 }
