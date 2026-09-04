@@ -18,8 +18,8 @@ private struct WrenBoxModifier: ViewModifier {
 }
 
 /// The hard offset shadow that does the work a drop shadow used to: a solid
-/// block of ink behind the element, shifted down and right. Only things you
-/// can press get one, so the shadow itself reads as "tappable".
+/// block behind the element, shifted down and right. Only things you can press
+/// get one, so the shadow itself reads as "tappable".
 private struct WrenHardShadowModifier: ViewModifier {
     var radius: CGFloat
     var offset: CGFloat
@@ -28,7 +28,7 @@ private struct WrenHardShadowModifier: ViewModifier {
     func body(content: Content) -> some View {
         content.background {
             RoundedRectangle(cornerRadius: radius, style: .continuous)
-                .fill(Color.wren.textPrimary)
+                .fill(Color.wren.shadow)
                 .offset(x: isLifted ? offset : 0, y: isLifted ? offset : 0)
         }
     }

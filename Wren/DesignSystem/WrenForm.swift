@@ -265,8 +265,12 @@ struct WrenDestructiveButtonStyle: ButtonStyle {
             )
             .offset(x: configuration.isPressed ? Stroke.shadow : 0, y: configuration.isPressed ? Stroke.shadow : 0)
             .background {
+                // The shadow colour, not the alert red: a red block is just as
+                // bright as a cream one on a dark page, and one shadow colour
+                // everywhere is the simpler rule. The border and label still
+                // carry the warning.
                 RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                    .fill(Color.wren.alert)
+                    .fill(Color.wren.shadow)
                     .offset(x: configuration.isPressed ? 0 : Stroke.shadow, y: configuration.isPressed ? 0 : Stroke.shadow)
             }
             .animation(.snappy(duration: 0.12), value: configuration.isPressed)

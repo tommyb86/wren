@@ -413,6 +413,7 @@ Calm neo-brutalism: paper and ink, one lime highlight, borders instead of shadow
 | `onHighlight` | `#111111` | text on lime, both appearances |
 | `alert` | `#D93A2B` | overdue only |
 | `divider` | `#DED9CE` | hairline row rules |
+| `shadow` | `#1C1A17` | the offset block behind anything pressable |
 
 **Dark**
 
@@ -428,12 +429,17 @@ Calm neo-brutalism: paper and ink, one lime highlight, borders instead of shadow
 | `onHighlight` | `#111111` |
 | `alert` | `#FF6B5B` |
 | `divider` | `#2A2823` |
+| `shadow` | `#4A453C` |
 
 Define as colour sets in `Assets.xcassets` (hand-written `Contents.json`), expose as `Color.wren.accent`. Never a raw hex in a view.
 
 **Colour discipline:** ink and paper, lime only on things you can press or the one figure the sentence is about. Red appears *only* for overdue, so it means something when it shows up. Bin lid colours are the deliberate exception — they map to physical objects, and are drawn as bordered squares so they read as objects rather than status dots.
 
-**Line:** every box, chip and swatch has a 1.5pt ink border (`Stroke.border`), corner radius 6 on cards and 3 on chips. No drop shadows. Anything pressable gets a hard 2pt offset block of ink behind it (`.wrenHardShadow`), and pressing pushes it into that shadow. Rows separate with a 1pt `divider` rule.
+**Line:** every box, chip and swatch has a 1.5pt ink border (`Stroke.border`), corner radius 6 on cards and 3 on chips. No drop shadows. Anything pressable gets a hard 2pt offset block behind it (`.wrenHardShadow`), and pressing pushes it into that shadow. Rows separate with a 1pt `divider` rule.
+
+**Shadows are their own token, not ink.** In dark mode `surface` and `background` are both `#111111`, so a box is nothing but its border, and inverting the ink would make every shadow a bright block — a glow, not a shadow. `shadow` is therefore ink on paper and a warm grey on dark. One shadow colour everywhere, including the destructive button.
+
+**Day headers on Today are a label and a rule**, not a filled band. The band read well on paper but became the only filled shape on a dark screen.
 
 **Typography:** Space Grotesk (SIL OFL, one variable TTF in `Wren/Fonts`, registered via `UIAppFonts`) for anything that carries the look — titles, section labels, chips, row titles, tile values, the summary sentence, money headlines — always through `WrenFont` so size and Dynamic Type anchor are decided once. SF Pro for reading: body copy, editors, list subtitles. No serif anywhere. Monospaced digits on all amounts. Diagnostics reports whether the family registered, because `Font.custom` falls back silently.
 

@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #111111; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .caption { font-size: 12px; line-height: 17px; color: #B8B3A8; }
+    .optlabel { font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #FF6BAA; }
+    .btn { display: inline-flex; align-items: center; justify-content: center; height: 34px; padding: 0 14px; background: #FF6BAA; color: #111111; border: 1.5px solid #F4EFE3; border-radius: 3px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .tick { width: 26px; height: 26px; border: 1.5px solid #F4EFE3; border-radius: 2px; box-sizing: border-box; }
+    .save { display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; background: #FF6BAA; color: #111111; border: 1.5px solid #F4EFE3; border-radius: 3px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .specimen { display: flex; align-items: center; gap: 18px; padding: 16px 14px; border: 1.5px solid #2A2823; border-radius: 6px; }
+    a { color: #FF6BAA; } a:hover { color: #FF9BC6; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1320px; background: #111111; color: #F4EFE3; display: flex; flex-direction: column; gap: 26px; padding: 28px 16px 40px 16px; box-sizing: border-box;">
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-size: 20px; line-height: 26px; font-weight: 700;">Hard shadows, dark mode</div>
+    <div class="sys caption">The shadow is drawn in the ink colour, which inverts to cream on dark. A light shadow is backwards — light comes from somewhere, so the offset block should be darker than what it sits on, never brighter.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">Now</div>
+    <div class="specimen">
+      <div class="btn" style="box-shadow: 2px 2px 0 #F4EFE3;">Paid</div>
+      <div class="tick" style="box-shadow: 2px 2px 0 #F4EFE3;"></div>
+      <div class="save" style="box-shadow: 2px 2px 0 #F4EFE3;">Save</div>
+    </div>
+    <div class="sys caption">Reads as a glow or a printing misregistration rather than depth.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">A · Black shadow, both modes</div>
+    <div class="specimen">
+      <div class="btn" style="box-shadow: 2px 2px 0 #000000;">Paid</div>
+      <div class="tick" style="box-shadow: 2px 2px 0 #000000;"></div>
+      <div class="save" style="box-shadow: 2px 2px 0 #000000;">Save</div>
+    </div>
+    <div class="sys caption">Physically right and one rule for both modes. On #111 it is nearly invisible, so pressable things lose their signature in dark — the border and the fill carry it alone.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">B · Muted shadow</div>
+    <div class="specimen">
+      <div class="btn" style="box-shadow: 2px 2px 0 #4A453C;">Paid</div>
+      <div class="tick" style="box-shadow: 2px 2px 0 #4A453C;"></div>
+      <div class="save" style="box-shadow: 2px 2px 0 #4A453C;">Save</div>
+    </div>
+    <div class="sys caption">A warm grey, lighter than the page but far below the ink. Keeps the offset geometry visible without the glare. Ink stays the shadow in light mode.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">C · No shadow in dark</div>
+    <div class="specimen">
+      <div class="btn">Paid</div>
+      <div class="tick"></div>
+      <div class="save">Save</div>
+    </div>
+    <div class="sys caption">Dark mode drops the device entirely and leans on the accent fill to say "pressable". Cleanest, but the two modes stop being the same design.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">D · Shadow as a darker accent</div>
+    <div class="specimen">
+      <div class="btn" style="box-shadow: 2px 2px 0 #8A2B57;">Paid</div>
+      <div class="tick" style="box-shadow: 2px 2px 0 #8A2B57;"></div>
+      <div class="save" style="box-shadow: 2px 2px 0 #8A2B57;">Save</div>
+    </div>
+    <div class="sys caption">A deepened version of the theme colour. Ties the shadow to the accent and stays clearly a shadow. Costs a fourth colour per theme to maintain.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 6px; padding-top: 4px;">
+    <div style="font-size: 15px; font-weight: 700;">Same options in light</div>
+    <div class="sys caption">Nothing is broken in light mode, so whatever is chosen has to leave this alone. Ink shadow stays.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px; padding: 16px 14px; background: #F3F0E8; border: 1.5px solid #1C1A17; border-radius: 6px;">
+    <div style="display: flex; align-items: center; gap: 18px;">
+      <div style="display: inline-flex; align-items: center; justify-content: center; height: 34px; padding: 0 14px; background: #FF6BAA; color: #111111; border: 1.5px solid #1C1A17; border-radius: 3px; box-shadow: 2px 2px 0 #1C1A17; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Paid</div>
+      <div style="width: 26px; height: 26px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 2px; box-shadow: 2px 2px 0 #1C1A17; box-sizing: border-box;"></div>
+      <div style="display: inline-flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; background: #FF6BAA; color: #111111; border: 1.5px solid #1C1A17; border-radius: 3px; box-shadow: 2px 2px 0 #1C1A17; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Save</div>
+    </div>
+    <div class="sys" style="font-size: 12px; line-height: 17px; color: #5E5A52;">Unchanged. Ink on paper, shadow darker than the surface — the way it should be.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

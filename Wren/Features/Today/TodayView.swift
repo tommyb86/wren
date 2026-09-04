@@ -210,28 +210,27 @@ struct TodayView: View {
             }
         }
         .padding(.horizontal, Space.m)
-        .padding(.bottom, Space.s)
-        // The first band sits flush with the top of the box.
-        .padding(.top, -Space.m)
-        // Bands bleed to the box edge, so the content is clipped to the box's
-        // corners before the border goes on.
-        .clipShape(RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
+        .padding(.bottom, Space.m)
         .wrenBox()
     }
 
-    /// Each day is a solid band, ink on the box, so the eye lands on the day
-    /// before the rows. "Needs doing" is the one red band.
+    /// Each day is a label with a rule running out to the box edge, so the eye
+    /// lands on the day before the rows. A full-width filled band did the same
+    /// job but inverted to a bright slab in dark mode, where it was the only
+    /// filled shape on the screen. "Needs doing" is the one red rule.
     @ViewBuilder
     private func group(_ title: String, items: [TodayItem], isAlert: Bool = false) -> some View {
         let models = items.compactMap(rowModel)
+        let ink = isAlert ? Color.wren.alert : Color.wren.textPrimary
         if !models.isEmpty {
-            WrenSectionLabel(text: title, color: .wren.surface)
-                .padding(.horizontal, Space.m)
-                .padding(.vertical, Space.s)
-                .frame(maxWidth: .infinity, alignment: .leading)
-                .background(isAlert ? Color.wren.alert : Color.wren.textPrimary)
-                .padding(.horizontal, -Space.m)
-                .padding(.top, Space.m)
+            HStack(spacing: Space.s + 2) {
+                WrenSectionLabel(text: title, color: ink)
+                Rectangle()
+                    .fill(ink)
+                    .frame(height: Stroke.border)
+            }
+            .padding(.top, Space.l)
+            .padding(.bottom, Space.xs)
 
             ForEach(Array(models.enumerated()), id: \.element.id) { index, model in
                 if index > 0 {

@@ -18,6 +18,10 @@ struct WrenPalette {
     let accent = Color("Colors/Accent", bundle: .main)
     let alert = Color("Colors/Alert", bundle: .main)
     let divider = Color("Colors/Divider", bundle: .main)
+    /// The block behind anything pressable. Ink on paper, but a warm grey on
+    /// dark: a shadow lighter than the surface it falls on reads as a glow,
+    /// so this cannot simply be `textPrimary` inverted.
+    let shadow = Color("Colors/Shadow", bundle: .main)
 }
 
 extension Color {

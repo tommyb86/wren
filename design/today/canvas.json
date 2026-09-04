@@ -19,6 +19,10 @@
     {
       "id": "page-4",
       "name": "Editors"
+    },
+    {
+      "id": "page-5",
+      "name": "Dark fixes"
     }
   ],
   "artboards": [
@@ -183,6 +187,24 @@
       "y": 0,
       "w": 390,
       "h": 1400
+    },
+    {
+      "file": "DayHeaders.dc.html",
+      "title": "Day headers",
+      "page": "page-5",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1560
+    },
+    {
+      "file": "Shadows.dc.html",
+      "title": "Shadows",
+      "page": "page-5",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 1320
     }
   ],
   "annotations": [
@@ -353,10 +375,18 @@
       "y": -140,
       "w": 620,
       "text": "One addition worth a look: the pale-lime box after the schedule. The old editor buried the normalisation in a footer sentence. Since the whole point of a bill is what it costs a month, it gets to be a figure. Date and time stay native pickers behind those two bordered chips, because a custom date picker is a lot of surface for little gain."
+    },
+    {
+      "id": "dark-brief",
+      "page": "page-5",
+      "x": 0,
+      "y": -260,
+      "w": 950,
+      "text": "Two dark-mode problems, one root cause. In dark mode surface and background are both #111111, so a box is nothing but its border and the only filled shapes are the ones we paint in ink. That makes the cream day band the loudest thing on the screen, and it turns the hard shadow into a glow, because a shadow lighter than its surface is backwards. Options for each are stacked here against the current build, all on the Blossom accent."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-4"
+    "page": "page-5"
   }
 }
