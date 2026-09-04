@@ -30,36 +30,41 @@ struct ReceiptEditorView: View {
 
     private var isEditing: Bool { receipt != nil }
 
+    private var canSave: Bool { amountCents > 0 }
+
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 Section {
-                    TextField("Vendor", text: $vendor)
+                    WrenTextRow(label: "Vendor", text: $vendor, placeholder: "Bunnings")
+                        .wrenRow(first: true)
                     MoneyField(label: "Amount", cents: $amountCents)
-                    DatePicker("Date", selection: $date, displayedComponents: .date)
+                        .wrenRow()
+                    WrenDateRow(label: "Date", date: $date, components: .date)
+                        .wrenRow(last: true)
                 } header: {
-                    Text("Receipt")
+                    WrenListHeader(text: "Receipt")
                 } footer: {
-                    Text("Filed under \(FinancialYear.containing(date, calendar: calendar).prefixedLabel).")
+                    WrenListFooter(text: "Filed under \(FinancialYear.containing(date, calendar: calendar).prefixedLabel).")
                 }
 
                 if let suggestions, !isEditing {
                     suggestionSection(suggestions)
                 }
 
-                Section("Category") {
-                    TextField("Category", text: $category)
+                Section {
+                    WrenTextRow(label: "Category", text: $category, placeholder: "None")
+                        .wrenRow(first: true)
                     if category.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: Space.s) {
-                                ForEach(categorySuggestions, id: \.self) { suggestion in
-                                    chip(suggestion) { category = suggestion }
-                                }
-                            }
+                        WrenSuggestionRow(label: "Common ones", suggestions: categorySuggestions) {
+                            category = $0
                         }
+                        .wrenRow()
                     }
-                    TextField("Notes", text: $notes, axis: .vertical)
-                        .lineLimit(2...4)
+                    WrenTextRow(label: "Notes", text: $notes, placeholder: "Optional", isMultiline: true)
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Category")
                 }
 
                 if !currentFilenames.isEmpty {
@@ -76,31 +81,41 @@ struct ReceiptEditorView: View {
                                     .accessibilityLabel("View page \(offset + 1)")
                                 }
                             }
+                            .padding(.vertical, Space.xs)
                         }
+                        .wrenRow(first: true, last: true)
                     } header: {
-                        Text("\(currentFilenames.count) page\(currentFilenames.count == 1 ? "" : "s")")
+                        WrenListHeader(text: "\(currentFilenames.count) page\(currentFilenames.count == 1 ? "" : "s")")
                     } footer: {
-                        Text("Tap a page to read it full screen — pinch or double-tap to zoom.")
+                        WrenListFooter(text: "Tap a page to read it full screen — pinch or double-tap to zoom.")
                     }
                 }
 
                 if isEditing {
                     Section {
-                        Button("Delete receipt", role: .destructive, action: delete)
+                        Button("Delete receipt", action: delete)
+                            .buttonStyle(WrenDestructiveButtonStyle())
+                            .listRowInsets(EdgeInsets(top: Space.l, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.wren.background)
+            .wrenListStyle()
             .navigationTitle(isEditing ? "Edit receipt" : "Confirm receipt")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel", action: cancel)
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(amountCents == 0)
+                    Button(action: save) {
+                        WrenToolbarButton(title: "Save", isEnabled: canSave)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
                 }
             }
             .task { load() }
@@ -121,15 +136,19 @@ struct ReceiptEditorView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fill)
                 .frame(width: 72, height: 96)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.chip))
+                .clipShape(RoundedRectangle(cornerRadius: Radius.chip, style: .continuous))
                 .overlay(
-                    RoundedRectangle(cornerRadius: Radius.chip)
-                        .strokeBorder(Color.wren.divider, lineWidth: 1)
+                    RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                        .strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
                 )
         } else {
-            RoundedRectangle(cornerRadius: Radius.chip)
+            RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
                 .fill(Color.wren.accentSoft)
                 .frame(width: 72, height: 96)
+                .overlay(
+                    RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                        .strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
+                )
                 .overlay(
                     Image(systemName: "exclamationmark.triangle")
                         .font(.caption)
@@ -141,56 +160,50 @@ struct ReceiptEditorView: View {
     /// The parser's alternatives. Shown only for a fresh scan — once saved, the
     /// stored values are the truth and old guesses are noise.
     private func suggestionSection(_ suggestions: ReceiptSuggestions) -> some View {
-        Section {
-            if suggestions.candidateTotals.count > 1 {
-                VStack(alignment: .leading, spacing: Space.xs) {
-                    Text("Other amounts found")
-                        .font(.caption)
-                        .foregroundStyle(Color.wren.textSecondary)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: Space.s) {
-                            ForEach(suggestions.candidateTotals.prefix(8), id: \.self) { cents in
-                                chip(Money.format(cents: cents)) { amountCents = cents }
-                            }
-                        }
-                    }
-                }
-                .padding(.vertical, Space.xs)
-            }
+        let hasAmounts = suggestions.candidateTotals.count > 1
+        let hasDates = suggestions.candidateDates.count > 1
 
-            if suggestions.candidateDates.count > 1 {
-                VStack(alignment: .leading, spacing: Space.xs) {
-                    Text("Other dates found")
-                        .font(.caption)
-                        .foregroundStyle(Color.wren.textSecondary)
-                    ScrollView(.horizontal, showsIndicators: false) {
-                        HStack(spacing: Space.s) {
-                            ForEach(suggestions.candidateDates.prefix(6), id: \.self) { candidate in
-                                chip(candidate.formatted(.dateTime.day().month().year())) { date = candidate }
-                            }
-                        }
+        return Section {
+            if hasAmounts {
+                WrenSuggestionRow(
+                    label: "Other amounts found",
+                    suggestions: suggestions.candidateTotals.prefix(8).map { Money.format(cents: $0) }
+                ) { picked in
+                    // Matched back to the original cents rather than reparsed,
+                    // so a currency symbol or separator can never lose money.
+                    if let cents = suggestions.candidateTotals.first(where: { Money.format(cents: $0) == picked }) {
+                        amountCents = cents
                     }
                 }
-                .padding(.vertical, Space.xs)
+                .wrenRow(first: true, last: !hasDates)
+            }
+            if hasDates {
+                WrenSuggestionRow(
+                    label: "Other dates found",
+                    suggestions: suggestions.candidateDates.prefix(6).map { $0.formatted(.dateTime.day().month().year()) }
+                ) { picked in
+                    if let match = suggestions.candidateDates.first(where: {
+                        $0.formatted(.dateTime.day().month().year()) == picked
+                    }) {
+                        date = match
+                    }
+                }
+                .wrenRow(first: !hasAmounts, last: true)
+            }
+            if !hasAmounts, !hasDates {
+                Text("Nothing else was read from the scan.")
+                    .font(.subheadline)
+                    .foregroundStyle(Color.wren.textSecondary)
+                    .padding(.vertical, Space.xs)
+                    .wrenRow(first: true, last: true)
             }
         } header: {
-            Text("From the scan")
+            WrenListHeader(text: "From the scan")
         } footer: {
-            Text(suggestions.isEmpty
-                 ? "Nothing could be read from the scan — enter the details by hand."
-                 : "Read from the receipt, so check them. Tap an alternative to use it instead.")
+            WrenListFooter(text: suggestions.isEmpty
+                           ? "Nothing could be read from the scan — enter the details by hand."
+                           : "Read from the receipt, so check them. Tap an alternative to use it instead.")
         }
-    }
-
-    private func chip(_ label: String, action: @escaping () -> Void) -> some View {
-        Button(label, action: action)
-            .font(.caption.weight(.medium))
-            .monospacedDigit()
-            .foregroundStyle(Color.wren.accent)
-            .padding(.horizontal, Space.s)
-            .padding(.vertical, Space.xs)
-            .background(Color.wren.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip))
-            .buttonStyle(.plain)
     }
 
     private func load() {

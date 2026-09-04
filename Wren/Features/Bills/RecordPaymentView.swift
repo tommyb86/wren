@@ -33,53 +33,86 @@ struct RecordPaymentView: View {
             .sorted(by: >)
     }
 
+    private var settlesOptions: [WrenOption<Date>] {
+        candidateDueDates.map { WrenOption($0, $0.formatted(.dateTime.day().month().year())) }
+    }
+
+    private var canSave: Bool { dueDate != nil && amountCents > 0 }
+
     var body: some View {
         NavigationStack {
-            Form {
+            List {
                 Section {
                     MoneyField(label: "Amount paid", cents: $amountCents)
-                    DatePicker("Paid on", selection: $paidAt, displayedComponents: .date)
+                        .wrenRow(first: true)
+                    WrenDateRow(label: "Paid on", date: $paidAt, components: .date)
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: bill.name.isEmpty ? "Payment" : bill.name)
                 } footer: {
-                    Text(bill.isVariableAmount
-                         ? "Expected \(Money.format(cents: bill.amountCents)) — enter what the bill actually came to."
-                         : "Expected \(Money.format(cents: bill.amountCents)).")
+                    WrenListFooter(text: bill.isVariableAmount
+                                   ? "Expected \(Money.format(cents: bill.amountCents)) — enter what the bill actually came to."
+                                   : "Expected \(Money.format(cents: bill.amountCents)).")
                 }
 
                 Section {
-                    if candidateDueDates.isEmpty {
+                    if let dueDate {
+                        WrenMenuRow(
+                            label: "Settles",
+                            selection: Binding(get: { dueDate }, set: { self.dueDate = $0 }),
+                            options: settlesOptions
+                        )
+                        .wrenRow(first: true, last: true)
+                    } else {
                         Text("No unsettled occurrences found. Every recent bill already has a payment recorded.")
                             .font(.subheadline)
                             .foregroundStyle(Color.wren.textSecondary)
-                    } else {
-                        Picker("Settles", selection: $dueDate) {
-                            ForEach(candidateDueDates, id: \.self) { date in
-                                Text(date.formatted(.dateTime.day().month().year()))
-                                    .tag(Date?.some(date))
-                            }
-                        }
+                            .padding(.vertical, Space.xs)
+                            .wrenRow(first: true, last: true)
                     }
                 } header: {
-                    Text("Which bill this pays")
+                    WrenListHeader(text: "Which bill this pays")
                 } footer: {
-                    Text("Recorded against the due date it settles, not the day you paid — so the reports stay accurate when you pay late.")
+                    WrenListFooter(text: "Recorded against the due date it settles, not the day you paid — so the reports stay accurate when you pay late.")
+                }
+
+                // The difference is the thing worth seeing before saving, so it
+                // is a figure rather than something discovered later in Reports.
+                if amountCents > 0, amountCents != bill.amountCents {
+                    Section {
+                        WrenOutcomeBox(
+                            label: deltaCents > 0 ? "More than expected" : "Less than expected",
+                            value: "\(deltaCents > 0 ? "+" : "")\(Money.format(cents: deltaCents))",
+                            detail: "Expected \(Money.format(cents: bill.amountCents))"
+                        )
+                        .listRowInsets(EdgeInsets(top: Space.s, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.wren.background)
+            .wrenListStyle()
             .navigationTitle("Record payment")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(dueDate == nil || amountCents == 0)
+                    Button(action: save) {
+                        WrenToolbarButton(title: "Save", isEnabled: canSave)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
                 }
             }
             .task { load() }
         }
     }
+
+    private var deltaCents: Int { amountCents - bill.amountCents }
 
     private func load() {
         guard !didLoad else { return }

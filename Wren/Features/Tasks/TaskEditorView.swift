@@ -21,28 +21,35 @@ struct TaskEditorView: View {
     private let calendar = Calendar.current
 
     private var isEditing: Bool { task != nil }
-    private var reminderOptions: [Int] { [0, 15, 60, 24 * 60] }
+    private var canSave: Bool { !title.trimmingCharacters(in: .whitespaces).isEmpty }
+
+    private var reminderOptions: [WrenOption<Int>] {
+        [0, 15, 60, 24 * 60].map { WrenOption($0, reminderLabel($0)) }
+    }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Task") {
-                    TextField("Title", text: $title)
-                    TextField("Notes", text: $notes, axis: .vertical)
-                        .lineLimit(2...5)
+            List {
+                Section {
+                    WrenTextRow(label: "Title", text: $title, placeholder: "Iron uniforms")
+                        .wrenRow(first: true)
+                    WrenTextRow(label: "Notes", text: $notes, placeholder: "Optional", isMultiline: true)
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Task")
                 }
 
                 ScheduleEditor(draft: $draft, labels: .tasks, calendar: calendar)
 
                 Section {
-                    Picker("Remind me", selection: $reminderMinutesBefore) {
-                        ForEach(reminderOptions, id: \.self) { minutes in
-                            Text(reminderLabel(minutes)).tag(minutes)
-                        }
-                    }
-                    Toggle("Active", isOn: $isActive)
+                    WrenMenuRow(label: "Remind me", selection: $reminderMinutesBefore, options: reminderOptions)
+                        .wrenRow(first: true)
+                    WrenToggleRow(label: "Active", isOn: $isActive)
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Reminder")
                 } footer: {
-                    Text(previewFooter)
+                    WrenListFooter(text: previewFooter)
                 }
 
                 if let task, !(task.completions ?? []).isEmpty {
@@ -51,26 +58,34 @@ struct TaskEditorView: View {
 
                 if isEditing {
                     Section {
-                        Button("Delete task", role: .destructive) {
+                        Button("Delete task") {
                             if let task {
                                 TaskStore.delete(task, context: context, calendar: calendar)
                             }
                             dismiss()
                         }
+                        .buttonStyle(WrenDestructiveButtonStyle())
+                        .listRowInsets(EdgeInsets(top: Space.l, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.wren.background)
+            .wrenListStyle()
             .navigationTitle(isEditing ? "Edit task" : "Add task")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(title.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button(action: save) {
+                        WrenToolbarButton(title: "Save", isEnabled: canSave)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
                 }
             }
             .task { load() }
@@ -80,20 +95,26 @@ struct TaskEditorView: View {
     /// Recording both the due date and the tick makes "done, four days late" a
     /// visible fact rather than a lost one.
     private func history(_ task: RecurringTask) -> some View {
-        Section("History") {
-            ForEach(recentCompletions(task)) { completion in
-                HStack {
+        let completions = recentCompletions(task)
+
+        return Section {
+            ForEach(Array(completions.enumerated()), id: \.element.persistentModelID) { index, completion in
+                HStack(spacing: Space.m) {
                     Text(completion.dueDate.formatted(.dateTime.weekday(.abbreviated).day().month()))
-                        .font(.subheadline)
+                        .font(WrenFont.value)
                         .monospacedDigit()
                         .foregroundStyle(Color.wren.textPrimary)
-                    Spacer()
+                    Spacer(minLength: Space.s)
                     Text(latenessLabel(completion))
-                        .font(.caption)
+                        .font(WrenFont.detail)
                         .foregroundStyle(completion.latenessInDays(calendar: calendar) > 0
                                          ? Color.wren.alert : Color.wren.textSecondary)
                 }
+                .padding(.vertical, Space.xs)
+                .wrenRow(first: index == 0, last: index == completions.count - 1)
             }
+        } header: {
+            WrenListHeader(text: "History")
         }
     }
 

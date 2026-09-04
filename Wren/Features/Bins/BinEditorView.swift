@@ -22,80 +22,101 @@ struct BinEditorView: View {
     private let log = Logger.shared
 
     private var isEditing: Bool { bin != nil }
+    private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
 
-    private var reminderOptions: [Int] { [1, 2, 3, 12, 14, 16, 24] }
+    private var reminderOptions: [WrenOption<Int>] {
+        [1, 2, 3, 12, 14, 16, 24].map { WrenOption($0, reminderLabel($0)) }
+    }
 
     var body: some View {
         NavigationStack {
-            Form {
-                Section("Bin") {
-                    TextField("Name", text: $name)
+            List {
+                Section {
+                    WrenTextRow(label: "Name", text: $name, placeholder: "General waste")
+                        .wrenRow(first: true)
                     lidPicker
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Bin")
                 }
 
                 ScheduleEditor(draft: $draft, calendar: calendar)
 
                 Section {
-                    Picker("Remind me", selection: $reminderHoursBefore) {
-                        ForEach(reminderOptions, id: \.self) { hours in
-                            Text(reminderLabel(hours)).tag(hours)
-                        }
-                    }
-                    Toggle("Active", isOn: $isActive)
+                    WrenMenuRow(label: "Remind me", selection: $reminderHoursBefore, options: reminderOptions)
+                        .wrenRow(first: true)
+                    WrenToggleRow(label: "Active", isOn: $isActive)
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Reminder")
                 } footer: {
-                    Text(previewFooter)
+                    WrenListFooter(text: previewFooter)
                 }
 
                 if isEditing {
                     Section {
-                        Button("Delete bin", role: .destructive, action: delete)
+                        Button("Delete bin", action: delete)
+                            .buttonStyle(WrenDestructiveButtonStyle())
+                            .listRowInsets(EdgeInsets(top: Space.l, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.wren.background)
+            .wrenListStyle()
             .navigationTitle(isEditing ? "Edit bin" : "Add bin")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save).disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button(action: save) {
+                        WrenToolbarButton(title: "Save", isEnabled: canSave)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
                 }
             }
             .task { load() }
         }
     }
 
+    /// Lids are squares here like everywhere else in the app, so a colour reads
+    /// as the physical object rather than as a status dot.
     private var lidPicker: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text("Lid colour")
-                .font(.subheadline)
-                .foregroundStyle(Color.wren.textSecondary)
+            WrenFieldLabel(text: "Lid colour")
 
-            HStack(spacing: Space.m) {
+            HStack(spacing: Space.s) {
                 ForEach(BinLid.allCases) { lid in
+                    let isOn = lidHex == lid.rawValue
                     Button {
-                        lidHex = lid.rawValue
-                        if name.isEmpty { name = lid.suggestedName }
+                        withAnimation(.snappy(duration: 0.12)) {
+                            lidHex = lid.rawValue
+                            if name.isEmpty { name = lid.suggestedName }
+                        }
                     } label: {
-                        Circle()
+                        RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
                             .fill(lid.color)
-                            .frame(width: 32, height: 32)
+                            .frame(maxWidth: .infinity)
+                            .frame(height: 40)
                             .overlay(
-                                Circle().strokeBorder(
-                                    lidHex == lid.rawValue ? Color.wren.textPrimary : Color.wren.divider,
-                                    lineWidth: lidHex == lid.rawValue ? 2 : 1
-                                )
+                                RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                                    .strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
                             )
-                            .accessibilityLabel(lid.label)
+                            .wrenHardShadow(radius: Radius.chip, isLifted: isOn)
+                            .contentShape(.rect)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(lid.label)
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
                 }
             }
         }
-        .padding(.vertical, Space.xs)
+        .padding(.vertical, Space.s)
     }
 
     private var previewFooter: String {

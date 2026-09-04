@@ -25,81 +25,116 @@ struct BillEditorView: View {
 
     private var isEditing: Bool { bill != nil }
 
+    private var canSave: Bool { !name.trimmingCharacters(in: .whitespaces).isEmpty }
+
     /// Suggestions, not a closed list — the field stays free text.
     private let categorySuggestions = ["Utilities", "Insurance", "Subscriptions", "Car", "Home", "Health"]
 
     var body: some View {
         NavigationStack {
-            Form {
-                // A string title and a footer are mutually exclusive overloads,
-                // so the header goes in its own builder.
+            List {
                 Section {
-                    TextField("Name", text: $name)
-                    MoneyField(label: "Amount", cents: $amountCents)
-                    Toggle("Amount varies", isOn: $isVariableAmount)
+                    WrenTextRow(label: "Name", text: $name, placeholder: "AGL")
+                        .wrenRow(first: true)
+                    MoneyField(
+                        label: "Amount",
+                        cents: $amountCents,
+                        note: isVariableAmount ? "estimate" : nil
+                    )
+                    .wrenRow()
+                    WrenToggleRow(label: "Amount varies", isOn: $isVariableAmount)
+                        .wrenRow(last: true)
                 } header: {
-                    Text("Bill")
+                    WrenListHeader(text: "Bill")
                 } footer: {
-                    Text(isVariableAmount
-                         ? "The amount above is treated as an estimate. Recording what you actually pay is what drives the variance report."
-                         : "A fixed amount, like a subscription or a premium.")
+                    WrenListFooter(text: isVariableAmount
+                                   ? "The amount above is treated as an estimate. Recording what you actually pay is what drives the variance report."
+                                   : "A fixed amount, like a subscription or a premium.")
                 }
 
-                Section("Category") {
-                    TextField("Category", text: $category)
+                Section {
+                    WrenTextRow(label: "Category", text: $category, placeholder: "None")
+                        .wrenRow(first: true)
                     if category.isEmpty {
-                        ScrollView(.horizontal, showsIndicators: false) {
-                            HStack(spacing: Space.s) {
-                                ForEach(categorySuggestions, id: \.self) { suggestion in
-                                    Button(suggestion) { category = suggestion }
-                                        .font(.caption.weight(.medium))
-                                        .foregroundStyle(Color.wren.accent)
-                                        .padding(.horizontal, Space.s)
-                                        .padding(.vertical, Space.xs)
-                                        .background(Color.wren.accentSoft, in: RoundedRectangle(cornerRadius: Radius.chip))
-                                        .buttonStyle(.plain)
-                                }
-                            }
+                        WrenSuggestionRow(label: "Common ones", suggestions: categorySuggestions) {
+                            category = $0
                         }
+                        .wrenRow()
                     }
-                    TextField("Paid by (optional)", text: $paidBy)
+                    WrenTextRow(label: "Paid by", text: $paidBy, placeholder: "Optional")
+                        .wrenRow(last: true)
+                } header: {
+                    WrenListHeader(text: "Category")
                 }
 
                 ScheduleEditor(draft: $draft, labels: .bills, calendar: calendar)
 
-                Section {
-                    Toggle("Pays automatically", isOn: $paysAutomatically)
-                } footer: {
-                    Text(automaticFooter)
+                // The whole point of a bill is what it costs a month, so the
+                // normalisation is a figure rather than a footnote.
+                if amountCents > 0 {
+                    Section {
+                        WrenOutcomeBox(
+                            label: "Works out to",
+                            value: Money.format(cents: monthlyCents),
+                            unit: "a month",
+                            detail: "\(Money.format(cents: annualCents)) a year · \(Money.format(cents: weeklyCents)) a week"
+                        )
+                        .listRowInsets(EdgeInsets(top: Space.s, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                        .listRowBackground(Color.clear)
+                        .listRowSeparator(.hidden)
+                    }
                 }
 
                 Section {
-                    Toggle("Active", isOn: $isActive)
+                    WrenToggleRow(label: "Pays automatically", isOn: $paysAutomatically)
+                        .wrenRow(first: true)
+                    WrenToggleRow(label: "Active", isOn: $isActive)
+                        .wrenRow(last: true)
                 } footer: {
-                    Text(normalisationFooter)
+                    WrenListFooter(text: automaticFooter)
                 }
 
                 if isEditing {
                     Section {
-                        Button("Delete bill", role: .destructive, action: delete)
+                        Button("Delete bill", action: delete)
+                            .buttonStyle(WrenDestructiveButtonStyle())
+                            .listRowInsets(EdgeInsets(top: Space.l, leading: Space.l, bottom: Space.s, trailing: Space.l))
+                            .listRowBackground(Color.clear)
+                            .listRowSeparator(.hidden)
                     }
                 }
             }
-            .scrollContentBackground(.hidden)
-            .background(Color.wren.background)
+            .wrenListStyle()
             .navigationTitle(isEditing ? "Edit bill" : "Add bill")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Cancel") { dismiss() }
+                        .font(WrenFont.value)
+                        .foregroundStyle(Color.wren.textSecondary)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("Save", action: save)
-                        .disabled(name.trimmingCharacters(in: .whitespaces).isEmpty)
+                    Button(action: save) {
+                        WrenToolbarButton(title: "Save", isEnabled: canSave)
+                    }
+                    .buttonStyle(.plain)
+                    .disabled(!canSave)
                 }
             }
             .task { load() }
         }
+    }
+
+    private var monthlyCents: Int {
+        BillingPeriod.monthlyEquivalentCents(amountCents: amountCents, schedule: draft.schedule)
+    }
+
+    private var annualCents: Int {
+        BillingPeriod.annualCents(amountCents: amountCents, schedule: draft.schedule)
+    }
+
+    private var weeklyCents: Int {
+        BillingPeriod.weeklyEquivalentCents(amountCents: amountCents, schedule: draft.schedule)
     }
 
     /// States plainly what the app does and doesn't know. Wren has no bank feed,
@@ -112,19 +147,6 @@ struct BillEditorView: View {
         return isVariableAmount
             ? "Direct debit. Nothing to tick — occurrences count as settled once the due date passes. Wren can't know the real amount, so it'll keep a list of ones worth entering to preserve the trend."
             : "Direct debit. Nothing to tick — occurrences count as settled once the due date passes, valued at the expected amount. Wren can't verify it actually went out."
-    }
-
-    /// Shows the normalisation working, so the monthly figure in the reports is
-    /// never a number that appeared from nowhere.
-    private var normalisationFooter: String {
-        guard amountCents > 0 else { return "Enter an amount to see what it works out to." }
-        let schedule = draft.schedule
-        let monthly = BillingPeriod.monthlyEquivalentCents(amountCents: amountCents, schedule: schedule)
-        let annual = BillingPeriod.annualCents(amountCents: amountCents, schedule: schedule)
-
-        return "\(Money.format(cents: amountCents)) \(BillingPeriod.cadenceDescription(schedule))"
-            + " is \(Money.format(cents: monthly)) a month"
-            + " and \(Money.format(cents: annual)) a year."
     }
 
     private func load() {

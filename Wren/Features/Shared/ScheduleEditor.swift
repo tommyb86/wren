@@ -106,51 +106,58 @@ struct ScheduleEditor: View {
 
     var body: some View {
         Section {
-            Picker("Repeats", selection: $draft.frequency) {
-                Text(labels.once).tag(Schedule.Frequency.once)
-                Text("Daily").tag(Schedule.Frequency.daily)
-                Text("Weekly").tag(Schedule.Frequency.weekly)
-                Text("Monthly").tag(Schedule.Frequency.monthly)
-                Text("Yearly").tag(Schedule.Frequency.yearly)
-            }
+            WrenMenuRow(
+                label: "Repeats",
+                selection: $draft.frequency,
+                options: [
+                    WrenOption(Schedule.Frequency.once, labels.once),
+                    WrenOption(Schedule.Frequency.daily, "Daily"),
+                    WrenOption(Schedule.Frequency.weekly, "Weekly"),
+                    WrenOption(Schedule.Frequency.monthly, "Monthly"),
+                    WrenOption(Schedule.Frequency.yearly, "Yearly")
+                ]
+            )
+            .wrenRow(first: true)
 
             // A one-off has no interval and no weekday pattern, so those
             // controls would be answering questions nobody asked.
             if !isOnce {
-                Stepper(value: $draft.interval, in: 1...12) {
-                    HStack {
-                        Text("Every")
-                        Spacer()
-                        Text("\(draft.interval) \(intervalLabel)")
-                            .monospacedDigit()
-                            .foregroundStyle(Color.wren.textSecondary)
-                    }
-                }
+                WrenStepperRow(
+                    label: "Every",
+                    value: "\(draft.interval) \(intervalLabel)",
+                    amount: $draft.interval,
+                    range: 1...12
+                )
+                .wrenRow()
             }
 
             // With explicit weekdays the anchor's own date is irrelevant — only
             // its time of day is used — so the picker narrows to match.
-            DatePicker(
-                anchorLabel,
-                selection: $draft.anchorDate,
-                displayedComponents: usesWeekdays ? .hourAndMinute : [.date, .hourAndMinute]
+            WrenDateRow(
+                label: anchorLabel,
+                date: $draft.anchorDate,
+                components: usesWeekdays ? .hourAndMinute : [.date, .hourAndMinute]
             )
+            .wrenRow(last: draft.frequency != .weekly)
 
             if draft.frequency == .weekly {
                 weekdayPicker
+                    .wrenRow(last: true)
             }
         } header: {
-            Text("Schedule")
+            WrenListHeader(text: "Schedule")
         } footer: {
-            Text(draft.schedule.summary(calendar: calendar))
+            WrenListFooter(text: draft.schedule.summary(calendar: calendar))
         }
 
         // An end date is meaningless on something that happens once.
         if !isOnce {
             Section {
-                Toggle(labels.endToggle, isOn: $draft.hasEndDate)
+                WrenToggleRow(label: labels.endToggle, isOn: $draft.hasEndDate)
+                    .wrenRow(first: true, last: !draft.hasEndDate)
                 if draft.hasEndDate {
-                    DatePicker(labels.endDate, selection: $draft.endDate, displayedComponents: .date)
+                    WrenDateRow(label: labels.endDate, date: $draft.endDate, components: .date)
+                        .wrenRow(last: true)
                 }
             }
         }
@@ -163,43 +170,46 @@ struct ScheduleEditor: View {
         return usesWeekdays ? labels.timeOfDay : labels.firstOccurrence
     }
 
+    /// Seven across, lime when the day is on. Selecting none means "use the
+    /// anchor's own weekday", which the hint below spells out.
     private var weekdayPicker: some View {
         VStack(alignment: .leading, spacing: Space.s) {
-            Text(labels.daysHeader)
-                .font(.subheadline)
-                .foregroundStyle(Color.wren.textSecondary)
+            WrenFieldLabel(text: labels.daysHeader)
 
-            HStack(spacing: Space.xs) {
+            HStack(spacing: 5) {
                 ForEach(orderedWeekdays, id: \.self) { weekday in
                     let isOn = draft.weekdays.contains(weekday)
                     Button {
-                        if isOn {
-                            draft.weekdays.remove(weekday)
-                        } else {
-                            draft.weekdays.insert(weekday)
+                        withAnimation(.snappy(duration: 0.12)) {
+                            if isOn {
+                                draft.weekdays.remove(weekday)
+                            } else {
+                                draft.weekdays.insert(weekday)
+                            }
                         }
                     } label: {
                         Text(shortName(weekday))
-                            .font(.caption.weight(.medium))
+                            .font(WrenFont.caption)
+                            .foregroundStyle(isOn ? Color.wren.onHighlight : Color.wren.textPrimary)
                             .frame(maxWidth: .infinity)
-                            .padding(.vertical, Space.s)
-                            .background(
-                                isOn ? Color.wren.accent : Color.wren.accentSoft,
-                                in: RoundedRectangle(cornerRadius: Radius.chip)
-                            )
-                            .foregroundStyle(isOn ? Color.wren.surface : Color.wren.accent)
+                            .frame(height: 36)
+                            .wrenBox(radius: Radius.chip, fill: isOn ? .wren.highlight : .wren.surface)
+                            .wrenHardShadow(radius: Radius.chip, isLifted: isOn)
+                            .contentShape(.rect)
                     }
                     .buttonStyle(.plain)
+                    .accessibilityLabel(fullName(weekday))
+                    .accessibilityAddTraits(isOn ? .isSelected : [])
                 }
             }
 
             Text(draft.weekdays.isEmpty
                  ? "None selected — the \(labels.firstOccurrenceInline)'s own weekday is used."
                  : "Overrides the \(labels.firstOccurrenceInline)'s weekday.")
-                .font(.caption)
+                .font(.caption2.weight(.medium))
                 .foregroundStyle(Color.wren.textSecondary)
         }
-        .padding(.vertical, Space.xs)
+        .padding(.vertical, Space.s)
     }
 
     /// Weekday numbers in the calendar's own display order.
@@ -211,5 +221,11 @@ struct ScheduleEditor: View {
         let symbols = calendar.veryShortWeekdaySymbols
         let index = weekday - 1
         return symbols.indices.contains(index) ? symbols[index] : "?"
+    }
+
+    private func fullName(_ weekday: Int) -> String {
+        let symbols = calendar.weekdaySymbols
+        let index = weekday - 1
+        return symbols.indices.contains(index) ? symbols[index] : "Day"
     }
 }

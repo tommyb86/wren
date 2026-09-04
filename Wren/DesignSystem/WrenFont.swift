@@ -43,6 +43,8 @@ enum WrenFont {
     static let label = display(15, relativeTo: .subheadline)
     /// Chips, tile labels, compact buttons.
     static let caption = display(12, relativeTo: .caption)
+    /// The small uppercase label naming a form field.
+    static let fieldLabel = display(11, relativeTo: .caption2)
     /// Row and tile detail lines.
     static let detail = display(12, weight: .medium, relativeTo: .caption)
 
