@@ -4,6 +4,7 @@ import WrenCore
 
 @MainActor
 struct BillsListView: View {
+    @Environment(\.wrenTheme) private var theme
     @Environment(\.modelContext) private var context
     @Query(sort: \Bill.sortOrder) private var bills: [Bill]
 
@@ -98,7 +99,7 @@ struct BillsListView: View {
                         .font(WrenFont.heading)
                         .foregroundStyle(bill.isActive ? Color.wren.textPrimary : Color.wren.textSecondary)
                     if bill.isVariableAmount {
-                        WrenChip(text: "varies", tint: .wren.textPrimary, fill: .wren.accentSoft)
+                        WrenChip(text: "varies", tint: .wren.textPrimary, fill: theme.soft)
                     }
                 }
                 subtitle(bill)

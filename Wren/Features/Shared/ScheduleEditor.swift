@@ -37,6 +37,8 @@ struct ScheduleDraft {
 
 @MainActor
 struct ScheduleEditor: View {
+    @Environment(\.wrenTheme) private var theme
+
     /// The editor is shared by bins and tasks, which don't share vocabulary — a
     /// task has no "collection date". Each consumer supplies its own nouns.
     struct Labels {
@@ -190,10 +192,10 @@ struct ScheduleEditor: View {
                     } label: {
                         Text(shortName(weekday))
                             .font(WrenFont.caption)
-                            .foregroundStyle(isOn ? Color.wren.onHighlight : Color.wren.textPrimary)
+                            .foregroundStyle(isOn ? theme.onHighlight : Color.wren.textPrimary)
                             .frame(maxWidth: .infinity)
                             .frame(height: 36)
-                            .wrenBox(radius: Radius.chip, fill: isOn ? .wren.highlight : .wren.surface)
+                            .wrenBox(radius: Radius.chip, fill: isOn ? theme.highlight : Color.wren.surface)
                             .wrenHardShadow(radius: Radius.chip, isLifted: isOn)
                             .contentShape(.rect)
                     }

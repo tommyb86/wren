@@ -10,6 +10,8 @@ import WrenCore
 /// the same rule the rest of the app follows — lime means you pressed it.
 @MainActor
 struct ForecastChart: View {
+    @Environment(\.wrenTheme) private var theme
+
     let months: [ForecastMonth]
     var calendar: Calendar = .current
     @Binding var selection: ForecastMonth?
@@ -71,7 +73,7 @@ struct ForecastChart: View {
         return VStack(spacing: 0) {
             Spacer(minLength: 0)
             Rectangle()
-                .fill(isSelected ? Color.wren.highlight : Color.wren.textPrimary)
+                .fill(isSelected ? theme.highlight : Color.wren.textPrimary)
                 .frame(height: max(height, month.totalCents > 0 ? 2 : 0))
                 .overlay {
                     if isSelected {

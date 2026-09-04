@@ -11,6 +11,7 @@ import WrenCore
 /// put them out — the collection date alone was the confusing part.
 @MainActor
 struct TodayView: View {
+    @Environment(\.wrenTheme) private var theme
     @Environment(\.modelContext) private var context
     @Query(sort: \BinCollection.sortOrder) private var bins: [BinCollection]
     @Query(sort: \RecurringTask.sortOrder) private var tasks: [RecurringTask]
@@ -120,8 +121,8 @@ struct TodayView: View {
     private func summaryText(_ summary: TodaySummary) -> AttributedString {
         var text = AttributedString(summary.text)
         if let highlight = summary.highlight, let range = text.range(of: highlight) {
-            text[range].backgroundColor = Color.wren.highlight
-            text[range].foregroundColor = Color.wren.onHighlight
+            text[range].backgroundColor = theme.highlight
+            text[range].foregroundColor = theme.onHighlight
             text[range].font = WrenFont.display(18, relativeTo: .body)
         }
         return text

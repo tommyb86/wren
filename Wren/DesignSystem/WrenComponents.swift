@@ -58,40 +58,65 @@ struct WrenCard<Content: View>: View {
 
 // MARK: - Buttons
 
-/// Primary action. Lime block, ink border, hard shadow; pressing pushes the
-/// block down into its shadow.
+// A ButtonStyle is not a View, so `@Environment` cannot be installed on one.
+// Each style therefore hands its work to a private nested view, which can read
+// the chosen theme.
+
+/// Primary action. Highlight block, ink border, hard shadow; pressing pushes
+/// the block down into its shadow.
 struct WrenPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(WrenFont.button)
-            .foregroundStyle(Color.wren.onHighlight)
-            .padding(.vertical, Space.m)
-            .padding(.horizontal, Space.l)
-            .frame(maxWidth: .infinity)
-            .wrenBox(fill: .wren.highlight)
-            .offset(x: configuration.isPressed ? Stroke.shadow : 0, y: configuration.isPressed ? Stroke.shadow : 0)
-            .wrenHardShadow(isLifted: !configuration.isPressed)
-            .animation(.snappy(duration: 0.12), value: configuration.isPressed)
+        Body(configuration: configuration)
+    }
+
+    private struct Body: View {
+        let configuration: ButtonStyleConfiguration
+        @Environment(\.wrenTheme) private var theme
+
+        var body: some View {
+            configuration.label
+                .font(WrenFont.button)
+                .foregroundStyle(theme.onHighlight)
+                .padding(.vertical, Space.m)
+                .padding(.horizontal, Space.l)
+                .frame(maxWidth: .infinity)
+                .wrenBox(fill: theme.highlight)
+                .offset(x: configuration.isPressed ? Stroke.shadow : 0, y: configuration.isPressed ? Stroke.shadow : 0)
+                .wrenHardShadow(isLifted: !configuration.isPressed)
+                .animation(.snappy(duration: 0.12), value: configuration.isPressed)
+        }
     }
 }
 
 /// Inline action on a row — "Paid", "Scan". Same construction as the primary
-/// button at caption size, so the two read as one family.
+/// button at caption size, so the two read as one family. Passing nil for the
+/// colours means "use the theme".
 struct WrenCompactButtonStyle: ButtonStyle {
-    var fill: Color = .wren.highlight
-    var foreground: Color = .wren.onHighlight
+    var fill: Color? = nil
+    var foreground: Color? = nil
 
     func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(WrenFont.caption)
-            .textCase(.uppercase)
-            .foregroundStyle(foreground)
-            .padding(.vertical, Space.s)
-            .padding(.horizontal, Space.m)
-            .wrenBox(radius: Radius.chip, fill: fill)
-            .offset(x: configuration.isPressed ? Stroke.shadow : 0, y: configuration.isPressed ? Stroke.shadow : 0)
-            .wrenHardShadow(radius: Radius.chip, isLifted: !configuration.isPressed)
-            .animation(.snappy(duration: 0.12), value: configuration.isPressed)
+        Body(configuration: configuration, fill: fill, foreground: foreground)
+    }
+
+    private struct Body: View {
+        let configuration: ButtonStyleConfiguration
+        let fill: Color?
+        let foreground: Color?
+        @Environment(\.wrenTheme) private var theme
+
+        var body: some View {
+            configuration.label
+                .font(WrenFont.caption)
+                .textCase(.uppercase)
+                .foregroundStyle(foreground ?? theme.onHighlight)
+                .padding(.vertical, Space.s)
+                .padding(.horizontal, Space.m)
+                .wrenBox(radius: Radius.chip, fill: fill ?? theme.highlight)
+                .offset(x: configuration.isPressed ? Stroke.shadow : 0, y: configuration.isPressed ? Stroke.shadow : 0)
+                .wrenHardShadow(radius: Radius.chip, isLifted: !configuration.isPressed)
+                .animation(.snappy(duration: 0.12), value: configuration.isPressed)
+        }
     }
 }
 
@@ -108,9 +133,11 @@ struct WrenTickBox: View {
     var fill: Fill
     var size: CGFloat = 22
 
+    @Environment(\.wrenTheme) private var theme
+
     var body: some View {
         RoundedRectangle(cornerRadius: 2, style: .continuous)
-            .fill(fill == .done ? Color.wren.highlight : Color.wren.surface)
+            .fill(fill == .done ? theme.highlight : Color.wren.surface)
             .frame(width: size, height: size)
             .overlay(
                 RoundedRectangle(cornerRadius: 2, style: .continuous)
@@ -123,7 +150,7 @@ struct WrenTickBox: View {
                 if fill != .empty {
                     Image(systemName: "checkmark")
                         .font(.system(size: size * 0.55, weight: .black))
-                        .foregroundStyle(fill == .done ? Color.wren.onHighlight : Color.wren.textSecondary)
+                        .foregroundStyle(fill == .done ? theme.onHighlight : Color.wren.textSecondary)
                 }
             }
     }
@@ -195,12 +222,14 @@ struct WrenSectionLabel: View {
     }
 }
 
-/// A small bordered tag. Lime by default; pass `fill: .wren.surface` for a
-/// quiet one.
+/// A small bordered tag. The theme highlight by default; pass
+/// `fill: .wren.surface` for a quiet one.
 struct WrenChip: View {
     let text: String
-    var tint: Color = Color.wren.onHighlight
-    var fill: Color = Color.wren.highlight
+    var tint: Color? = nil
+    var fill: Color? = nil
+
+    @Environment(\.wrenTheme) private var theme
 
     var body: some View {
         Text(text)
@@ -208,10 +237,10 @@ struct WrenChip: View {
             .monospacedDigit()
             .tracking(0.8)
             .textCase(.uppercase)
-            .foregroundStyle(tint)
+            .foregroundStyle(tint ?? theme.onHighlight)
             .padding(.horizontal, Space.s)
             .padding(.vertical, Space.xs)
-            .wrenBox(radius: Radius.chip, fill: fill)
+            .wrenBox(radius: Radius.chip, fill: fill ?? theme.highlight)
     }
 }
 

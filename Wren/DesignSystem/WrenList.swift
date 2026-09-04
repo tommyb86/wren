@@ -135,16 +135,18 @@ struct WrenStatRow: View {
     }
 }
 
-/// The navigation-bar action as a small lime block.
+/// The navigation-bar action as a small highlight block.
 struct WrenToolbarIcon: View {
     let systemName: String
+
+    @Environment(\.wrenTheme) private var theme
 
     var body: some View {
         Image(systemName: systemName)
             .font(.system(size: 14, weight: .black))
-            .foregroundStyle(Color.wren.onHighlight)
+            .foregroundStyle(theme.onHighlight)
             .frame(width: 30, height: 30)
-            .wrenBox(radius: Radius.chip, fill: .wren.highlight)
+            .wrenBox(radius: Radius.chip, fill: theme.highlight)
             .wrenHardShadow(radius: Radius.chip)
     }
 }

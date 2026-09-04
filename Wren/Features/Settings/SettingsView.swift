@@ -32,6 +32,9 @@ enum Appearance: String, CaseIterable, Identifiable {
 @MainActor
 struct SettingsView: View {
     @AppStorage(Appearance.storageKey) private var appearanceRaw = Appearance.system.rawValue
+    @AppStorage(WrenTheme.storageKey) private var themeRaw = WrenTheme.lime.rawValue
+
+    @Environment(\.wrenTheme) private var theme
 
     private var appearance: Appearance {
         Appearance(rawValue: appearanceRaw) ?? .system
@@ -44,6 +47,14 @@ struct SettingsView: View {
                     WrenSectionLabel(text: "Appearance")
                     appearancePicker
                     Text("Auto follows the phone's setting.")
+                        .font(.caption)
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+
+                VStack(alignment: .leading, spacing: Space.m) {
+                    WrenSectionLabel(text: "Accent")
+                    themePicker
+                    Text("Used for anything you can press, whatever is selected, and the one figure a screen is about. Paper, ink and the overdue red don't change.")
                         .font(.caption)
                         .foregroundStyle(Color.wren.textSecondary)
                 }
@@ -81,6 +92,41 @@ struct SettingsView: View {
         .navigationTitle("Settings")
     }
 
+    /// Swatches rather than names: the colour is the thing being chosen, so
+    /// the chip shows it. The selected one lifts onto its shadow, the same way
+    /// every other pressable thing in the app does.
+    private var themePicker: some View {
+        HStack(spacing: Space.s) {
+            ForEach(WrenTheme.allCases) { option in
+                let isSelected = option == theme
+                Button {
+                    withAnimation(.snappy(duration: 0.15)) { themeRaw = option.rawValue }
+                } label: {
+                    RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                        .fill(option.highlight)
+                        .frame(maxWidth: .infinity)
+                        .frame(height: 48)
+                        .overlay(
+                            RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
+                                .strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border)
+                        )
+                        .overlay {
+                            if isSelected {
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 15, weight: .black))
+                                    .foregroundStyle(option.onHighlight)
+                            }
+                        }
+                        .wrenHardShadow(radius: Radius.chip, isLifted: isSelected)
+                        .contentShape(.rect)
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(option.label)
+                .accessibilityAddTraits(isSelected ? .isSelected : [])
+            }
+        }
+    }
+
     /// A segmented control in the house style: one box, hairlines between
     /// the options, the chosen one filled lime.
     private var appearancePicker: some View {
@@ -93,9 +139,9 @@ struct SettingsView: View {
                     Text(option.label)
                         .font(WrenFont.caption)
                         .textCase(.uppercase)
-                        .foregroundStyle(isSelected ? Color.wren.onHighlight : Color.wren.textPrimary)
+                        .foregroundStyle(isSelected ? theme.onHighlight : Color.wren.textPrimary)
                         .frame(maxWidth: .infinity, minHeight: 44)
-                        .background(isSelected ? Color.wren.highlight : Color.wren.surface)
+                        .background(isSelected ? theme.highlight : Color.wren.surface)
                         .contentShape(.rect)
                 }
                 .buttonStyle(.plain)

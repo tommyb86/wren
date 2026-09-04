@@ -13,6 +13,8 @@ import WrenCore
 /// `PaymentTrend` for why a regression here would mislead.
 @MainActor
 struct PaymentTrendChart: View {
+    @Environment(\.wrenTheme) private var theme
+
     let trend: PaymentTrend
     let expectedCents: Int
     @Binding var selection: TrendPoint?
@@ -110,7 +112,7 @@ struct PaymentTrendChart: View {
     }
 
     private func markerFill(point: TrendPoint, isSelected: Bool) -> Color {
-        if isSelected { return .wren.highlight }
+        if isSelected { return theme.highlight }
         return point.isOutlier ? .wren.surface : .wren.textPrimary
     }
 

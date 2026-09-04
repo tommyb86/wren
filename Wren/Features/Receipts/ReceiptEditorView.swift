@@ -7,6 +7,8 @@ import WrenCore
 /// suggestions the user confirms, never silent auto-fill.
 @MainActor
 struct ReceiptEditorView: View {
+    @Environment(\.wrenTheme) private var theme
+
     /// nil when confirming a fresh scan.
     let receipt: Receipt?
     /// Pages already written to disk, for a fresh scan.
@@ -143,7 +145,7 @@ struct ReceiptEditorView: View {
                 )
         } else {
             RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)
-                .fill(Color.wren.accentSoft)
+                .fill(theme.soft)
                 .frame(width: 72, height: 96)
                 .overlay(
                     RoundedRectangle(cornerRadius: Radius.chip, style: .continuous)

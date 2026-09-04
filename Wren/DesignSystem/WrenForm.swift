@@ -63,6 +63,8 @@ struct WrenTextRow: View {
 struct WrenSwitch: View {
     var isOn: Bool
 
+    @Environment(\.wrenTheme) private var theme
+
     var body: some View {
         HStack(spacing: 0) {
             if isOn { Spacer(minLength: 0) }
@@ -79,7 +81,7 @@ struct WrenSwitch: View {
         .padding(2)
         .frame(width: 52, height: 30)
         .background(
-            isOn ? Color.wren.highlight : Color.wren.background,
+            isOn ? theme.highlight : Color.wren.background,
             in: RoundedRectangle(cornerRadius: 4, style: .continuous)
         )
         .overlay(
@@ -276,14 +278,16 @@ struct WrenToolbarButton: View {
     let title: String
     var isEnabled: Bool = true
 
+    @Environment(\.wrenTheme) private var theme
+
     var body: some View {
         Text(title)
             .font(WrenFont.caption)
             .textCase(.uppercase)
-            .foregroundStyle(isEnabled ? Color.wren.onHighlight : Color.wren.textSecondary)
+            .foregroundStyle(isEnabled ? theme.onHighlight : Color.wren.textSecondary)
             .padding(.horizontal, Space.m)
             .frame(height: 30)
-            .wrenBox(radius: Radius.chip, fill: isEnabled ? .wren.highlight : .wren.surface)
+            .wrenBox(radius: Radius.chip, fill: isEnabled ? theme.highlight : Color.wren.surface)
             .wrenHardShadow(radius: Radius.chip, isLifted: isEnabled)
     }
 }
@@ -295,6 +299,8 @@ struct WrenOutcomeBox: View {
     let value: String
     var unit: String? = nil
     var detail: String? = nil
+
+    @Environment(\.wrenTheme) private var theme
 
     var body: some View {
         VStack(alignment: .leading, spacing: 3) {
@@ -319,6 +325,6 @@ struct WrenOutcomeBox: View {
         }
         .padding(Space.m)
         .frame(maxWidth: .infinity, alignment: .leading)
-        .wrenBox(fill: .wren.accentSoft)
+        .wrenBox(fill: theme.soft)
     }
 }

@@ -7,6 +7,7 @@ import WrenCore
 /// grouping that matters at tax time.
 @MainActor
 struct ReceiptsListView: View {
+    @Environment(\.wrenTheme) private var theme
     @Environment(\.modelContext) private var context
     @Query(sort: \Receipt.date, order: .reverse) private var receipts: [Receipt]
 
@@ -212,7 +213,7 @@ struct ReceiptsListView: View {
                     .overlay(RoundedRectangle(cornerRadius: Radius.chip).strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border))
             } else {
                 RoundedRectangle(cornerRadius: Radius.chip)
-                    .fill(Color.wren.accentSoft)
+                    .fill(theme.soft)
                     .frame(width: 34, height: 44)
                     .overlay(RoundedRectangle(cornerRadius: Radius.chip).strokeBorder(Color.wren.textPrimary, lineWidth: Stroke.border))
                     .overlay(

@@ -3,21 +3,19 @@ import SwiftUI
 /// Design tokens, resolved from the hand-written colour sets in Assets.xcassets.
 /// Views never reference a raw hex — they go through `Color.wren`.
 ///
-/// The look is a calm neo-brutalism: paper and ink, one lime highlight, borders
-/// instead of shadows. `textPrimary` doubles as the ink every border is drawn
-/// in, and `accent` resolves to the same ink so links and ticks stay
-/// monochrome. Lime is reserved for the few things that are actions or the
-/// one number that matters.
+/// The look is a calm neo-brutalism: paper and ink, one bright highlight,
+/// borders instead of shadows. `textPrimary` doubles as the ink every border is
+/// drawn in, and `accent` resolves to the same ink so links and ticks stay
+/// monochrome.
+///
+/// The highlight is not here: it is the one colour the user chooses, so it
+/// lives on `WrenTheme` and is read from the environment. See that file.
 struct WrenPalette {
     let background = Color("Colors/Background", bundle: .main)
     let surface = Color("Colors/Surface", bundle: .main)
     let textPrimary = Color("Colors/TextPrimary", bundle: .main)
     let textSecondary = Color("Colors/TextSecondary", bundle: .main)
     let accent = Color("Colors/Accent", bundle: .main)
-    let accentSoft = Color("Colors/AccentSoft", bundle: .main)
-    /// Lime. Same in both appearances, so anything on it uses `onHighlight`.
-    let highlight = Color("Colors/Highlight", bundle: .main)
-    let onHighlight = Color("Colors/OnHighlight", bundle: .main)
     let alert = Color("Colors/Alert", bundle: .main)
     let divider = Color("Colors/Divider", bundle: .main)
 }

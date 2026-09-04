@@ -6,6 +6,7 @@ import SwiftData
 struct WrenApp: App {
     @Environment(\.scenePhase) private var scenePhase
     @AppStorage(Appearance.storageKey) private var appearanceRaw = Appearance.system.rawValue
+    @AppStorage(WrenTheme.storageKey) private var themeRaw = WrenTheme.lime.rawValue
 
     private let container: ModelContainer
 
@@ -19,6 +20,9 @@ struct WrenApp: App {
             TodayView()
                 .tint(Color.wren.accent)
                 .preferredColorScheme((Appearance(rawValue: appearanceRaw) ?? .system).colorScheme)
+                // Injected once at the root: every view that paints a highlight
+                // reads it from the environment, so changing it redraws them all.
+                .environment(\.wrenTheme, WrenTheme(rawValue: themeRaw) ?? .lime)
         }
         .modelContainer(container)
         .onChange(of: scenePhase) { _, phase in
