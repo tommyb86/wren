@@ -30,3 +30,6 @@ id_*
 *.p12
 *.key
 *.mobileprovision
+
+# Icon export staging — the asset catalogue carries the one 1024 it needs.
+Wren-NeoBrutalist-iOS-AppIcon/
