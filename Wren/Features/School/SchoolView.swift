@@ -22,6 +22,7 @@ struct SchoolView: View {
     private var pending: [SuggestedDate]
 
     @State private var showingSettings = false
+    @State private var showingInbox = false
 
     private var profile: SchoolProfile { SchoolConfig.profile }
 
@@ -55,6 +56,9 @@ struct SchoolView: View {
         }
         .sheet(isPresented: $showingSettings) {
             NavigationStack { SchoolSettingsView() }
+        }
+        .sheet(isPresented: $showingInbox) {
+            NavigationStack { SchoolInboxView() }
         }
         .task { await refresh() }
         .refreshable { await refresh() }
@@ -100,11 +104,16 @@ struct SchoolView: View {
         .wrenListStyle()
     }
 
-    /// A row that leads to the suggested-dates inbox. Only shown when there are
-    /// pending suggestions, so it never nags when there is nothing to review.
+    /// Opens the suggested-dates inbox. Only shown when there are pending
+    /// suggestions, so it never nags when there is nothing to review.
+    ///
+    /// A sheet rather than a push: pushing this destination hung the app twice,
+    /// across two completely different versions of the destination's body. The
+    /// settings sheet on this same screen has never had the problem, so the
+    /// inbox is presented the same way. See `SchoolInboxView`.
     private var suggestionsBanner: some View {
-        NavigationLink {
-            SchoolInboxView()
+        Button {
+            showingInbox = true
         } label: {
             HStack(spacing: Space.m) {
                 WrenLidSwatch(color: theme.highlight, size: 16)
