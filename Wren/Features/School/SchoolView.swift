@@ -16,7 +16,10 @@ private struct RankedNotice: Identifiable {
 @MainActor
 struct SchoolView: View {
     @Environment(\.modelContext) private var context
+    @Environment(\.wrenTheme) private var theme
     @Query(sort: \SchoolNotice.published, order: .reverse) private var notices: [SchoolNotice]
+    @Query(filter: #Predicate<SuggestedDate> { $0.state == "pending" }, sort: \SuggestedDate.date)
+    private var pending: [SuggestedDate]
 
     @State private var showingSettings = false
 
@@ -53,8 +56,13 @@ struct SchoolView: View {
         .sheet(isPresented: $showingSettings) {
             NavigationStack { SchoolSettingsView() }
         }
-        .task { await SchoolStore.refresh(context: context) }
-        .refreshable { await SchoolStore.refresh(context: context) }
+        .task { await refresh() }
+        .refreshable { await refresh() }
+    }
+
+    private func refresh() async {
+        await SchoolStore.refresh(context: context)
+        SchoolSuggestions.rebuild(context: context)
     }
 
     // MARK: - List
@@ -63,6 +71,10 @@ struct SchoolView: View {
         let ranked = rank()
         return List {
             summary(ranked)
+
+            if !pending.isEmpty {
+                suggestionsBanner
+            }
 
             if !ranked.forMe.isEmpty {
                 section(profile.isConfigured ? "For \(profile.yearLabel)" : "Matched", rows: ranked.forMe)
@@ -75,6 +87,32 @@ struct SchoolView: View {
             }
         }
         .wrenListStyle()
+    }
+
+    /// A row that leads to the suggested-dates inbox. Only shown when there are
+    /// pending suggestions, so it never nags when there is nothing to review.
+    private var suggestionsBanner: some View {
+        NavigationLink {
+            SchoolInboxView()
+        } label: {
+            HStack(spacing: Space.m) {
+                WrenLidSwatch(color: theme.highlight, size: 16)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("\(pending.count) suggested date\(pending.count == 1 ? "" : "s")")
+                        .font(WrenFont.heading)
+                        .foregroundStyle(Color.wren.textPrimary)
+                    Text("Pulled from notices — add or dismiss")
+                        .font(WrenFont.detail)
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            .padding(.vertical, Space.xs)
+        }
+        .wrenRow(first: true, last: true)
     }
 
     private func summary(_ ranked: (forMe: [RankedNotice], whole: [RankedNotice], rest: [RankedNotice])) -> some View {

@@ -165,4 +165,48 @@ final class SchoolTests: XCTestCase {
         let m = SchoolRelevance.match(item("Year 4 excursion", "Year 4 only."), profile: SchoolProfile())
         XCTAssertEqual(m.bucket, .everythingElse)
     }
+
+    // MARK: - Deadlines
+
+    private var brisbane: Calendar = {
+        var c = Calendar(identifier: .gregorian)
+        c.timeZone = TimeZone(identifier: "Australia/Brisbane")!
+        return c
+    }()
+
+    private func day(_ y: Int, _ m: Int, _ d: Int) -> Date {
+        brisbane.date(from: DateComponents(year: y, month: m, day: d, hour: 12))!
+    }
+
+    func testExtractsFullDateWithYear() {
+        let blocks = ["Survey Closing Date Thursday 24 September 2026. Please respond."]
+        let published = day(2026, 9, 2)
+        let found = SchoolDeadlines.extract(fromBlocks: blocks, published: published, calendar: brisbane)
+        XCTAssertEqual(found.count, 1)
+        XCTAssertEqual(brisbane.startOfDay(for: found[0].date), brisbane.startOfDay(for: day(2026, 9, 24)))
+        XCTAssertEqual(found[0].confidence, .high)
+    }
+
+    func testInfersYearForBareDate() {
+        // Posted in November; "5 February" should resolve to the next February.
+        let blocks = ["Please register by 5 February for the season."]
+        let found = SchoolDeadlines.extract(fromBlocks: blocks, published: day(2026, 11, 10), calendar: brisbane)
+        XCTAssertEqual(found.count, 1)
+        XCTAssertEqual(brisbane.component(.year, from: found[0].date), 2027)
+        XCTAssertEqual(found[0].confidence, .medium)
+    }
+
+    func testDateWithoutCueIsIgnored() {
+        let blocks = ["We had a lovely time on 12 August at the fair."]
+        let found = SchoolDeadlines.extract(fromBlocks: blocks, published: day(2026, 8, 20), calendar: brisbane)
+        XCTAssertTrue(found.isEmpty)
+    }
+
+    func testExtractFromHTMLUsesBlocks() {
+        let html = "<p>Curriculum notes.</p><p>Ordering closes 30 September 2026.</p>"
+        let found = SchoolDeadlines.extract(fromHTML: html, published: day(2026, 9, 1), calendar: brisbane)
+        XCTAssertEqual(found.count, 1)
+        XCTAssertEqual(brisbane.startOfDay(for: found[0].date), brisbane.startOfDay(for: day(2026, 9, 30)))
+        XCTAssertTrue(found[0].evidence.contains("Ordering closes"))
+    }
 }

@@ -9,7 +9,8 @@ enum ModelContainerFactory {
         Bill.self,
         BillPayment.self,
         Receipt.self,
-        SchoolNotice.self
+        SchoolNotice.self,
+        SuggestedDate.self
     ])
 
     /// A failed container must be *visible*. On device the only symptom would
