@@ -40,7 +40,7 @@ struct SchoolView: View {
                     cta: "Open settings"
                 )
             } else {
-                list
+                noticesView
             }
         }
         .background(Color.wren.background)
@@ -67,14 +67,25 @@ struct SchoolView: View {
 
     // MARK: - List
 
+    /// The banner sits ABOVE the list, not as a row inside it: a bare
+    /// NavigationLink row at a List's top level (outside any Section) hangs
+    /// SwiftUI's layout. Out here it is an ordinary tappable card, exactly like
+    /// the Today tiles.
+    private var noticesView: some View {
+        VStack(spacing: 0) {
+            if !pending.isEmpty {
+                suggestionsBanner
+                    .padding(.horizontal, Space.l)
+                    .padding(.top, Space.m)
+            }
+            list
+        }
+    }
+
     private var list: some View {
         let ranked = rank()
         return List {
             summary(ranked)
-
-            if !pending.isEmpty {
-                suggestionsBanner
-            }
 
             if !ranked.forMe.isEmpty {
                 section(profile.isConfigured ? "For \(profile.yearLabel)" : "Matched", rows: ranked.forMe)
@@ -110,9 +121,12 @@ struct SchoolView: View {
                     .font(.system(size: 13, weight: .bold))
                     .foregroundStyle(Color.wren.textSecondary)
             }
-            .padding(.vertical, Space.xs)
+            .padding(Space.m)
+            .frame(maxWidth: .infinity)
+            .wrenBox()
+            .wrenHardShadow()
         }
-        .wrenRow(first: true, last: true)
+        .buttonStyle(.plain)
     }
 
     private func summary(_ ranked: (forMe: [RankedNotice], whole: [RankedNotice], rest: [RankedNotice])) -> some View {
