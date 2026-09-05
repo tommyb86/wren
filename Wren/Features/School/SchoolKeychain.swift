@@ -29,7 +29,9 @@ enum SchoolKeychain {
 
         let status = SecItemAdd(insert as CFDictionary, nil)
         if status != errSecSuccess {
-            Logger.shared.error("school", "keychain write failed (\(status))")
+            // `Logger.record`, not `Logger.shared`: this type is nonisolated so
+            // a background refresh can reach the token without hopping actors.
+            Logger.record(.error, "school", "keychain write failed (\(status))")
         }
     }
 
