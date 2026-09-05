@@ -18,11 +18,21 @@ struct SchoolView: View {
     @Environment(\.modelContext) private var context
     @Environment(\.wrenTheme) private var theme
     @Query(sort: \SchoolNotice.published, order: .reverse) private var notices: [SchoolNotice]
-    @Query(filter: #Predicate<SuggestedDate> { $0.state == "pending" }, sort: \SuggestedDate.date)
-    private var pending: [SuggestedDate]
+    /// Deliberately unfiltered. A *predicated* `@Query` in a view that owns a
+    /// `NavigationLink` sets off a spurious-invalidation loop on iOS 17: each
+    /// push re-invalidates this view, which re-creates the destination, which
+    /// invalidates again — and the app hangs on the main thread. That, not the
+    /// destinations, is what froze both the inbox and the week view.
+    ///
+    /// The predicate is the trigger, so it is gone. This table holds one row per
+    /// suggested date, so filtering in memory is free.
+    @Query(sort: \SuggestedDate.date) private var suggestions: [SuggestedDate]
+
+    private var pending: [SuggestedDate] {
+        suggestions.filter { $0.stateValue == .pending }
+    }
 
     @State private var showingSettings = false
-    @State private var showingInbox = false
     /// Read from the keychain, so it is resolved on appear rather than in
     /// `body` — which runs on every update.
     @State private var hasCalendar = false
@@ -59,9 +69,6 @@ struct SchoolView: View {
         }
         .sheet(isPresented: $showingSettings, onDismiss: { hasCalendar = SchoolConfig.hasCalendar }) {
             NavigationStack { SchoolSettingsView() }
-        }
-        .sheet(isPresented: $showingInbox) {
-            NavigationStack { SchoolInboxView() }
         }
         .task { await refresh() }
         .refreshable { await refresh() }
@@ -141,16 +148,11 @@ struct SchoolView: View {
         .wrenListStyle()
     }
 
-    /// Opens the suggested-dates inbox. Only shown when there are pending
+    /// Leads to the suggested-dates inbox. Only shown when there are pending
     /// suggestions, so it never nags when there is nothing to review.
-    ///
-    /// A sheet rather than a push: pushing this destination hung the app twice,
-    /// across two completely different versions of the destination's body. The
-    /// settings sheet on this same screen has never had the problem, so the
-    /// inbox is presented the same way. See `SchoolInboxView`.
     private var suggestionsBanner: some View {
-        Button {
-            showingInbox = true
+        NavigationLink {
+            SchoolInboxView()
         } label: {
             HStack(spacing: Space.m) {
                 WrenLidSwatch(color: theme.highlight, size: 16)

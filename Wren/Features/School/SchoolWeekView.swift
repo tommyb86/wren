@@ -46,10 +46,10 @@ struct SchoolWeekView: View {
         .background(Color.wren.background)
         .navigationTitle("Week ahead")
         .navigationBarTitleDisplayMode(.inline)
-        .task { rebuildLinks() }
+        .task { await rebuildLinks() }
         .refreshable {
             await SchoolStore.refresh(context: context)
-            rebuildLinks()
+            await rebuildLinks()
         }
     }
 
@@ -157,22 +157,36 @@ struct SchoolWeekView: View {
     /// both sides, and only accepts a confident (two-signal) match — a wrong
     /// link is worse than no link, since it would send the reader to the wrong
     /// notice.
-    private func rebuildLinks() {
-        let candidates = notices.prefix(40).map(\.feedItem)
-        guard !candidates.isEmpty else { links = [:]; return }
+    ///
+    /// Runs off the main actor, and that is not a nicety. Every pair re-parses
+    /// the notice's HTML and compiles a fresh regex, so at 40 x 40 this is tens
+    /// of seconds of work; on the main actor — where `.task` would otherwise put
+    /// it, since this view is `@MainActor` — it reads as a frozen app during the
+    /// push. The models are converted to `Sendable` values first so nothing
+    /// SwiftData-bound crosses the boundary.
+    private func rebuildLinks() async {
+        let candidates = Array(notices.prefix(40).map(\.feedItem))
+        let pending = Array(upcoming.prefix(40).map(\.calendarEvent))
+        guard !candidates.isEmpty, !pending.isEmpty else { links = [:]; return }
 
-        var found: [String: String] = [:]
-        for event in upcoming.prefix(40) {
-            let match = SchoolCorrelation.correlate(
-                event: event.calendarEvent,
-                notices: Array(candidates),
-                calendar: Calendar.current
-            )
-            if let match, match.isMerge {
-                found[event.uid] = match.noticeGUID
+        let calendar = Calendar.current
+        let started = Date()
+        Logger.shared.info("school", "correlating \(pending.count) event(s) x \(candidates.count) notice(s)")
+        Logger.shared.flush()
+
+        let found: [String: String] = await Task.detached(priority: .userInitiated) {
+            var result: [String: String] = [:]
+            for event in pending {
+                if let match = SchoolCorrelation.correlate(event: event, notices: candidates, calendar: calendar),
+                   match.isMerge {
+                    result[event.uid] = match.noticeGUID
+                }
             }
-        }
+            return result
+        }.value
+
         links = found
+        Logger.shared.info("school", "correlated \(found.count) link(s) in \(Int(Date().timeIntervalSince(started) * 1000))ms")
     }
 
     private func linkedNotice(_ event: SchoolEvent) -> SchoolNotice? {
