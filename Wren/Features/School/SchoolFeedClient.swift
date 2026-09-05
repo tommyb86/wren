@@ -7,7 +7,7 @@ import WrenCore
 enum SchoolFeedClient {
     static func fetch(_ source: SchoolSource) async -> [SchoolFeedItem] {
         guard let url = URL(string: source.url) else {
-            Logger.shared.warn("school", "bad URL for source '\(source.name)'")
+            Logger.record(.warn, "school", "bad URL for source '\(source.name)'")
             return []
         }
 
@@ -19,14 +19,14 @@ enum SchoolFeedClient {
             let (data, response) = try await URLSession.shared.data(for: request)
             let status = (response as? HTTPURLResponse)?.statusCode ?? -1
             guard (200..<300).contains(status) else {
-                Logger.shared.warn("school", "'\(source.name)' returned HTTP \(status)")
+                Logger.record(.warn, "school", "'\(source.name)' returned HTTP \(status)")
                 return []
             }
             let items = SchoolFeedParser.parse(data)
-            Logger.shared.info("school", "fetched \(items.count) item(s) from '\(source.name)'")
+            Logger.record(.info, "school", "fetched \(items.count) item(s) from '\(source.name)'")
             return items
         } catch {
-            Logger.shared.warn("school", "fetch of '\(source.name)' failed: \(error.localizedDescription)")
+            Logger.record(.warn, "school", "fetch of '\(source.name)' failed: \(error.localizedDescription)")
             return []
         }
     }
