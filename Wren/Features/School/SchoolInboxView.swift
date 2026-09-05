@@ -2,32 +2,37 @@ import SwiftUI
 import SwiftData
 import WrenCore
 
-/// The suggested-dates inbox. Each card shows the date Wren found and the exact
+/// The suggested-dates inbox. Each row shows the date Wren found and the exact
 /// text it came from, so it can be trusted before it becomes a reminder.
 /// Accepting creates a one-off task; dismissing is remembered so the same date
 /// is never proposed again.
+///
+/// Built on the same `List` + `wrenRow` construction as every other feature
+/// screen. An earlier version used a `ScrollView` of cards with a flexible-shape
+/// overlay for the quote bar, which hung SwiftUI's layout — the plain list has
+/// bounded row heights and none of that.
 @MainActor
 struct SchoolInboxView: View {
     @Environment(\.modelContext) private var context
     @Query(filter: #Predicate<SuggestedDate> { $0.state == "pending" }, sort: \SuggestedDate.date)
     private var pending: [SuggestedDate]
 
-    @Environment(\.wrenTheme) private var theme
-
     var body: some View {
         Group {
             if pending.isEmpty {
                 emptyState
             } else {
-                ScrollView {
-                    VStack(spacing: Space.l) {
-                        ForEach(pending) { suggestion in
-                            card(suggestion)
+                List {
+                    Section {
+                        ForEach(Array(pending.enumerated()), id: \.element.id) { index, suggestion in
+                            row(suggestion)
+                                .wrenRow(first: index == 0, last: index == pending.count - 1)
                         }
-                        footer
+                    } footer: {
+                        WrenListFooter(text: "Notices with no date stay on the School screen and never become a reminder on their own.")
                     }
-                    .padding(Space.l)
                 }
+                .wrenListStyle()
             }
         }
         .background(Color.wren.background)
@@ -35,15 +40,18 @@ struct SchoolInboxView: View {
         .navigationBarTitleDisplayMode(.inline)
     }
 
-    private func card(_ suggestion: SuggestedDate) -> some View {
-        VStack(alignment: .leading, spacing: Space.m) {
-            HStack(alignment: .top, spacing: Space.m) {
+    private func row(_ suggestion: SuggestedDate) -> some View {
+        VStack(alignment: .leading, spacing: Space.s) {
+            HStack(alignment: .firstTextBaseline, spacing: Space.m) {
                 Text(suggestion.proposedTitle.isEmpty ? "School reminder" : suggestion.proposedTitle)
                     .font(WrenFont.heading)
                     .foregroundStyle(Color.wren.textPrimary)
                     .fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                WrenChip(text: dateLabel(suggestion.date))
+                Spacer(minLength: Space.s)
+                Text(dateLabel(suggestion.date))
+                    .font(WrenFont.value)
+                    .monospacedDigit()
+                    .foregroundStyle(Color.wren.textPrimary)
             }
 
             if !suggestion.evidence.isEmpty {
@@ -51,12 +59,6 @@ struct SchoolInboxView: View {
                     .font(.subheadline)
                     .foregroundStyle(Color.wren.textSecondary)
                     .fixedSize(horizontal: false, vertical: true)
-                    .padding(.leading, Space.m)
-                    .overlay(alignment: .leading) {
-                        Rectangle()
-                            .fill(Color.wren.divider)
-                            .frame(width: Stroke.border)
-                    }
             }
 
             if suggestion.isDateInferred {
@@ -66,34 +68,19 @@ struct SchoolInboxView: View {
             }
 
             HStack(spacing: Space.s) {
-                Button {
+                Button("Add reminder") {
                     SchoolSuggestions.accept(suggestion, context: context)
-                } label: {
-                    Text("Add reminder")
-                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(WrenCompactButtonStyle())
 
-                Button {
+                Button("Not this") {
                     SchoolSuggestions.dismiss(suggestion, context: context)
-                } label: {
-                    Text("Not this")
-                        .frame(maxWidth: .infinity)
                 }
                 .buttonStyle(WrenCompactButtonStyle(fill: .wren.surface, foreground: .wren.textPrimary))
             }
+            .padding(.top, Space.xs)
         }
-        .padding(Space.l)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .wrenBox()
-    }
-
-    private var footer: some View {
-        Text("Notices with no date stay on the School screen and never become a reminder on their own.")
-            .font(.caption)
-            .foregroundStyle(Color.wren.textSecondary)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .padding(.horizontal, Space.xs)
+        .padding(.vertical, Space.xs)
     }
 
     private var emptyState: some View {
@@ -117,7 +104,7 @@ struct SchoolInboxView: View {
     }
 
     private func quoted(_ text: String) -> String {
-        let trimmed = text.count > 220 ? String(text.prefix(220)) + "…" : text
+        let trimmed = text.count > 220 ? String(text.prefix(220)) + "\u{2026}" : text
         return "\u{201C}\(trimmed)\u{201D}"
     }
 }

@@ -124,7 +124,6 @@ struct SchoolView: View {
             .padding(Space.m)
             .frame(maxWidth: .infinity)
             .wrenBox()
-            .wrenHardShadow()
         }
         .buttonStyle(.plain)
     }
