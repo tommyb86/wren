@@ -85,6 +85,7 @@ public enum SchoolFeedParser {
                         guid: id.trimmingCharacters(in: .whitespacesAndNewlines),
                         title: SchoolText.decodeEntities(title.trimmingCharacters(in: .whitespacesAndNewlines)),
                         bodyText: SchoolText.plain(fromHTML: descriptionHTML),
+                        bodyHTML: descriptionHTML.trimmingCharacters(in: .whitespacesAndNewlines),
                         published: SchoolFeedParser.dateFormatter.date(from: pubDate.trimmingCharacters(in: .whitespacesAndNewlines)),
                         category: category.trimmingCharacters(in: .whitespacesAndNewlines),
                         position: position,

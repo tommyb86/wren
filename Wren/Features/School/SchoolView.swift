@@ -91,11 +91,11 @@ struct SchoolView: View {
 
     private func summaryText(_ ranked: (forMe: [RankedNotice], whole: [RankedNotice], rest: [RankedNotice])) -> String {
         let forMe = ranked.forMe.count
-        let total = notices.count
+        let shown = ranked.forMe.count + ranked.whole.count + ranked.rest.reduce(0) { $0 + $1.seriesCount }
         if forMe > 0 {
-            return "\(forMe) for \(profile.isConfigured ? profile.yearLabel.lowercased() : "you") · \(total) notices in all"
+            return "\(forMe) for \(profile.isConfigured ? profile.yearLabel.lowercased() : "you") · \(shown) recent notices"
         }
-        return "\(total) notices — nothing matched your son yet"
+        return "\(shown) recent notices — nothing matched your son yet"
     }
 
     private func section(_ title: String, rows: [RankedNotice], quiet: Bool = false) -> some View {
@@ -126,7 +126,11 @@ struct SchoolView: View {
         var rest: [SchoolNotice] = []
         var tagsByGuid: [String: [SchoolTag]] = [:]
 
-        for notice in notices {
+        // Hide stale notices, but always keep the ones the school has pinned.
+        let cutoff = Calendar.current.date(byAdding: .day, value: -SchoolConfig.maxAgeDays, to: Date()) ?? .distantPast
+        let recent = notices.filter { $0.isPinned || $0.published >= cutoff }
+
+        for notice in recent {
             let match = SchoolRelevance.match(notice.feedItem, profile: profile)
             tagsByGuid[notice.guid] = match.tags
             switch match.bucket {

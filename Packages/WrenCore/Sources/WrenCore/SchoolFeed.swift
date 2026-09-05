@@ -10,7 +10,11 @@ public struct SchoolFeedItem: Hashable, Sendable, Identifiable {
     /// key everywhere.
     public let guid: String
     public let title: String
+    /// Flattened plain text — for ranking and one-line previews.
     public let bodyText: String
+    /// The original body HTML, kept so the detail view can render paragraphs and
+    /// bullets rather than one wall of text.
+    public let bodyHTML: String
     public let published: Date?
     public let category: String
     /// Position in the feed as delivered. The first four items are pinned by
@@ -31,6 +35,7 @@ public struct SchoolFeedItem: Hashable, Sendable, Identifiable {
         guid: String,
         title: String,
         bodyText: String,
+        bodyHTML: String = "",
         published: Date?,
         category: String = "",
         position: Int = 0,
@@ -40,11 +45,76 @@ public struct SchoolFeedItem: Hashable, Sendable, Identifiable {
         self.guid = guid
         self.title = title
         self.bodyText = bodyText
+        self.bodyHTML = bodyHTML
         self.published = published
         self.category = category
         self.position = position
         self.imageHash = imageHash
         self.labels = labels
+    }
+}
+
+// MARK: - Structured body
+
+/// One block of a notice body. Enough structure to read the article as
+/// paragraphs and bullet lists instead of a single run-on line.
+public enum SchoolBodyBlock: Hashable, Sendable {
+    case paragraph(String)
+    case bullet(String)
+
+    public var text: String {
+        switch self {
+        case .paragraph(let text), .bullet(let text): return text
+        }
+    }
+
+    public var isBullet: Bool {
+        if case .bullet = self { return true }
+        return false
+    }
+}
+
+public enum SchoolBody {
+    private static let bulletMarker = "\u{2022} "
+
+    /// Turns feed-body HTML into readable blocks: `<li>` becomes a bullet, and
+    /// paragraph/line/heading boundaries become separate paragraphs. Not a full
+    /// HTML renderer — just the structure that stops it reading as a wall.
+    public static func blocks(fromHTML html: String) -> [SchoolBodyBlock] {
+        var s = html
+        // List items become bullet lines.
+        s = s.replacingOccurrences(of: "<li[^>]*>", with: "\n" + bulletMarker, options: [.regularExpression, .caseInsensitive])
+        // Block boundaries become newlines.
+        s = s.replacingOccurrences(
+            of: "</p>|<br\\s*/?>|</div>|</h[1-6]>|</li>|</ul>|</ol>|</tr>",
+            with: "\n",
+            options: [.regularExpression, .caseInsensitive]
+        )
+        // Drop remaining tags and decode entities.
+        s = s.replacingOccurrences(of: "<[^>]+>", with: "", options: .regularExpression)
+        s = SchoolText.decodeEntities(s)
+
+        var blocks: [SchoolBodyBlock] = []
+        for rawLine in s.components(separatedBy: "\n") {
+            var line = rawLine.replacingOccurrences(of: "[ \\t\u{00A0}]+", with: " ", options: .regularExpression)
+            line = line.replacingOccurrences(of: "\\s+([.,;:!?])", with: "$1", options: .regularExpression)
+            line = line.trimmingCharacters(in: .whitespacesAndNewlines)
+            guard !line.isEmpty else { continue }
+
+            if line.hasPrefix("\u{2022}") {
+                let text = String(line.dropFirst()).trimmingCharacters(in: .whitespaces)
+                if !text.isEmpty { blocks.append(.bullet(text)) }
+            } else {
+                blocks.append(.paragraph(line))
+            }
+        }
+
+        // A body with no block markup at all still gets one readable paragraph.
+        if blocks.isEmpty {
+            let plain = SchoolText.plain(fromHTML: html)
+            if !plain.isEmpty { blocks.append(.paragraph(plain)) }
+        }
+        return blocks
     }
 }
 

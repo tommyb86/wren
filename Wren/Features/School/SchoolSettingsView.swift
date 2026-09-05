@@ -20,10 +20,12 @@ struct SchoolSettingsView: View {
     @State private var newName = ""
     @State private var newURL = ""
     @State private var newKind: SchoolSource.Kind = .all
+    @State private var maxAgeWeeks: Int = max(1, SchoolConfig.maxAgeDays / 7)
 
     var body: some View {
         Form {
             profileSection
+            showSection
             sourcesSection
             addSourceSection
         }
@@ -71,6 +73,24 @@ struct SchoolSettingsView: View {
         case -1: return "Not set"
         case 0: return "Prep"
         default: return "Year \(yearLevel)"
+        }
+    }
+
+    // MARK: - Recency
+
+    private var showSection: some View {
+        Section("Show") {
+            Stepper(value: $maxAgeWeeks, in: 1...26) {
+                HStack {
+                    Text("Recent window")
+                    Spacer()
+                    Text("\(maxAgeWeeks) week\(maxAgeWeeks == 1 ? "" : "s")")
+                        .foregroundStyle(.secondary)
+                }
+            }
+            Text("Older notices are hidden. Anything the school has pinned always shows.")
+                .font(.caption)
+                .foregroundStyle(.secondary)
         }
     }
 
@@ -133,6 +153,7 @@ struct SchoolSettingsView: View {
 
     private func save() {
         SchoolConfig.sources = sources
+        SchoolConfig.maxAgeDays = maxAgeWeeks * 7
         SchoolConfig.profile = SchoolProfile(
             yearLevel: yearLevel,
             house: house.trimmingCharacters(in: .whitespaces),

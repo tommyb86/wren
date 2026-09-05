@@ -10,7 +10,10 @@ final class SchoolNotice {
     /// The numeric article id. The dedupe key.
     var guid: String = ""
     var title: String = ""
+    /// Flattened text, for ranking and previews.
     var bodyText: String = ""
+    /// Original body HTML, so the detail view can render paragraphs and bullets.
+    var bodyHTML: String = ""
     var published: Date = Date.distantPast
     var category: String = ""
     /// Position in the feed as last seen; `<= 3` means pinned by the school.
@@ -25,6 +28,7 @@ final class SchoolNotice {
         guid: String = "",
         title: String = "",
         bodyText: String = "",
+        bodyHTML: String = "",
         published: Date = .distantPast,
         category: String = "",
         feedPosition: Int = 0,
@@ -36,6 +40,7 @@ final class SchoolNotice {
         self.guid = guid
         self.title = title
         self.bodyText = bodyText
+        self.bodyHTML = bodyHTML
         self.published = published
         self.category = category
         self.feedPosition = feedPosition
@@ -52,6 +57,7 @@ extension SchoolNotice {
             guid: item.guid,
             title: item.title,
             bodyText: item.bodyText,
+            bodyHTML: item.bodyHTML,
             published: item.published ?? .distantPast,
             category: item.category,
             feedPosition: item.position,
@@ -69,6 +75,7 @@ extension SchoolNotice {
             guid: guid,
             title: title,
             bodyText: bodyText,
+            bodyHTML: bodyHTML,
             published: published == .distantPast ? nil : published,
             category: category,
             position: feedPosition,
@@ -82,6 +89,7 @@ extension SchoolNotice {
     func merge(_ item: SchoolFeedItem) {
         title = item.title
         bodyText = item.bodyText
+        if !item.bodyHTML.isEmpty { bodyHTML = item.bodyHTML }
         if let published = item.published { self.published = published }
         category = item.category
         feedPosition = item.position

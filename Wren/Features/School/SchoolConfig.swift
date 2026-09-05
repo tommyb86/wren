@@ -25,6 +25,15 @@ struct SchoolSource: Codable, Hashable, Identifiable {
 enum SchoolConfig {
     private static let sourcesKey = "schoolSources"
     private static let profileKey = "schoolProfile"
+    private static let maxAgeDaysKey = "schoolMaxAgeDays"
+
+    /// Notices older than this are hidden — school news is termly, so a stale
+    /// January post is just clutter. Pinned notices ignore it, since the school
+    /// keeping one at the top is its "still current" signal. Default six weeks.
+    static var maxAgeDays: Int {
+        get { UserDefaults.standard.object(forKey: maxAgeDaysKey) as? Int ?? 42 }
+        set { UserDefaults.standard.set(newValue, forKey: maxAgeDaysKey) }
+    }
 
     static var sources: [SchoolSource] {
         get {

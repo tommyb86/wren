@@ -31,11 +31,7 @@ struct SchoolNoticeView: View {
 
                 Divider().overlay(Color.wren.divider)
 
-                Text(notice.bodyText.isEmpty ? "No further detail in the notice." : notice.bodyText)
-                    .font(.body)
-                    .foregroundStyle(Color.wren.textPrimary)
-                    .fixedSize(horizontal: false, vertical: true)
-                    .lineSpacing(4)
+                articleBody
             }
             .padding(.horizontal, Space.l)
             .padding(.top, Space.m)
@@ -46,6 +42,43 @@ struct SchoolNoticeView: View {
         .navigationBarTitleDisplayMode(.inline)
         .task {
             SchoolStore.markRead(notice, context: context)
+        }
+    }
+
+    /// The article, as paragraphs and bullets. Falls back to the flattened text
+    /// for a notice stored before bodies were kept as HTML (until it re-fetches).
+    @ViewBuilder
+    private var articleBody: some View {
+        let blocks = notice.bodyHTML.isEmpty
+            ? (notice.bodyText.isEmpty ? [] : [SchoolBodyBlock.paragraph(notice.bodyText)])
+            : SchoolBody.blocks(fromHTML: notice.bodyHTML)
+
+        if blocks.isEmpty {
+            Text("No further detail in the notice.")
+                .font(.body)
+                .foregroundStyle(Color.wren.textSecondary)
+        } else {
+            VStack(alignment: .leading, spacing: Space.m) {
+                ForEach(Array(blocks.enumerated()), id: \.offset) { _, block in
+                    if block.isBullet {
+                        HStack(alignment: .firstTextBaseline, spacing: Space.s) {
+                            Text("•")
+                                .font(.body)
+                                .foregroundStyle(Color.wren.textSecondary)
+                            Text(block.text)
+                                .font(.body)
+                                .foregroundStyle(Color.wren.textPrimary)
+                                .fixedSize(horizontal: false, vertical: true)
+                        }
+                    } else {
+                        Text(block.text)
+                            .font(.body)
+                            .foregroundStyle(Color.wren.textPrimary)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .lineSpacing(4)
+                    }
+                }
+            }
         }
     }
 

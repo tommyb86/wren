@@ -63,6 +63,28 @@ final class SchoolTests: XCTestCase {
         XCTAssertEqual(items[1].guid, "31287")
     }
 
+    func testParserKeepsBodyHTML() {
+        let items = SchoolFeedParser.parse(sampleRSS)
+        XCTAssertTrue(items[0].bodyHTML.contains("<strong>"))
+    }
+
+    // MARK: - Structured body
+
+    func testBodyBlocksSplitParagraphsAndBullets() {
+        let html = "<p>Week 8 was busy.</p><p>Uniform reminder:</p><ul><li>Blazers compulsory</li><li>Hair above the collar</li></ul>"
+        let blocks = SchoolBody.blocks(fromHTML: html)
+        XCTAssertEqual(blocks.count, 4)
+        XCTAssertEqual(blocks[0], .paragraph("Week 8 was busy."))
+        XCTAssertEqual(blocks[1], .paragraph("Uniform reminder:"))
+        XCTAssertEqual(blocks[2], .bullet("Blazers compulsory"))
+        XCTAssertTrue(blocks[3].isBullet)
+    }
+
+    func testBodyBlocksFallBackToPlainWhenNoMarkup() {
+        let blocks = SchoolBody.blocks(fromHTML: "Just a line with no tags.")
+        XCTAssertEqual(blocks, [.paragraph("Just a line with no tags.")])
+    }
+
     // MARK: - Series
 
     func testSeriesStem() {
