@@ -1,0 +1,38 @@
+{
+  "pages": [
+    { "id": "page-0", "name": "School" },
+    { "id": "page-1", "name": "Flows" }
+  ],
+  "artboards": [
+    { "file": "Main.dc.html", "title": "School", "page": "page-0", "x": 0, "y": 0, "w": 390, "h": 1500 },
+    { "file": "Dark.dc.html", "title": "School, dark", "page": "page-0", "x": 560, "y": 0, "w": 390, "h": 1300 },
+    { "file": "Today.dc.html", "title": "Today, with school", "page": "page-0", "x": 1120, "y": 0, "w": 390, "h": 1220 },
+    { "file": "Merged.dc.html", "title": "Two sources, one row", "page": "page-0", "x": 1680, "y": 0, "w": 390, "h": 1040 },
+
+    { "file": "Inbox.dc.html", "title": "Suggested dates", "page": "page-1", "x": 0, "y": 0, "w": 390, "h": 1120 },
+    { "file": "Item.dc.html", "title": "One notice", "page": "page-1", "x": 560, "y": 0, "w": 390, "h": 1080 },
+    { "file": "Remind.dc.html", "title": "Remind me", "page": "page-1", "x": 1120, "y": 0, "w": 390, "h": 940 },
+    { "file": "Profile.dc.html", "title": "What counts", "page": "page-1", "x": 1680, "y": 0, "w": 390, "h": 1660 },
+    { "file": "Brief.dc.html", "title": "The 7:30 brief", "page": "page-1", "x": 2240, "y": 0, "w": 390, "h": 1100 },
+    { "file": "Bulletin.dc.html", "title": "Weekly bulletin", "page": "page-1", "x": 2800, "y": 0, "w": 390, "h": 1300 }
+  ],
+  "annotations": [
+    {
+      "id": "rank-not-filter",
+      "page": "page-0",
+      "x": 0,
+      "y": -190,
+      "w": 950,
+      "text": "Rank, never filter — then correlate.\nAll 43 items stay reachable; the sections only set the order. And where a notice and a calendar event are the same real thing (the Monday assembly), Wren joins them into one row carrying both halves — see 'Two sources, one row'."
+    },
+    {
+      "id": "dates-are-the-product",
+      "page": "page-1",
+      "x": 0,
+      "y": -190,
+      "w": 950,
+      "text": "A notice you have read is worth less than a date you have kept.\nSuggested dates shows the sentence each date came from, so you can trust it before accepting. Accepting writes a one-off Wren task, and optionally an Apple Reminder or calendar event."
+    }
+  ],
+  "launch": { "view": "canvas", "page": "page-0" }
+}

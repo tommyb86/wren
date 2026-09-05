@@ -1,0 +1,192 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F3F0E8; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .block { background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; }
+    .label { font-size: 14px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .fieldlabel { font-size: 10px; line-height: 14px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5E5A52; }
+    .value { font-size: 17px; line-height: 22px; font-weight: 700; color: #1C1A17; }
+    .placeholder { font-size: 17px; line-height: 22px; font-weight: 700; color: #A8A297; }
+    .foot { font-size: 12px; line-height: 17px; color: #5E5A52; padding: 8px 4px 0 4px; }
+    .rule { border-top: 1px solid #DED9CE; }
+    .on { font-size: 11px; line-height: 15px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 8px; background: #E4F5A6; border: 1.5px solid #1C1A17; border-radius: 3px; }
+    .off { font-size: 11px; line-height: 15px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 8px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 3px; color: #5E5A52; }
+    a { color: #1C1A17; } a:hover { color: #444444; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1660px; background: #F3F0E8; color: #1C1A17; display: flex; flex-direction: column; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 16px; border-bottom: 1.5px solid #1C1A17; background: #F3F0E8;">
+    <div class="sys" style="font-size: 15px; line-height: 20px; font-weight: 500; color: #5E5A52;">Cancel</div>
+    <div style="font-size: 16px; line-height: 20px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase;">What counts</div>
+    <div style="display: flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; background: #C6F135; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Save</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 24px; padding: 24px 16px 48px 16px;">
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">At school</div>
+      <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0;">
+          <div class="fieldlabel">Name</div>
+          <div class="placeholder">Add a name</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px;">
+            <div class="fieldlabel">Year level</div>
+            <div class="value" style="font-size: 24px; line-height: 28px;">Year 4</div>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 3px; box-shadow: 2px 2px 0 #1C1A17; font-size: 18px; font-weight: 700;">−</div>
+            <div style="display: flex; align-items: center; justify-content: center; width: 38px; height: 38px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 3px; box-shadow: 2px 2px 0 #1C1A17; font-size: 18px; font-weight: 700;">+</div>
+          </div>
+        </div>
+        <div class="rule" style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0;">
+          <div class="fieldlabel">House</div>
+          <div class="value">Rowan</div>
+        </div>
+      </div>
+      <div class="sys foot">Junior School follows from the year level. At the start of Term 1 Wren moves him up a year and asks you to confirm both — the house changes on the move to Secondary.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">Co-curricular</div>
+      <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0;">
+          <div class="on">Football</div>
+          <div class="on">Pipe Band</div>
+          <div class="on">Water Polo</div>
+          <div class="off">Debating</div>
+          <div class="off">Tennis</div>
+          <div class="off">Cricket</div>
+          <div class="off">Art Club</div>
+          <div class="off">Rugby</div>
+          <div class="off">Colla Voce</div>
+          <div class="off">Chess</div>
+          <div style="font-size: 11px; line-height: 15px; font-weight: 700; letter-spacing: 0.04em; padding: 4px 8px; background: #FFFFFF; border: 1.5px dashed #5E5A52; border-radius: 3px; color: #5E5A52;">+ Add</div>
+        </div>
+        <div class="rule" style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0;">
+          <div class="fieldlabel">Teams and groups</div>
+          <div class="placeholder">Add a team name</div>
+        </div>
+      </div>
+      <div class="sys foot">Every chip is yours to edit — the list above is only what the feed has mentioned so far. Notices name teams as grades, “5A” or “QDU 10.1”; add his once you know it and photo and fixture notices start matching.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">Always show</div>
+      <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+
+        <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="flex-grow: 1;"><div class="value" style="font-size: 15px;">Uniform and kit changes</div></div>
+          <div style="display: flex; align-items: center; width: 54px; height: 30px; padding: 2px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 4px; box-sizing: border-box; justify-content: flex-end; flex-shrink: 0;"><div style="width: 22px; height: 22px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 1px 1px 0 #1C1A17; box-sizing: border-box;"></div></div>
+        </div>
+
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="flex-grow: 1;"><div class="value" style="font-size: 15px;">Parking, buses and transport</div></div>
+          <div style="display: flex; align-items: center; width: 54px; height: 30px; padding: 2px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 4px; box-sizing: border-box; justify-content: flex-end; flex-shrink: 0;"><div style="width: 22px; height: 22px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 1px 1px 0 #1C1A17; box-sizing: border-box;"></div></div>
+        </div>
+
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="flex-grow: 1;"><div class="value" style="font-size: 15px;">Term dates and free days</div></div>
+          <div style="display: flex; align-items: center; width: 54px; height: 30px; padding: 2px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 4px; box-sizing: border-box; justify-content: flex-end; flex-shrink: 0;"><div style="width: 22px; height: 22px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 1px 1px 0 #1C1A17; box-sizing: border-box;"></div></div>
+        </div>
+
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="flex-grow: 1;"><div class="value" style="font-size: 15px;">Fundraising and house charity</div></div>
+          <div style="display: flex; align-items: center; width: 54px; height: 30px; padding: 2px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 4px; box-sizing: border-box; justify-content: flex-start; flex-shrink: 0;"><div style="width: 22px; height: 22px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 1px 1px 0 #1C1A17; box-sizing: border-box;"></div></div>
+        </div>
+
+      </div>
+      <div class="sys foot">Off means further down, never gone. Everything the school publishes stays readable under Everything else.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">Notify me</div>
+      <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+        <div style="display: flex; flex-wrap: wrap; gap: 6px; padding: 12px 0;">
+          <div class="off">Everything new</div>
+          <div class="on">Only dated things</div>
+          <div class="off">Nothing, just the brief</div>
+        </div>
+      </div>
+      <div class="sys foot">The morning brief carries the rest at 7:30 am, so a notice posted at 2pm on a Tuesday does not interrupt you.</div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 10px;">
+      <div class="label">Sources</div>
+      <div class="block" style="display: flex; flex-direction: column; padding: 0 14px;">
+        <div style="display: flex; flex-direction: column; gap: 2px; padding: 10px 0;">
+          <div class="fieldlabel">School</div>
+          <div class="value">Brisbane Boys' College</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div class="fieldlabel">All news · the corpus</div>
+            <div class="sys" style="font-size: 13px; line-height: 18px; font-weight: 500; color: #5E5A52;">43 items · checked 12 min ago</div>
+          </div>
+          <div style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 3px; font-size: 10px; line-height: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;">OK</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div class="fieldlabel">Topic · labels only</div>
+            <div class="value" style="font-size: 15px;">Year 4 Community</div>
+            <div class="sys" style="font-size: 12px; line-height: 16px; color: #5E5A52;">topic 12973 · 1 item</div>
+          </div>
+          <div style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 3px; font-size: 10px; line-height: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;">OK</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div class="fieldlabel">Topic · labels only</div>
+            <div class="value" style="font-size: 15px;">Junior School Community</div>
+            <div class="sys" style="font-size: 12px; line-height: 16px; color: #5E5A52;">topic 991 · 2 items</div>
+          </div>
+          <div style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 3px; font-size: 10px; line-height: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;">OK</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="flex-grow: 1;"><div class="placeholder" style="font-size: 15px;">Add a topic feed</div></div>
+          <div style="display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px; font-size: 16px; font-weight: 700; flex-shrink: 0;">+</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div class="fieldlabel">His calendar · timetable &amp; fixtures</div>
+            <div class="sys" style="font-size: 13px; line-height: 18px; font-weight: 500; color: #5E5A52; word-break: break-all;">calendar/export.php?…&amp;token=••••</div>
+            <div style="display: flex; align-items: center; gap: 5px; padding-top: 2px;">
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#5E5A52" stroke-width="2.4"><rect x="4" y="10" width="16" height="10"></rect><path d="M8 10 V7 a4 4 0 0 1 8 0 v3"></path></svg>
+              <div class="sys" style="font-size: 12px; line-height: 16px; color: #5E5A52;">In the Keychain, kept off backups</div>
+            </div>
+          </div>
+          <div style="display: inline-flex; align-items: center; height: 20px; padding: 0 6px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 3px; font-size: 10px; line-height: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;">OK</div>
+        </div>
+        <div class="rule" style="display: flex; flex-direction: column; gap: 3px; padding: 10px 0;">
+          <div class="fieldlabel">Whole-college events</div>
+          <div class="sys" style="font-size: 13px; line-height: 18px; font-weight: 500; color: #5E5A52; word-break: break-all;">bbc.qld.edu.au/events/?ical=1</div>
+        </div>
+        <div class="rule" style="display: flex; align-items: center; gap: 12px; padding: 10px 0;">
+          <div style="display: flex; flex-direction: column; gap: 2px; flex-grow: 1;">
+            <div class="fieldlabel">Term dates</div>
+            <div class="value" style="font-size: 15px;">2026 and 2027 · 8 terms</div>
+          </div>
+          <div style="display: flex; align-items: center; justify-content: center; height: 30px; padding: 0 12px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px; font-size: 12px; line-height: 16px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; flex-shrink: 0;">Edit</div>
+        </div>
+      </div>
+      <div class="sys foot">His calendar is a personal link the school gives you — anyone holding it can read his week, so Wren keeps it in the Keychain and shows it masked. Topic feeds only add the school's own labels to notices already collected from All news, so a quiet topic costs a label, never a notice. Nothing about the school is compiled in: change the sources and every screen follows.</div>
+    </div>
+
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>

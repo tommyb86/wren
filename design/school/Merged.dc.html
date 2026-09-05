@@ -1,0 +1,98 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F3F0E8; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .block { background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; }
+    .tag { display: inline-flex; align-items: center; height: 20px; padding: 0 6px; border: 1.5px solid #1C1A17; font-size: 10px; line-height: 13px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; }
+    .caption { font-size: 12px; line-height: 17px; color: #5E5A52; }
+    .optlabel { font-size: 13px; line-height: 18px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; color: #5E5A52; }
+    a { color: #1C1A17; } a:hover { color: #444444; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1040px; background: #F3F0E8; color: #1C1A17; display: flex; flex-direction: column; gap: 26px; padding: 40px 20px 48px 20px; box-sizing: border-box;">
+
+  <div style="display: flex; flex-direction: column; gap: 6px;">
+    <div style="font-size: 20px; line-height: 26px; font-weight: 700;">One event, two sources</div>
+    <div class="sys caption" style="text-wrap: pretty;">The assembly is in his calendar as a time, and in the news as a notice. Neither is the whole story — so Wren joins them into one row instead of showing two half-empty ones.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">Apart — what each source knows</div>
+    <div style="display: flex; gap: 10px;">
+      <div class="block" style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 12px;">
+        <div class="tag" style="align-self: flex-start; background: #C6F135;">Calendar</div>
+        <div style="font-size: 15px; line-height: 20px; font-weight: 700;">Father's Day Assembly</div>
+        <div class="sys" style="font-size: 12px; line-height: 16px; color: #5E5A52;">Mon 7 Sep · 1.30pm<br>College Hall</div>
+      </div>
+      <div class="block" style="flex: 1; display: flex; flex-direction: column; gap: 6px; padding: 12px;">
+        <div class="tag" style="align-self: flex-start; background: #C6F135;">News</div>
+        <div style="font-size: 15px; line-height: 20px; font-weight: 700;">JS Father's Day Special Assembly</div>
+        <div class="sys" style="font-size: 12px; line-height: 16px; color: #5E5A52;">Parking on oval from 1.00pm · dads invited</div>
+      </div>
+    </div>
+    <div class="sys caption">Same day, overlapping title, agreeing venue — two signals, so it merges.</div>
+  </div>
+
+  <div style="display: flex; align-items: center; gap: 10px; padding: 0 20px;">
+    <div style="flex-grow: 1; height: 1.5px; background: #DED9CE;"></div>
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1C1A17" stroke-width="2.2" stroke-linecap="square"><path d="M12 5 V19 M5 12 L12 19 L19 12"></path></svg>
+    <div style="flex-grow: 1; height: 1.5px; background: #DED9CE;"></div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">Together — on Today, Monday</div>
+    <div class="block" style="display: flex; flex-direction: column; padding: 0 12px 12px 12px; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 10px; padding: 16px 0 4px 0;">
+        <div style="font-size: 15px; line-height: 20px; font-weight: 700; letter-spacing: 0.8px; text-transform: uppercase;">Monday 7</div>
+        <div style="flex-grow: 1; height: 1.5px; background: #1C1A17;"></div>
+      </div>
+      <div style="display: flex; align-items: flex-start; gap: 12px; padding: 10px 0;">
+        <div style="display: flex; flex-direction: column; gap: 5px; flex-grow: 1;">
+          <div style="font-size: 17px; line-height: 22px; font-weight: 700;">Father's Day Assembly</div>
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500;">1.30pm · College Hall · dads invited</div>
+          <div style="font-size: 12px; line-height: 16px; font-weight: 500;">Park before <span style="background: #C6F135; padding: 0 3px; font-weight: 700;">1.00pm</span> — P&amp;F Oval closes</div>
+          <div style="display: flex; flex-wrap: wrap; gap: 5px; padding-top: 2px;">
+            <div class="tag" style="background: #C6F135;">Calendar</div>
+            <div class="tag" style="background: #C6F135;">Junior School Community</div>
+          </div>
+        </div>
+        <div style="width: 44px; height: 44px; display: flex; align-items: center; justify-content: center; flex-shrink: 0;"><div style="width: 24px; height: 24px; background: #FFFFFF; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; box-sizing: border-box;"></div></div>
+      </div>
+    </div>
+    <div class="sys caption">Both source tags stay on the row, and either original card is still one tap away — a wrong join is visible, never a silent swallow.</div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 10px;">
+    <div class="optlabel">When unsure — both, never neither</div>
+    <div class="block" style="display: flex; flex-direction: column; padding: 0 12px 10px 12px; overflow: hidden;">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 12px 0 10px 0;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+          <div style="font-size: 16px; line-height: 21px; font-weight: 700;">Water Polo vs Churchie</div>
+          <div style="display: flex; align-items: center; gap: 6px;"><div class="tag">Calendar</div><div class="sys" style="font-size: 12px; color: #5E5A52;">Sat 12 Sep · 8.00am</div></div>
+        </div>
+      </div>
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 0; border-top: 1px solid #DED9CE;">
+        <div style="display: flex; flex-direction: column; gap: 3px; flex-grow: 1;">
+          <div style="font-size: 16px; line-height: 21px; font-weight: 700;">GPS Water Polo Round 4 draw</div>
+          <div style="display: flex; align-items: center; gap: 6px;"><div class="tag">News</div><div class="sys" style="font-size: 12px; color: #5E5A52;">posted Wed 9 Sep</div></div>
+        </div>
+      </div>
+    </div>
+    <div class="sys caption">Only one signal lines these up, so Wren leaves them as two rows and cross-links them rather than guessing. A duplicate is a shrug; a dropped notice is the thing this feature exists to prevent.</div>
+  </div>
+
+</div>
+</x-dc>
+</body>
+</html>
