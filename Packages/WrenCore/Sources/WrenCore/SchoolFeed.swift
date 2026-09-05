@@ -69,6 +69,13 @@ public enum SchoolText {
             with: " ",
             options: .regularExpression
         )
+        // A dropped tag before punctuation leaves "word ." — close that gap so
+        // the flattened text reads naturally.
+        s = s.replacingOccurrences(
+            of: "\\s+([.,;:!?])",
+            with: "$1",
+            options: .regularExpression
+        )
         return s.trimmingCharacters(in: .whitespacesAndNewlines)
     }
 
