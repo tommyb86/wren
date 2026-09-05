@@ -60,6 +60,8 @@ struct TodayView: View {
 
                     tiles(current)
 
+                    schoolLink
+
                     if current.isEmpty {
                         emptyState
                     } else {
@@ -139,6 +141,35 @@ struct TodayView: View {
                     .foregroundStyle(Color.wren.textSecondary)
             }
         }
+    }
+
+    // MARK: - School
+
+    /// A full-width entry to the School screen. Sits below the four tiles rather
+    /// than as a fifth, since it is a different kind of thing — a feed, not one
+    /// of the counted sources — and would break the 2×2 grid.
+    private var schoolLink: some View {
+        NavigationLink { SchoolView() } label: {
+            HStack(spacing: Space.m) {
+                WrenLidSwatch(color: theme.highlight, size: 14)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("School")
+                        .font(WrenFont.heading)
+                        .foregroundStyle(Color.wren.textPrimary)
+                    Text("News from the college")
+                        .font(WrenFont.detail)
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            .padding(Space.m)
+            .frame(maxWidth: .infinity)
+            .wrenBox()
+        }
+        .buttonStyle(.plain)
     }
 
     // MARK: - Tiles
