@@ -10,7 +10,16 @@ enum ReminderCoordinator {
         do {
             let bins = try context.fetch(FetchDescriptor<BinCollection>())
             let tasks = try context.fetch(FetchDescriptor<RecurringTask>())
-            await NotificationScheduler.shared.rebuild(bins: bins, tasks: tasks, now: now, calendar: calendar)
+            // Bills carry no reminders of their own, but the morning brief and
+            // the badge both count them, so they are fetched here too.
+            let bills = try context.fetch(FetchDescriptor<Bill>())
+            await NotificationScheduler.shared.rebuild(
+                bins: bins,
+                tasks: tasks,
+                bills: bills,
+                now: now,
+                calendar: calendar
+            )
         } catch {
             Logger.shared.error("notif", "rebuild fetch failed: \(error.localizedDescription)")
         }

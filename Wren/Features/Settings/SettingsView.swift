@@ -33,8 +33,22 @@ enum Appearance: String, CaseIterable, Identifiable {
 struct SettingsView: View {
     @AppStorage(Appearance.storageKey) private var appearanceRaw = Appearance.system.rawValue
     @AppStorage(WrenTheme.storageKey) private var themeRaw = WrenTheme.lime.rawValue
+    @AppStorage(MorningBrief.enabledKey) private var briefEnabled = true
+    @AppStorage(MorningBrief.timeKey) private var briefMinutes = MorningBrief.defaultMinutes
 
+    @Environment(\.modelContext) private var context
     @Environment(\.wrenTheme) private var theme
+
+    private let calendar = Calendar.current
+
+    /// The stored minutes as a Date for the picker to bind to, written back on
+    /// the way out so the scheduler and the picker never disagree.
+    private var briefTime: Binding<Date> {
+        Binding(
+            get: { MorningBrief.time(calendar: calendar) },
+            set: { briefMinutes = MorningBrief.minutes(from: $0, calendar: calendar) }
+        )
+    }
 
     private var appearance: Appearance {
         Appearance(rawValue: appearanceRaw) ?? .system
@@ -55,6 +69,23 @@ struct SettingsView: View {
                     WrenSectionLabel(text: "Accent")
                     themePicker
                     Text("Used for anything you can press, whatever is selected, and the one figure a screen is about. Paper, ink and the overdue red don't change.")
+                        .font(.caption)
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+
+                VStack(alignment: .leading, spacing: Space.m) {
+                    WrenSectionLabel(text: "Morning brief")
+                    VStack(spacing: 0) {
+                        WrenToggleRow(label: "Send a daily brief", isOn: $briefEnabled)
+                            .padding(.horizontal, Space.m)
+                        if briefEnabled {
+                            Divider().overlay(Color.wren.divider)
+                            WrenDateRow(label: "At", date: briefTime, components: .hourAndMinute)
+                                .padding(.horizontal, Space.m)
+                        }
+                    }
+                    .wrenBox()
+                    Text("One notification naming what the day holds, instead of a separate nag per thing. A day with nothing on it is skipped.")
                         .font(.caption)
                         .foregroundStyle(Color.wren.textSecondary)
                 }
@@ -90,6 +121,14 @@ struct SettingsView: View {
         }
         .background(Color.wren.background)
         .navigationTitle("Settings")
+        // The brief is written a week ahead, so a change here has to rewrite it
+        // rather than wait for the next foreground.
+        .onChange(of: briefEnabled) { _, _ in rescheduleBrief() }
+        .onChange(of: briefMinutes) { _, _ in rescheduleBrief() }
+    }
+
+    private func rescheduleBrief() {
+        Task { await ReminderCoordinator.rebuild(context: context, calendar: calendar) }
     }
 
     /// Swatches rather than names: the colour is the thing being chosen, so

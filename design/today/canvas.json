@@ -27,6 +27,10 @@
     {
       "id": "page-6",
       "name": "Tasks"
+    },
+    {
+      "id": "page-7",
+      "name": "Kept up"
     }
   ],
   "artboards": [
@@ -236,6 +240,33 @@
       "y": 0,
       "w": 390,
       "h": 1180
+    },
+    {
+      "file": "KeptUpRows.dc.html",
+      "title": "A · On the row",
+      "page": "page-7",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1080
+    },
+    {
+      "file": "KeptUpToday.dc.html",
+      "title": "B · On Today",
+      "page": "page-7",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 1000
+    },
+    {
+      "file": "KeptUpScreen.dc.html",
+      "title": "C · Own screen",
+      "page": "page-7",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 1160
     }
   ],
   "annotations": [
@@ -446,10 +477,42 @@
       "y": -150,
       "w": 390,
       "text": "C · By cadence\nGrouped by how often: weekly, monthly, every few months, one-offs. Answers what the household has standing rather than what is next.\n\nFor: the best library view, and it makes gaps obvious — nothing yearly, no quarterly check.\nAgainst: overdue has to be lifted into a banner or it hides inside a group, and it is the least useful cut when you just want to tick something off."
+    },
+    {
+      "id": "kept-brief",
+      "page": "page-7",
+      "x": 0,
+      "y": -320,
+      "w": 1510,
+      "text": "Honest scorekeeping instead of streaks. Every completion already records the due date and the tick, so the app has been keeping this record since Phase 2 and has never shown it. A rolling rate degrades gracefully: one bad week barely moves 23 of 28, where a streak would reset to zero and make the app a place you avoid. Three squares carry the whole language — filled is on time, split is late, red outline is missed. Sample data."
+    },
+    {
+      "id": "kept-a",
+      "page": "page-7",
+      "x": 0,
+      "y": -170,
+      "w": 390,
+      "text": "A · On the row\nEach recurring task carries a strip of its last several occurrences, oldest on the left, with the household rate in the section header.\n\nFor: the record sits next to the thing it describes, so a task that keeps slipping is obvious while you are looking at it. No new screen.\nAgainst: the Tasks screen gets denser, and you only see it when you go to Tasks."
+    },
+    {
+      "id": "kept-b",
+      "page": "page-7",
+      "x": 560,
+      "y": -170,
+      "w": 390,
+      "text": "B · On Today\nA Kept up block above the agenda: the rate, every occurrence as a square, and one line naming whatever is slipping.\n\nFor: it is on the screen you already open, which is the whole point — you cannot ignore a record you see daily.\nAgainst: Today is the calm screen, and this is the first thing on it that is about you rather than about the day."
+    },
+    {
+      "id": "kept-c",
+      "page": "page-7",
+      "x": 1120,
+      "y": -170,
+      "w": 390,
+      "text": "C · Own screen\nA Kept up screen behind Tasks: the headline rate, a meter per task worst-first, and a financial-year tally including the receipts figure.\n\nFor: room to be useful — it can name the task that is slipping and suggest the schedule is wrong rather than you. The FY tally is the honest score, since receipts turn into money at tax time.\nAgainst: a screen nobody visits changes no behaviour. Needs A or B to pull you into it."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-6"
+    "page": "page-7"
   }
 }

@@ -1,0 +1,83 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F3F0E8; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .box { background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; }
+    .hdr { font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .flabel { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #5E5A52; }
+    .title { font-size: 17px; line-height: 22px; font-weight: 700; }
+    .detail { font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52; }
+    .m { width: 11px; height: 11px; border: 1.5px solid #1C1A17; box-sizing: border-box; }
+    .on { background: #1C1A17; }
+    .late { background: linear-gradient(135deg, #1C1A17 50%, #FFFFFF 50%); }
+    .miss { background: #FFFFFF; border-color: #D93A2B; }
+    a { color: #1C1A17; } a:hover { color: #444; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1000px; background: #F3F0E8; color: #1C1A17; display: flex; flex-direction: column; gap: 24px; padding: 56px 16px 40px 16px; box-sizing: border-box;">
+
+  <div style="display: flex; flex-direction: column; gap: 12px;">
+    <div style="display: inline-flex; align-self: flex-start; align-items: center; height: 26px; padding: 0 10px; background: #C6F135; border: 1.5px solid #1C1A17; border-radius: 3px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Today</div>
+    <div style="font-size: 34px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em;">Saturday<br>5 September</div>
+    <div style="font-size: 18px; line-height: 25px; font-weight: 500;">One thing to do tomorrow, and <span class="num" style="background: #C6F135; padding: 0 4px; font-weight: 700;">$638.82</span> in bills due this week.</div>
+  </div>
+
+  <div class="box" style="display: flex; flex-direction: column; gap: 12px; padding: 14px;">
+    <div style="display: flex; align-items: baseline; justify-content: space-between;">
+      <div class="flabel">Kept up</div>
+      <div class="sys detail">last 8 weeks</div>
+    </div>
+    <div style="display: flex; align-items: flex-end; gap: 10px;">
+      <div class="num" style="font-size: 30px; line-height: 32px; font-weight: 700;">23<span style="font-size: 17px; font-weight: 500; color: #5E5A52;"> of 28</span></div>
+      <div style="font-size: 15px; font-weight: 500; padding-bottom: 3px;">on time</div>
+    </div>
+    <div style="display: flex; gap: 4px; flex-wrap: wrap;">
+      <div class="m on"></div><div class="m on"></div><div class="m late"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div>
+      <div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m miss"></div><div class="m on"></div><div class="m on"></div><div class="m late"></div>
+      <div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m miss"></div><div class="m on"></div><div class="m on"></div>
+      <div class="m late"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div><div class="m on"></div>
+    </div>
+    <div class="sys detail" style="border-top: 1px solid #DED9CE; padding-top: 10px;">Aircon filters is the one slipping — missed twice.</div>
+  </div>
+
+  <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px;">
+    <div class="box" style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px; min-height: 92px;">
+      <div class="flabel">Bins</div>
+      <div><div style="display: flex; align-items: center; gap: 8px;"><div style="width: 14px; height: 14px; background: #D9A82E; border: 1.5px solid #1C1A17;"></div><div style="font-size: 17px; font-weight: 700;">Recycling</div></div><div class="sys detail">week from Thu 10</div></div>
+    </div>
+    <div class="box" style="display: flex; flex-direction: column; justify-content: space-between; gap: 18px; padding: 12px; min-height: 92px;">
+      <div class="flabel">Receipts</div>
+      <div><div class="num" style="font-size: 17px; font-weight: 700;">$239</div><div class="sys detail">FY2026–27 so far</div></div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div style="display: flex; align-items: center; gap: 10px;">
+      <div class="hdr">Today</div>
+      <div style="flex-grow: 1; height: 1.5px; background: #1C1A17;"></div>
+    </div>
+    <div class="box">
+      <div style="display: flex; align-items: center; gap: 12px; padding: 10px 14px;">
+        <div style="flex-grow: 1;"><div class="title">AGL</div><div class="sys detail num">Utilities · $150.00</div></div>
+        <div style="display: flex; align-items: center; justify-content: center; height: 32px; padding: 0 12px; background: #C6F135; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px; font-size: 12px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;">Paid</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sys" style="font-size: 12px; line-height: 17px; color: #5E5A52;">The record sits on Today, above the agenda, so you see it without going looking. One square per occurrence across every recurring task, oldest first.</div>
+
+</div>
+</x-dc>
+</body>
+</html>

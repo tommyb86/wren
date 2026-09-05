@@ -69,6 +69,9 @@ final class NotificationScheduler: ObservableObject {
         let fireDate: Date
         let title: String
         let body: String
+        /// Set only on the morning brief, which is the one reminder that knows
+        /// what the whole day holds and so can correct the badge overnight.
+        var badge: Int?
     }
 
     /// Cancels every pending request and re-adds the next `horizonDays` of
@@ -76,6 +79,7 @@ final class NotificationScheduler: ObservableObject {
     func rebuild(
         bins: [BinCollection],
         tasks: [RecurringTask],
+        bills: [Bill] = [],
         now: Date = Date(),
         calendar: Calendar = .current
     ) async {
@@ -90,6 +94,7 @@ final class NotificationScheduler: ObservableObject {
 
         var planned = plannedBinReminders(bins, now: now, horizon: horizon, calendar: calendar)
         planned += plannedTaskReminders(tasks, now: now, horizon: horizon, calendar: calendar)
+        planned += plannedMorningBriefs(bins: bins, tasks: tasks, bills: bills, now: now, calendar: calendar)
         planned.sort { $0.fireDate < $1.fireDate }
 
         // Soonest wins if we are over budget — a reminder four weeks out matters
@@ -105,6 +110,9 @@ final class NotificationScheduler: ObservableObject {
             content.title = reminder.title
             content.body = reminder.body
             content.sound = .default
+            if let badge = reminder.badge {
+                content.badge = NSNumber(value: badge)
+            }
 
             let components = calendar.dateComponents([.year, .month, .day, .hour, .minute], from: reminder.fireDate)
             let request = UNNotificationRequest(
@@ -121,10 +129,12 @@ final class NotificationScheduler: ObservableObject {
             }
         }
 
+        await setBadge(to: agenda(bins: bins, tasks: tasks, bills: bills, at: now, calendar: calendar).actionableCount)
+
         lastRebuild = Date()
         log.info(
             "notif",
-            "rebuilt \(added) reminder(s) over \(Self.horizonDays)d — \(bins.count) bin(s), \(tasks.count) task(s)"
+            "rebuilt \(added) reminder(s) over \(Self.horizonDays)d — \(bins.count) bin(s), \(tasks.count) task(s), \(bills.count) bill(s)"
         )
         if droppedAtCap > 0 {
             log.warn("notif", "\(droppedAtCap) reminder(s) beyond the \(Self.requestBudget)-request budget were not scheduled")
@@ -208,6 +218,90 @@ final class NotificationScheduler: ObservableObject {
 
     /// Stable and idempotent: the same source and occurrence always produce the
     /// same identifier, so rebuilding cannot duplicate a reminder.
+    // MARK: - Morning brief
+
+    /// One notification per morning, each naming what that particular day
+    /// holds. Three reminders at six in the evening are three things to swipe
+    /// away; one sentence at breakfast is a thing you read.
+    ///
+    /// A day with nothing on it is skipped rather than sent as "nothing on".
+    /// A brief that is sometimes absent stays worth reading; one that arrives
+    /// empty teaches you to ignore it.
+    private func plannedMorningBriefs(
+        bins: [BinCollection],
+        tasks: [RecurringTask],
+        bills: [Bill],
+        now: Date,
+        calendar: Calendar
+    ) -> [PlannedReminder] {
+        guard MorningBrief.isEnabled else { return [] }
+
+        let minutes = MorningBrief.minutesFromMidnight
+        let hasAnythingSetUp = !(bins.isEmpty && tasks.isEmpty && bills.isEmpty)
+        guard hasAnythingSetUp else { return [] }
+
+        return (0..<MorningBrief.horizonDays).compactMap { offset -> PlannedReminder? in
+            guard
+                let day = calendar.date(byAdding: .day, value: offset, to: now),
+                let fireDate = calendar.date(bySettingHour: minutes / 60, minute: minutes % 60, second: 0, of: day),
+                fireDate > now
+            else { return nil }
+
+            // Built as of that morning, so the sentence describes the day the
+            // reader is actually waking up to.
+            let dayAgenda = agenda(bins: bins, tasks: tasks, bills: bills, at: fireDate, calendar: calendar)
+            guard !dayAgenda.isEmpty else { return nil }
+
+            let summary = TodaySummary.make(for: dayAgenda, hasAnythingSetUp: true)
+            return PlannedReminder(
+                identifier: MorningBrief.identifier(for: fireDate, calendar: calendar),
+                fireDate: fireDate,
+                title: fireDate.formatted(.dateTime.weekday(.wide).day().month(.wide)),
+                body: summary.text,
+                badge: dayAgenda.actionableCount
+            )
+        }
+    }
+
+    private func agenda(
+        bins: [BinCollection],
+        tasks: [RecurringTask],
+        bills: [Bill],
+        at date: Date,
+        calendar: Calendar
+    ) -> TodayAgenda {
+        TodayAgenda.build(
+            bins: bins.filter(\.isActive).compactMap(\.binSchedule),
+            tasks: tasks.compactMap { task in
+                task.schedule.map {
+                    TaskSpec(
+                        id: task.taskID,
+                        schedule: $0,
+                        completedDueDates: task.completedDueDates,
+                        isActive: task.isActive
+                    )
+                }
+            },
+            bills: bills.compactMap(\.spec),
+            payments: bills.flatMap(\.paymentRecords),
+            now: date,
+            calendar: calendar
+        )
+    }
+
+    // MARK: - Badge
+
+    /// The count of things that can actually be cleared right now. Bins are
+    /// excluded by `actionableCount` — there is no "done" for a bin, so
+    /// badging one would be a number you cannot make go away.
+    private func setBadge(to count: Int) async {
+        do {
+            try await center.setBadgeCount(count)
+        } catch {
+            log.error("notif", "badge update failed: \(error.localizedDescription)")
+        }
+    }
+
     static func binIdentifier(binID: UUID, collection: Date) -> String {
         "bin-\(binID.uuidString)-\(ISO8601DateFormatter().string(from: collection))"
     }

@@ -74,10 +74,21 @@ struct DiagnosticsView: View {
         }
     }
 
+    /// A brief is skipped on an empty day, so the scheduled count is usually
+    /// under the horizon — worth seeing rather than reading as a fault.
+    private var briefStatus: String {
+        guard MorningBrief.isEnabled else { return "Off" }
+        let scheduled = scheduler.pending.filter { $0.identifier.hasPrefix("brief-") }.count
+        let minutes = MorningBrief.minutesFromMidnight
+        let time = String(format: "%02d:%02d", minutes / 60, minutes % 60)
+        return "\(scheduled) of \(MorningBrief.horizonDays)d at \(time)"
+    }
+
     private var notificationSection: some View {
         Section {
             row("Authorisation", scheduler.authorizationStatus.wrenLabel)
             row("Pending", "\(scheduler.pending.count) / \(NotificationScheduler.pendingLimit)")
+            row("Morning briefs", briefStatus)
             row("Budget", "\(NotificationScheduler.requestBudget) over \(NotificationScheduler.horizonDays)d")
             if let lastRebuild = scheduler.lastRebuild {
                 row("Last rebuild", lastRebuild.formatted(date: .omitted, time: .standard))
