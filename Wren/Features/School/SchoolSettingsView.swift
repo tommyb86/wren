@@ -112,14 +112,21 @@ struct SchoolSettingsView: View {
                                 .font(.caption)
                                 .foregroundStyle(.secondary)
                         }
-                        Text(source.url)
+                        Text(display(source))
                             .font(.caption)
                             .foregroundStyle(.secondary)
                             .lineLimit(1)
                             .truncationMode(.middle)
                     }
                 }
-                .onDelete { sources.remove(atOffsets: $0) }
+                .onDelete { offsets in
+                    // Take the token out of the keychain too, or it outlives the
+                    // source that referenced it.
+                    for index in offsets where sources[index].isSecret {
+                        SchoolKeychain.delete(sources[index].id.uuidString)
+                    }
+                    sources.remove(atOffsets: offsets)
+                }
             }
         }
     }
@@ -127,7 +134,7 @@ struct SchoolSettingsView: View {
     private var addSourceSection: some View {
         Section("Add a feed") {
             TextField("Name — e.g. All news, Year 4 Community", text: $newName)
-            TextField("Feed URL", text: $newURL)
+            TextField(newKind == .calendar ? "Calendar address (webcal or https)" : "Feed URL", text: $newURL)
                 .textInputAutocapitalization(.never)
                 .autocorrectionDisabled()
                 .keyboardType(.URL)
@@ -138,7 +145,20 @@ struct SchoolSettingsView: View {
             }
             Button("Add feed") { addSource() }
                 .disabled(newURL.trimmingCharacters(in: .whitespaces).isEmpty)
+
+            if newKind == .calendar {
+                Text("A calendar address is a password for his timetable — anyone with it can read the calendar. Wren keeps it in the keychain and shows it masked from here on.")
+                    .font(.caption)
+                    .foregroundStyle(.secondary)
+            }
         }
+    }
+
+    /// Secrets are never shown back, only acknowledged — so a shoulder-surfer or
+    /// a screenshot cannot lift the token.
+    private func display(_ source: SchoolSource) -> String {
+        guard source.isSecret else { return source.url }
+        return source.url.isEmpty ? "Not set" : "Stored in the keychain"
     }
 
     // MARK: - Actions

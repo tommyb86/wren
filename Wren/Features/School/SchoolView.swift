@@ -23,6 +23,9 @@ struct SchoolView: View {
 
     @State private var showingSettings = false
     @State private var showingInbox = false
+    /// Read from the keychain, so it is resolved on appear rather than in
+    /// `body` — which runs on every update.
+    @State private var hasCalendar = false
 
     private var profile: SchoolProfile { SchoolConfig.profile }
 
@@ -34,7 +37,7 @@ struct SchoolView: View {
                     message: "Add your school's news feed and its notices turn up here, ranked for your son.",
                     cta: "Add a feed"
                 )
-            } else if notices.isEmpty {
+            } else if notices.isEmpty && !hasCalendar {
                 emptyState(
                     title: "Nothing yet",
                     message: "Pull down to refresh. If it stays empty, check the feed URL in settings.",
@@ -54,7 +57,7 @@ struct SchoolView: View {
                 .accessibilityLabel("School settings")
             }
         }
-        .sheet(isPresented: $showingSettings) {
+        .sheet(isPresented: $showingSettings, onDismiss: { hasCalendar = SchoolConfig.hasCalendar }) {
             NavigationStack { SchoolSettingsView() }
         }
         .sheet(isPresented: $showingInbox) {
@@ -65,6 +68,7 @@ struct SchoolView: View {
     }
 
     private func refresh() async {
+        hasCalendar = SchoolConfig.hasCalendar
         await SchoolStore.refresh(context: context)
         SchoolSuggestions.rebuild(context: context)
     }
@@ -76,14 +80,47 @@ struct SchoolView: View {
     /// SwiftUI's layout. Out here it is an ordinary tappable card, exactly like
     /// the Today tiles.
     private var noticesView: some View {
-        VStack(spacing: 0) {
-            if !pending.isEmpty {
-                suggestionsBanner
+        VStack(spacing: Space.s) {
+            if hasCalendar {
+                weekCard
                     .padding(.horizontal, Space.l)
                     .padding(.top, Space.m)
             }
+            if !pending.isEmpty {
+                suggestionsBanner
+                    .padding(.horizontal, Space.l)
+                    .padding(.top, hasCalendar ? 0 : Space.m)
+            }
             list
         }
+    }
+
+    /// Entry to the week ahead. Only shown once a calendar feed is configured,
+    /// so it never leads to an empty screen.
+    private var weekCard: some View {
+        NavigationLink {
+            SchoolWeekView()
+        } label: {
+            HStack(spacing: Space.m) {
+                WrenLidSwatch(color: theme.highlight, size: 16)
+                VStack(alignment: .leading, spacing: 1) {
+                    Text("Week ahead")
+                        .font(WrenFont.heading)
+                        .foregroundStyle(Color.wren.textPrimary)
+                    Text("His timetable and what he's in")
+                        .font(WrenFont.detail)
+                        .foregroundStyle(Color.wren.textSecondary)
+                }
+                Spacer(minLength: 0)
+                Image(systemName: "chevron.right")
+                    .font(.system(size: 13, weight: .bold))
+                    .foregroundStyle(Color.wren.textSecondary)
+            }
+            .padding(Space.m)
+            .frame(maxWidth: .infinity)
+            .wrenBox()
+        }
+        .buttonStyle(.plain)
     }
 
     private var list: some View {

@@ -13,11 +13,23 @@ struct SchoolSource: Codable, Hashable, Identifiable {
     /// `.all` is the corpus — every notice is stored from it. `.topic` feeds are
     /// a labelling pass: their items only union a label onto notices already
     /// collected, so a quiet or renamed topic costs a label, never a notice.
+    /// `.calendar` is the personal iCal feed — his timetable, not news.
     enum Kind: String, Codable, CaseIterable, Identifiable {
-        case all, topic
+        case all, topic, calendar
         var id: String { rawValue }
-        var label: String { self == .all ? "All news" : "Topic label" }
+
+        var label: String {
+            switch self {
+            case .all: return "All news"
+            case .topic: return "Topic label"
+            case .calendar: return "Calendar"
+            }
+        }
     }
+
+    /// A calendar URL is a bearer token for the child's timetable, so it is kept
+    /// in the keychain and never written to `UserDefaults`.
+    var isSecret: Bool { kind == .calendar }
 }
 
 /// School configuration, kept in `UserDefaults` as JSON — like the morning-brief
@@ -35,14 +47,34 @@ enum SchoolConfig {
         set { UserDefaults.standard.set(newValue, forKey: maxAgeDaysKey) }
     }
 
+    /// The configured sources, with any secret URL resolved from the keychain on
+    /// the way out and stripped back out of the plist on the way in. Callers see
+    /// an ordinary `SchoolSource` with a usable `url` and never have to know
+    /// which storage it came from.
     static var sources: [SchoolSource] {
         get {
             guard let data = UserDefaults.standard.data(forKey: sourcesKey) else { return [] }
-            return (try? JSONDecoder().decode([SchoolSource].self, from: data)) ?? []
+            var list = (try? JSONDecoder().decode([SchoolSource].self, from: data)) ?? []
+            for index in list.indices where list[index].isSecret {
+                list[index].url = SchoolKeychain.get(list[index].id.uuidString) ?? ""
+            }
+            return list
         }
         set {
-            UserDefaults.standard.set(try? JSONEncoder().encode(newValue), forKey: sourcesKey)
+            var sanitised = newValue
+            for index in sanitised.indices where sanitised[index].isSecret {
+                SchoolKeychain.set(sanitised[index].url, for: sanitised[index].id.uuidString)
+                // The plist keeps the source, never its token.
+                sanitised[index].url = ""
+            }
+            UserDefaults.standard.set(try? JSONEncoder().encode(sanitised), forKey: sourcesKey)
         }
+    }
+
+    /// True once a calendar feed is set up, so the week-ahead entry only appears
+    /// when there is something behind it.
+    static var hasCalendar: Bool {
+        sources.contains { $0.kind == .calendar && !$0.url.isEmpty }
     }
 
     static var profile: SchoolProfile {

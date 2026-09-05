@@ -14,20 +14,66 @@ enum SchoolStore {
 
         var corpus: [SchoolFeedItem] = []
         var labelsByGuid: [String: [String]] = [:]
+        var events: [SchoolCalendarEvent] = []
 
         for source in sources {
-            let items = await SchoolFeedClient.fetch(source)
             switch source.kind {
             case .all:
-                corpus.append(contentsOf: items)
+                corpus.append(contentsOf: await SchoolFeedClient.fetch(source))
             case .topic:
-                for item in items {
+                for item in await SchoolFeedClient.fetch(source) {
                     labelsByGuid[item.guid, default: []].append(source.name)
                 }
+            case .calendar:
+                events.append(contentsOf: await SchoolFeedClient.fetchICal(source))
             }
         }
 
+        upsertEvents(events, context: context)
         return upsert(corpus: corpus, labelsByGuid: labelsByGuid, context: context)
+    }
+
+    /// Upsert calendar events by `uid`, then drop the ones that have finished.
+    /// The week ahead is a forward-looking view, so keeping the past would only
+    /// grow the store and slow the query.
+    @discardableResult
+    static func upsertEvents(
+        _ events: [SchoolCalendarEvent],
+        context: ModelContext,
+        calendar: Calendar = .current
+    ) -> Int {
+        let existing = (try? context.fetch(FetchDescriptor<SchoolEvent>())) ?? []
+        guard !events.isEmpty || !existing.isEmpty else { return 0 }
+
+        var byUID: [String: SchoolEvent] = [:]
+        for event in existing { byUID[event.uid] = event }
+
+        var added = 0
+        for event in events where !event.uid.isEmpty {
+            if let stored = byUID[event.uid] {
+                stored.merge(event)
+            } else {
+                let stored = SchoolEvent(from: event)
+                context.insert(stored)
+                byUID[event.uid] = stored
+                added += 1
+            }
+        }
+
+        // Yesterday, not today: an event that finished this morning is still
+        // worth seeing for the rest of the day.
+        let floor = calendar.date(byAdding: .day, value: -1, to: calendar.startOfDay(for: Date())) ?? .distantPast
+        for stored in byUID.values where stored.finish < floor {
+            context.delete(stored)
+        }
+
+        do {
+            try context.save()
+            Logger.shared.info("school", "reconciled calendar — \(added) new, \(events.count) in feed")
+        } catch {
+            Logger.shared.error("school", "calendar save failed: \(error.localizedDescription)")
+        }
+        return added
     }
 
     /// Upsert by `guid`, enriching each corpus item with any topic labels, then
