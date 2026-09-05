@@ -27,8 +27,8 @@ targets:
         # than generated — an `info:` block would have XcodeGen overwrite it.
         INFOPLIST_FILE: Wren/Info.plist
         GENERATE_INFOPLIST_FILE: NO
-        MARKETING_VERSION: "0.13.0"
-        CURRENT_PROJECT_VERSION: "19"
+        MARKETING_VERSION: "0.16.0"
+        CURRENT_PROJECT_VERSION: "20"
         PRODUCT_BUNDLE_IDENTIFIER: au.wren.app
         PRODUCT_NAME: Wren
         SWIFT_VERSION: "5.9"
