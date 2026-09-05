@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;700&amp;display=swap">
+  <style>
+    body { margin: 0; background: #F3F0E8; }
+    .screen { font-family: "Space Grotesk", -apple-system, system-ui, "Segoe UI", sans-serif; -webkit-font-smoothing: antialiased; }
+    .sys { font-family: -apple-system, "SF Pro Text", system-ui, "Segoe UI", sans-serif; }
+    .num { font-variant-numeric: tabular-nums; }
+    .box { background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 6px; }
+    .hdr { font-size: 15px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; }
+    .title { font-size: 17px; line-height: 22px; font-weight: 700; }
+    .detail { font-size: 12px; line-height: 16px; font-weight: 500; color: #5E5A52; }
+    .tick { width: 24px; height: 24px; background: #FFFFFF; border: 1.5px solid #1C1A17; border-radius: 2px; box-shadow: 2px 2px 0 #1C1A17; box-sizing: border-box; flex-shrink: 0; }
+    .row { display: flex; align-items: center; gap: 12px; padding: 10px 14px; }
+    .chip { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 7px; border: 1.5px solid; border-radius: 3px; }
+    a { color: #1C1A17; } a:hover { color: #444; }
+  </style>
+</helmet>
+<div class="screen" style="width: 390px; min-height: 1180px; background: #F3F0E8; color: #1C1A17; display: flex; flex-direction: column; gap: 22px; padding: 56px 16px 40px 16px; box-sizing: border-box;">
+
+  <div style="display: flex; align-items: flex-end; justify-content: space-between;">
+    <div style="display: flex; flex-direction: column; gap: 4px;">
+      <div style="font-size: 34px; line-height: 38px; font-weight: 700; letter-spacing: -0.02em;">Tasks</div>
+      <div class="sys detail">What the household has standing</div>
+    </div>
+    <div style="width: 32px; height: 32px; display: flex; align-items: center; justify-content: center; background: #C6F135; border: 1.5px solid #1C1A17; box-shadow: 2px 2px 0 #1C1A17; border-radius: 3px;"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"></path></svg></div>
+  </div>
+
+  <div class="box" style="display: flex; align-items: center; gap: 12px; padding: 12px 14px; background: #FFFFFF; border-color: #D93A2B; box-shadow: 2px 2px 0 #1C1A17;">
+    <div style="flex-grow: 1;"><div class="title" style="color: #D93A2B;">2 need doing</div><div class="sys detail">Aircon filters, call the dentist</div></div>
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#D93A2B" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 6l6 6-6 6"></path></svg>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div class="hdr">Weekly</div>
+    <div class="box">
+      <div class="row">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Iron uniforms</div><div class="sys detail">Sundays at 8:00 pm</div></div>
+        <div class="sys detail num">Sun 6</div>
+      </div>
+      <div class="row" style="border-top: 1px solid #DED9CE;">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Water the ferns</div><div class="sys detail">Mondays at 7:00 am</div></div>
+        <div class="sys detail num">Mon 7</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div class="hdr">Monthly</div>
+    <div class="box">
+      <div class="row">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Collate operational KPIs</div><div class="sys detail">First Monday</div></div>
+        <div class="sys detail num">Mon 7</div>
+      </div>
+      <div class="row" style="border-top: 1px solid #DED9CE;">
+        <div class="tick" style="box-shadow: none; border-color: #5E5A52;"></div>
+        <div style="flex-grow: 1;"><div class="title" style="color: #5E5A52;">Descale the kettle</div><div class="sys detail">Paused</div></div>
+        <div class="chip" style="border-color: #5E5A52; color: #5E5A52;">Paused</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div class="hdr">Every few months</div>
+    <div class="box">
+      <div class="row">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Clean the aircon filters</div><div class="sys detail" style="color: #D93A2B;">Every 3 months · overdue by 3 days</div></div>
+        <div class="chip num" style="border-color: #D93A2B; color: #D93A2B;">2 missed</div>
+      </div>
+      <div class="row" style="border-top: 1px solid #DED9CE;">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Test the smoke alarms</div><div class="sys detail">Every 6 months</div></div>
+        <div class="sys detail num">Wed 1 Oct</div>
+      </div>
+    </div>
+  </div>
+
+  <div style="display: flex; flex-direction: column; gap: 8px;">
+    <div class="hdr">One-offs</div>
+    <div class="box">
+      <div class="row">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Pick up Freddie</div><div class="sys detail">Tomorrow at 11:30 am</div></div>
+      </div>
+      <div class="row" style="border-top: 1px solid #DED9CE;">
+        <div class="tick"></div>
+        <div style="flex-grow: 1;"><div class="title">Call the dentist</div><div class="sys detail" style="color: #D93A2B;">Overdue since yesterday</div></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="sys" style="font-size: 12px; line-height: 17px; color: #5E5A52; padding-top: 4px;">Grouped by how often, so the screen answers "what have I committed to" rather than "what's next". Overdue is pulled out into a banner because it would otherwise be buried in whichever cadence it belongs to.</div>
+
+</div>
+</x-dc>
+</body>
+</html>

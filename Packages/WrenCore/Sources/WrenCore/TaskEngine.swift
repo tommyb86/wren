@@ -31,6 +31,30 @@ public struct TaskEngine {
     /// showing a wall of shame from six months ago.
     public static let defaultLookbackDays = 60
 
+    /// How long a ticked one-off reminder is kept before it is deleted.
+    ///
+    /// A reminder is transient by nature: it exists to be done once. Keeping it
+    /// forever turns the list into an archive nobody reads, so it stays around
+    /// long enough to be undone or noticed, then goes. Recurring tasks are
+    /// never subject to this — they are standing commitments.
+    public static let settledReminderRetentionDays = 7
+
+    /// Whether a reminder ticked at `completedAt` has outlived its retention.
+    /// Measured in whole days so the cutoff does not depend on the time of day
+    /// it happened to be ticked.
+    public static func settledReminderHasExpired(
+        completedAt: Date,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) -> Bool {
+        let days = calendar.dateComponents(
+            [.day],
+            from: calendar.startOfDay(for: completedAt),
+            to: calendar.startOfDay(for: now)
+        ).day ?? 0
+        return days >= settledReminderRetentionDays
+    }
+
     public static func state(
         schedule: Schedule,
         completedDueDates: [Date],

@@ -42,38 +42,94 @@ struct TasksListView: View {
                 }
             }
         }
+        // Reminders are cleared here rather than on a timer: this is the only
+        // screen they are visible on, so it is the only place it matters.
+        .task {
+            TaskStore.purgeSettledReminders(tasks, context: context, calendar: calendar)
+        }
     }
 
+    /// Reminders and recurring tasks are kept apart because they behave
+    /// differently: a reminder is done once and then gone, a recurring task
+    /// only ever cycles. Anything overdue floats above both, since at that
+    /// point what kind of thing it is matters less than the fact it is late.
     private var list: some View {
         List {
-            if !overdueTasks.isEmpty {
-                section("Overdue", tasks: overdueTasks, color: .wren.alert)
+            summary
+
+            if !needsDoing.isEmpty {
+                section("Needs doing", tasks: needsDoing, color: .wren.alert, showsKind: true)
             }
 
-            section(overdueTasks.isEmpty ? "Tasks" : "Upcoming", tasks: upcomingTasks)
+            if !reminders.isEmpty {
+                section(
+                    "Reminders",
+                    tasks: reminders,
+                    footer: "One-offs. A ticked one is removed a week later."
+                )
+            }
 
-            // A settled one-off has nothing left to do, so it drops out of the
-            // main list rather than sitting there looking pending forever.
-            if !finishedTasks.isEmpty {
-                section("Done", tasks: finishedTasks, color: .wren.textSecondary)
+            if !recurring.isEmpty {
+                section(
+                    "Recurring",
+                    tasks: recurring,
+                    footer: "Sorted by what is next. Paused ones sink to the bottom."
+                )
             }
         }
         .wrenListStyle()
     }
 
-    private func section(_ title: String, tasks: [RecurringTask], color: Color = .wren.textPrimary) -> some View {
+    private var summary: some View {
+        Text(summaryText)
+            .font(WrenFont.detail)
+            .monospacedDigit()
+            .foregroundStyle(Color.wren.textSecondary)
+            .padding(.horizontal, Space.l)
+            .padding(.top, Space.s)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .listRowInsets(EdgeInsets())
+            .listRowBackground(Color.wren.background)
+            .listRowSeparator(.hidden)
+    }
+
+    private var summaryText: String {
+        let recurringCount = tasks.filter { !$0.isOneOff }.count
+        let reminderCount = tasks.filter(\.isOneOff).count
+        var parts = ["\(recurringCount) recurring", "\(reminderCount) reminder\(reminderCount == 1 ? "" : "s")"]
+        parts.append(needsDoing.isEmpty ? "nothing overdue" : "\(needsDoing.count) overdue")
+        return parts.joined(separator: " · ")
+    }
+
+    private func section(
+        _ title: String,
+        tasks: [RecurringTask],
+        color: Color = .wren.textPrimary,
+        footer: String? = nil,
+        showsKind: Bool = false
+    ) -> some View {
         Section {
             ForEach(Array(tasks.enumerated()), id: \.element.taskID) { index, task in
-                row(task)
+                row(task, showsKind: showsKind)
                     .wrenRow(first: index == 0, last: index == tasks.count - 1)
             }
         } header: {
             WrenListHeader(text: title, color: color)
+        } footer: {
+            if let footer {
+                WrenListFooter(text: footer)
+            }
         }
     }
 
-    private func row(_ task: RecurringTask) -> some View {
-        TaskRow(task: task, calendar: calendar, onComplete: { complete(task) }, onUndo: { undoLast(task) })
+    private func row(_ task: RecurringTask, showsKind: Bool = false) -> some View {
+        TaskRow(
+            task: task,
+            calendar: calendar,
+            showsKind: showsKind,
+            onComplete: { complete(task) },
+            onUndo: { undoLast(task) }
+        )
             .swipeActions(edge: .trailing) {
                 Button("Delete", role: .destructive) {
                     TaskStore.delete(task, context: context, calendar: calendar)
@@ -85,17 +141,51 @@ struct TasksListView: View {
             .onTapGesture { editing = task }
     }
 
-    private var overdueTasks: [RecurringTask] {
-        tasks.filter { $0.isActive && ($0.state(calendar: calendar)?.isOverdue ?? false) }
+    // MARK: - Grouping
+
+    /// Late, whatever kind it is. Oldest miss first, so the thing that has been
+    /// waiting longest is the thing at the top.
+    private var needsDoing: [RecurringTask] {
+        tasks
+            .filter { $0.isActive && ($0.state(calendar: calendar)?.isOverdue ?? false) }
+            .sorted { oldestMiss($0) < oldestMiss($1) }
     }
 
-    private var finishedTasks: [RecurringTask] {
-        tasks.filter(\.isFinished)
+    /// One-offs that are not late. Pending first by when they are due, then the
+    /// ticked ones waiting out their week.
+    private var reminders: [RecurringTask] {
+        tasks
+            .filter { $0.isOneOff && !isLate($0) }
+            .sorted { a, b in
+                let (doneA, doneB) = (a.isFinished ? 1 : 0, b.isFinished ? 1 : 0)
+                if doneA != doneB { return doneA < doneB }
+                return nextDue(a) < nextDue(b)
+            }
     }
 
-    private var upcomingTasks: [RecurringTask] {
-        let handled = Set(overdueTasks.map(\.taskID)).union(finishedTasks.map(\.taskID))
-        return tasks.filter { !handled.contains($0.taskID) }
+    /// Standing commitments that are not late, by what is next. Paused ones
+    /// have no next occurrence to speak of, so they are pushed to the bottom
+    /// explicitly rather than relying on where a nil date happens to sort.
+    private var recurring: [RecurringTask] {
+        tasks
+            .filter { !$0.isOneOff && !isLate($0) }
+            .sorted { a, b in
+                let (pausedA, pausedB) = (a.isActive ? 0 : 1, b.isActive ? 0 : 1)
+                if pausedA != pausedB { return pausedA < pausedB }
+                return nextDue(a) < nextDue(b)
+            }
+    }
+
+    private func isLate(_ task: RecurringTask) -> Bool {
+        task.isActive && (task.state(calendar: calendar)?.isOverdue ?? false)
+    }
+
+    private func nextDue(_ task: RecurringTask) -> Date {
+        task.state(calendar: calendar)?.nextDue ?? .distantFuture
+    }
+
+    private func oldestMiss(_ task: RecurringTask) -> Date {
+        task.state(calendar: calendar)?.overdue.first ?? .distantFuture
     }
 
     private func complete(_ task: RecurringTask) {

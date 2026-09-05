@@ -70,9 +70,21 @@ extension RecurringTask {
     /// Checked against the completions directly rather than via
     /// `RecurringTaskState`, whose history is bounded by the lookback window —
     /// a reminder settled months ago would otherwise stop reading as done.
+    /// A one-off: a reminder rather than a standing commitment. The two look
+    /// alike in a list but behave nothing alike — a reminder is done forever,
+    /// a recurring task only ever cycles — so the screens separate them.
+    var isOneOff: Bool {
+        schedule?.frequency == .once
+    }
+
     var isFinished: Bool {
         guard let schedule, schedule.frequency == .once else { return false }
         return TaskEngine.isComplete(occurrence: schedule.anchorDate, completedDueDates: completedDueDates)
+    }
+
+    /// When the most recent tick happened, for retention.
+    var lastCompletedAt: Date? {
+        (completions ?? []).map(\.completedAt).max()
     }
 
     /// The occurrence a "done" tap should settle.

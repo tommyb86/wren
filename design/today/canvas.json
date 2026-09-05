@@ -23,6 +23,10 @@
     {
       "id": "page-5",
       "name": "Dark fixes"
+    },
+    {
+      "id": "page-6",
+      "name": "Tasks"
     }
   ],
   "artboards": [
@@ -205,6 +209,33 @@
       "y": 0,
       "w": 390,
       "h": 1320
+    },
+    {
+      "file": "TasksSplit.dc.html",
+      "title": "A · Two sections",
+      "page": "page-6",
+      "x": 0,
+      "y": 0,
+      "w": 390,
+      "h": 1180
+    },
+    {
+      "file": "TasksTabs.dc.html",
+      "title": "B · Two tabs",
+      "page": "page-6",
+      "x": 560,
+      "y": 0,
+      "w": 390,
+      "h": 1180
+    },
+    {
+      "file": "TasksCadence.dc.html",
+      "title": "C · By cadence",
+      "page": "page-6",
+      "x": 1120,
+      "y": 0,
+      "w": 390,
+      "h": 1180
     }
   ],
   "annotations": [
@@ -383,10 +414,42 @@
       "y": -260,
       "w": 950,
       "text": "Two dark-mode problems, one root cause. In dark mode surface and background are both #111111, so a box is nothing but its border and the only filled shapes are the ones we paint in ink. That makes the cream day band the loudest thing on the screen, and it turns the hard shadow into a glow, because a shadow lighter than its surface is backwards. Options for each are stacked here against the current build, all on the Blossom accent."
+    },
+    {
+      "id": "tasks-brief",
+      "page": "page-6",
+      "x": 0,
+      "y": -300,
+      "w": 1510,
+      "text": "Organising the Tasks screen. Three things are true of the current one: it is ordered by when each task was created, which means nothing to anyone; a one-off reminder and a standing commitment look identical although they behave nothing alike; and the Done section is already reminders-only by accident, because isFinished can only ever be true for a one-off. All three options fix the sort and surface the kind. Sample data, lime accent."
+    },
+    {
+      "id": "tasks-a",
+      "page": "page-6",
+      "x": 0,
+      "y": -150,
+      "w": 390,
+      "text": "A · Two sections\nOne scroll. Anything overdue floats to the top whatever it is, then Reminders, then Recurring sorted by what is next, with paused ones sunk to the bottom.\n\nFor: no new chrome, everything visible at once, and the header line says the state in words.\nAgainst: with twenty recurring tasks the reminders get pushed off screen."
+    },
+    {
+      "id": "tasks-b",
+      "page": "page-6",
+      "x": 560,
+      "y": -150,
+      "w": 390,
+      "text": "B · Two tabs\nA segmented control splits the screen into Recurring and Reminders, each with its own grouping. Recurring groups by horizon — this week, this month, later — which is the useful cut once a list gets long.\n\nFor: scales, and each tab can be organised on its own terms.\nAgainst: hides half the screen behind a tap, and the count badges have to work hard to say what is on the other side."
+    },
+    {
+      "id": "tasks-c",
+      "page": "page-6",
+      "x": 1120,
+      "y": -150,
+      "w": 390,
+      "text": "C · By cadence\nGrouped by how often: weekly, monthly, every few months, one-offs. Answers what the household has standing rather than what is next.\n\nFor: the best library view, and it makes gaps obvious — nothing yearly, no quarterly check.\nAgainst: overdue has to be lifted into a banner or it hides inside a group, and it is the least useful cut when you just want to tick something off."
     }
   ],
   "launch": {
     "view": "canvas",
-    "page": "page-5"
+    "page": "page-6"
   }
 }

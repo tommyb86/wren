@@ -66,6 +66,30 @@ enum TaskStore {
         Task { await ReminderCoordinator.rebuild(context: context, calendar: calendar) }
     }
 
+    /// Removes reminders that were ticked more than a week ago.
+    ///
+    /// Only one-offs: a recurring task is a standing commitment and is never
+    /// deleted behind the user's back. Run when the Tasks screen appears,
+    /// which is the only place a settled reminder is visible.
+    static func purgeSettledReminders(
+        _ tasks: [RecurringTask],
+        context: ModelContext,
+        now: Date = Date(),
+        calendar: Calendar = .current
+    ) {
+        let expired = tasks.filter { task in
+            guard task.isOneOff, task.isFinished, let ticked = task.lastCompletedAt else { return false }
+            return TaskEngine.settledReminderHasExpired(completedAt: ticked, now: now, calendar: calendar)
+        }
+        guard !expired.isEmpty else { return }
+
+        for task in expired {
+            Logger.shared.info("tasks", "removed settled reminder '\(task.title)' — done over \(TaskEngine.settledReminderRetentionDays) days ago")
+            context.delete(task)
+        }
+        save(context, action: "purge settled reminders")
+    }
+
     static func delete(_ task: RecurringTask, context: ModelContext, calendar: Calendar = .current) {
         Logger.shared.info("tasks", "deleted '\(task.title)'")
         context.delete(task)
